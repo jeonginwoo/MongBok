@@ -1,18 +1,21 @@
-# React + Vite
+# 합★체 (Hap-Che / Stream-Fusion)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 인방 합방 모아보기
 
-Currently, two official plugins are available:
+### ✨ 프로젝트 소개 (Introduction)
+"합방할 때 창 여러 개 띄우기, 이제 그만!"
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+인터넷 방송(인방)의 꽃인 '합방'을 시청할 때, 여러 개의 방송 창을 띄우고 일일이 배치하는 것은 번거롭습니다.
 
-## React Compiler
+합★체는 이러한 불편함을 해결하기 위해 만들어졌습니다. 여러 스트리머의 방송을 하나의 화면에 깔끔하게 배치하여, 시청자는 가장 편안하고 효율적인 방법으로 합방 콘텐츠를 즐길 수 있습니다.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+### 🚀 주요 기능 (Features)
+멀티뷰 동시 시청: 최대 N개의 방송을 한 화면에 분할하여 동시에 시청할 수 있습니다. (예정)
 
-Note: This will impact Vite dev & build performances.
+간편한 방송 추가: 스트리밍 URL만 입력하면 즉시 화면에 추가 및 배치됩니다. (예정)
 
-## Expanding the ESLint configuration
+레이아웃 최적화: 방송 수(최대 4)에 따라 필자가 정의한 레이아웃에 맞게 배치됩니다. (예정)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+자주보는 방송과 레이아웃 저장: 매번 번거롭게 스트리밍 URL을 추가할 필요 없습니다. (예정)
+
+음량/화질 개별 제어: 각 방송마다 개별적으로 볼륨 및 화질을 조절할 수 있습니다. (예정)
