@@ -14,10 +14,7 @@ body {
   position: relative;
   width: 1000px;
   aspect-ratio: 16 / 9;
-  background: #f8f9fb;
-  border: 2px solid #bbb;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background: #000000;
 }
 
 .zone {
