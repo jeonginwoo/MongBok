@@ -9,6 +9,7 @@ import {
   closestCenter,
   pointerWithin
 } from "@dnd-kit/core";
+import { layouts } from "./data/layouts";
 
 export default function App() {
   const [objects, setObjects] = useState({
@@ -22,20 +23,9 @@ export default function App() {
     c4: { id: "c4", zoneId: 4, type: "chat", label: "C4" },
   });
 
-  const zones = {
-    view: {
-      1: { id: 1, type: "view", style: { top: "0%", left: "0%", width: "71.5%", height: "71.5%" } },
-      2: { id: 2, type: "view", style: { top: "71.5%", left: "0%", width: "28.5%", height: "28.5%" } },
-      3: { id: 3, type: "view", style: { top: "71.5%", left: "28.5%", width: "28.5%", height: "28.5%" } },
-      4: { id: 4, type: "view", style: { top: "71.5%", left: "57%", width: "28.5%", height: "28.5%" } },
-    },
-    chat: {
-      1: { id: 1, type: "chat", style: { top: "0%", left: "71.5%", width: "14%", height: "71.5%" } },
-      2: { id: 2, type: "chat", style: { top: "0%", left: "85.5%", width: "14.5%", height: "34%" } },
-      3: { id: 3, type: "chat", style: { top: "34%", left: "85.5%", width: "14.5%", height: "33%" } },
-      4: { id: 4, type: "chat", style: { top: "67%", left: "85.5%", width: "14.5%", height: "33%" } },
-    },
-  };
+  const viewCount = 4;
+  const layoutType = "layout1";
+  const layout = layouts[viewCount][layoutType];
 
   const [isDraggingAny, setIsDraggingAny] = useState(false);
   const [draggingType, setDraggingType] = useState(null);
@@ -51,26 +41,21 @@ export default function App() {
       const sourceZoneId = dragged.zoneId;
       const sourceType = dragged.type;
 
-      // 🚫 다른 타입의 zone으로는 이동 불가
       if (sourceType !== targetZoneType) return prev;
 
       const updated = { ...prev };
 
-      // 🎯 같은 타입 내에서 스왑 또는 이동
       const targetObject = Object.values(prev).find(
         (obj) => obj.zoneId === targetZoneId && obj.type === sourceType
       );
 
-      if (targetObject) {
-        // ✅ 스왑
+      if (targetObject) { // 스왑
         updated[objectId] = { ...dragged, zoneId: targetZoneId };
         updated[targetObject.id] = { ...targetObject, zoneId: sourceZoneId };
       } else {
-        // ✅ 단순 이동
         updated[objectId] = { ...dragged, zoneId: targetZoneId };
       }
 
-      // 🧩 같은 zoneId의 다른 타입 object도 함께 스왑/이동
       const pairedType = sourceType === "view" ? "chat" : "view";
 
       const sourcePair = Object.values(prev).find(
@@ -80,12 +65,10 @@ export default function App() {
         (obj) => obj.zoneId === targetZoneId && obj.type === pairedType
       );
 
-      if (sourcePair && targetPair) {
-        // 두 타입 다 존재하면 스왑
+      if (sourcePair && targetPair) { // 페어 스왑
         updated[sourcePair.id] = { ...sourcePair, zoneId: targetZoneId };
         updated[targetPair.id] = { ...targetPair, zoneId: sourceZoneId };
       } else if (sourcePair) {
-        // 대상 zone에 다른 타입이 없으면 그냥 이동
         updated[sourcePair.id] = { ...sourcePair, zoneId: targetZoneId };
       }
 
@@ -96,8 +79,8 @@ export default function App() {
   return (
     <div className="container">
       <DndContext
-        sensors={sensors} // ✅ pointer sensor 적용
-        collisionDetection={pointerWithin} // ✅ 마우스 포인터 기준
+        sensors={sensors}
+        collisionDetection={pointerWithin}
         onDragStart={({ active }) => {
           setIsDraggingAny(true);
           const obj = objects[active.id];
@@ -112,21 +95,22 @@ export default function App() {
         }}
       >
         <div className="canvas">
-          {/* ✅ 드래그 중일 때만, 같은 타입의 zone만 표시 */}
           {isDraggingAny &&
             draggingType &&
-            Object.values(zones[draggingType]).map((zone) => (
+            layout[draggingType] &&
+            Object.values(layout[draggingType]).map((zone) => (
               <DropZone key={`${zone.type}-${zone.id}`} zone={zone} />
             ))}
 
-          {/* ✅ object 렌더링 */}
-          {Object.values(objects).map((obj) => (
-            <DraggableItem
-              key={obj.id}
-              object={obj}
-              zone={zones[obj.type][obj.zoneId]}
-            />
-          ))}
+          {Object.values(objects).map((obj) => 
+            layout[obj.type]?.[obj.zoneId] ? (
+              <DraggableItem
+                key={obj.id}
+                object={obj}
+                zone={layout[obj.type][obj.zoneId]}
+              />
+            ) : null
+          )}
         </div>
       </DndContext>
     </div>
@@ -167,7 +151,6 @@ function DraggableItem({ object, zone }) {
     background: isDragging ? "#91e3ff" : "#f2f2f2",
     opacity: isDragging ? 0.6 : 1,
     border: "2px solid #555",
-    borderRadius: "8px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
