@@ -9,7 +9,10 @@ import {
   closestCenter,
   pointerWithin
 } from "@dnd-kit/core";
+
 import { layouts } from "./data/layouts";
+import DraggableView from "./components/Draggable/DraggableView";
+import DraggableChat from "./components/Draggable/DraggableChat";
 
 export default function App() {
   const [objects, setObjects] = useState({
@@ -102,15 +105,14 @@ export default function App() {
               <DropZone key={`${zone.type}-${zone.id}`} zone={zone} />
             ))}
 
-          {Object.values(objects).map((obj) => 
-            layout[obj.type]?.[obj.zoneId] ? (
-              <DraggableItem
-                key={obj.id}
-                object={obj}
-                zone={layout[obj.type][obj.zoneId]}
-              />
-            ) : null
-          )}
+          {Object.values(objects).map((obj) => {
+            if (!layout[obj.type]?.[obj.zoneId]) return null;
+            return obj.type === "view" ? (
+              <DraggableView key={obj.id} object={obj} zone={layout[obj.type][obj.zoneId]} />
+            ) : (
+              <DraggableChat key={obj.id} object={obj} zone={layout[obj.type][obj.zoneId]} />
+            );
+          })}
         </div>
       </DndContext>
     </div>
@@ -134,35 +136,6 @@ function DropZone({ zone }) {
       }}
     >
       {zone.type} {zone.id}
-    </div>
-  );
-}
-
-function DraggableItem({ object, zone }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ id: object.id });
-
-  const style = {
-    position: "absolute",
-    ...zone.style,
-    transform: transform
-      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-      : undefined,
-    background: isDragging ? "#91e3ff" : "#f2f2f2",
-    opacity: isDragging ? 0.6 : 1,
-    border: "2px solid #555",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "grab",
-    transition: isDragging ? "none" : "0.2s ease",
-    boxSizing: "border-box",
-    zIndex: isDragging ? 3 : 1,
-  };
-
-  return (
-    <div ref={setNodeRef} {...listeners} {...attributes} style={style}>
-      {object.label}
     </div>
   );
 }
