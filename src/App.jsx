@@ -1,18 +1,16 @@
 import { useState } from "react";
 import {
   DndContext,
-  useDraggable,
-  useDroppable,
   PointerSensor,
   useSensor,
   useSensors,
-  closestCenter,
   pointerWithin
 } from "@dnd-kit/core";
 
 import { layouts } from "./data/layouts";
 import DraggableView from "./components/Draggable/DraggableView";
 import DraggableChat from "./components/Draggable/DraggableChat";
+import DropZone from "./components/DropZone";
 
 export default function App() {
   const [objects, setObjects] = useState({
@@ -27,8 +25,8 @@ export default function App() {
     c4: { id: "c4", zoneId: 4, type: "chat", label: "C4" },
   });
 
-  const viewCount = 3;  // TODO: 목록에서 공개된 수
-  const layoutType = "layout2";
+  const viewCount = 4;  // TODO: 목록에서 공개된 수
+  const layoutType = "layout3";
   const layout = layouts[viewCount][layoutType];
 
   const [isDraggingAny, setIsDraggingAny] = useState(false);
@@ -116,27 +114,6 @@ export default function App() {
           })}
         </div>
       </DndContext>
-    </div>
-  );
-}
-
-function DropZone({ zone }) {
-  const { setNodeRef, isOver } = useDroppable({ id: `${zone.type}-${zone.id}` });
-
-  return (
-    <div
-      ref={setNodeRef}
-      className="zone"
-      style={{
-        ...zone.style,
-        opacity: 1,
-        zIndex: 200,
-        background: isOver
-          ? "rgba(100, 150, 255, 0.5)"
-          : "rgba(255, 255, 255, 0.7)",
-      }}
-    >
-      {zone.type} {zone.id}
     </div>
   );
 }
