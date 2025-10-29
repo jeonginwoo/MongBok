@@ -16,6 +16,7 @@ import DraggableChat from "./components/Draggable/DraggableChat";
 
 export default function App() {
   const [objects, setObjects] = useState({
+    // TODO: Localstroage에서 가져오기
     v1: { id: "v1", zoneId: 1, type: "view", label: "V1" },
     v2: { id: "v2", zoneId: 2, type: "view", label: "V2" },
     v3: { id: "v3", zoneId: 3, type: "view", label: "V3" },
@@ -26,8 +27,8 @@ export default function App() {
     c4: { id: "c4", zoneId: 4, type: "chat", label: "C4" },
   });
 
-  const viewCount = 4;
-  const layoutType = "layout1";
+  const viewCount = 3;  // TODO: 목록에서 공개된 수
+  const layoutType = "layout2";
   const layout = layouts[viewCount][layoutType];
 
   const [isDraggingAny, setIsDraggingAny] = useState(false);
@@ -129,10 +130,10 @@ function DropZone({ zone }) {
       style={{
         ...zone.style,
         opacity: 1,
-        zIndex: 2,
+        zIndex: 200,
         background: isOver
           ? "rgba(100, 150, 255, 0.5)"
-          : "rgba(255, 255, 255, 0.3)",
+          : "rgba(255, 255, 255, 0.7)",
       }}
     >
       {zone.type} {zone.id}

@@ -2,7 +2,7 @@ import { useDraggable } from "@dnd-kit/core";
 
 export default function DraggableChat({ object, zone }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: object.id });
-
+  
   const style = {
     position: "absolute",
     ...zone.style,
@@ -18,7 +18,7 @@ export default function DraggableChat({ object, zone }) {
     cursor: "grab",
     transition: isDragging ? "none" : "0.2s ease",
     boxSizing: "border-box",
-    zIndex: isDragging ? 3 : 1,
+    zIndex: isDragging ? 300 : 100,
   };
 
   return (
