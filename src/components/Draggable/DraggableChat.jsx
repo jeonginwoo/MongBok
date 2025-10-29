@@ -16,7 +16,7 @@ export default function DraggableChat({ object, zone }) {
     alignItems: "center",
     justifyContent: "center",
     cursor: "grab",
-    transition: isDragging ? "none" : "0.2s ease",
+    transition: isDragging ? "none" : "0.5s ease",
     boxSizing: "border-box",
     zIndex: isDragging ? 300 : 100,
   };

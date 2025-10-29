@@ -19,7 +19,7 @@ body {
 
 .zone {
   position: absolute;
-  border: 2px dashed #999;
+  border: 2px dashed rgb(76, 192, 101);
   border-radius: 8px;
   color: #333;
   display: flex;

@@ -12,7 +12,7 @@ export default function DropZone({ zone }) {
         opacity: 1,
         zIndex: 200,
         background: isOver
-          ? "rgba(100, 150, 255, 0.5)"
+          ? "rgba(100, 255, 134, 0.8)"
           : "rgba(255, 255, 255, 0.7)",
       }}
     >

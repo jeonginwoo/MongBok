@@ -53,6 +53,8 @@ export const layouts = {  // layouts[viewCount][layoutType][zoneType][zoneId]
     layout1: {
       view: {
         1: { id: 1, type: "view", style: { top: "0%", left: "0%", width: `${a31}%`, height: `${a31}%` } },
+        // 2: { id: 2, type: "view", style: { top: `${a31}%`, left: "0%", width: `${(100 - a31)}%`, height: `${(100 - a31)}%` } },
+        // 3: { id: 3, type: "view", style: { top: `${a31}%`, left: `${(100 - a31)}%`, width: `${(100 - a31)}%`, height: `${(100 - a31)}%` } },
         2: { id: 2, type: "view", style: { top: `${a31}%`, left: `${(100 - a31)}%`, width: `${(100 - a31)}%`, height: `${(100 - a31)}%` } },
         3: { id: 3, type: "view", style: { top: `${a31}%`, left: `${(100 - a31) * 2}%`, width: `${(100 - a31)}%`, height: `${(100 - a31)}%` } },
       },
