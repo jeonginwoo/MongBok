@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -31,6 +31,8 @@ export default function App() {
 
   const [isDraggingAny, setIsDraggingAny] = useState(false);
   const [draggingType, setDraggingType] = useState(null);
+
+  const canvasRef = useRef(null);
 
   // ✅ sensors 설정
   const sensors = useSensors(
@@ -96,12 +98,12 @@ export default function App() {
           handleDrop(active.id, Number(zoneId), zoneType);
         }}
       >
-        <div className="canvas">
+        <div className="canvas" ref={canvasRef}>
           {isDraggingAny &&
             draggingType &&
             layout[draggingType] &&
             Object.values(layout[draggingType]).map((zone) => (
-              <DropZone key={`${zone.type}-${zone.id}`} zone={zone} />
+              <DropZone key={`${zone.type}-${zone.id}`} zone={zone} canvasRef={canvasRef} />
             ))}
 
           {Object.values(objects).map((obj) => {
