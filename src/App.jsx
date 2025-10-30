@@ -25,8 +25,8 @@ export default function App() {
     c4: { id: "c4", zoneId: 4, type: "chat", label: "C4" },
   });
 
-  const viewCount = 4;  // TODO: 목록에서 공개된 수
-  const layoutType = "layout3";
+  const viewCount = 3;  // TODO: 목록에서 공개된 수
+  const layoutType = "layout1";
   const layout = layouts[viewCount][layoutType];
 
   const [isDraggingAny, setIsDraggingAny] = useState(false);

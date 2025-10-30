@@ -6,7 +6,7 @@ const a21 = a11;
 const b21 = 28.8;
 
 // val of layouts[4][layout1]
-const a31 = 71.2;
+const a31 = 60;
 
 // val of layouts[4][layout1]
 const a41 = 71.2;
@@ -53,15 +53,13 @@ export const layouts = {  // layouts[viewCount][layoutType][zoneType][zoneId]
     layout1: {
       view: {
         1: { id: 1, type: "view", style: { top: "0%", left: "0%", width: `${a31}%`, height: `${a31}%` } },
-        // 2: { id: 2, type: "view", style: { top: `${a31}%`, left: "0%", width: `${(100 - a31)}%`, height: `${(100 - a31)}%` } },
-        // 3: { id: 3, type: "view", style: { top: `${a31}%`, left: `${(100 - a31)}%`, width: `${(100 - a31)}%`, height: `${(100 - a31)}%` } },
-        2: { id: 2, type: "view", style: { top: `${a31}%`, left: `${(100 - a31)}%`, width: `${(100 - a31)}%`, height: `${(100 - a31)}%` } },
-        3: { id: 3, type: "view", style: { top: `${a31}%`, left: `${(100 - a31) * 2}%`, width: `${(100 - a31)}%`, height: `${(100 - a31)}%` } },
+        2: { id: 2, type: "view", style: { top: `${a31}%`, left: "0%", width: `${(100 - a31)}%`, height: `${(100 - a31)}%` } },
+        3: { id: 3, type: "view", style: { top: `${a31}%`, left: `${(100 - a31)}%`, width: `${(100 - a31)}%`, height: `${(100 - a31)}%` } },
       },
       chat: {
-        1: { id: 1, type: "chat", style: { top: "0%", left: `${a31}%`, width: `${(100 - a31) * 3 - a31}%`, height: `${a31}%` } },
-        2: { id: 2, type: "chat", style: { top: "0%", left: `${(100 - a31) * 3}%`, width: `${100 - (100 - a31) * 3}%`, height: "50%" } },
-        3: { id: 3, type: "chat", style: { top: "50%", left: `${(100 - a31) * 3}%`, width: `${100 - (100 - a31) * 3}%`, height: "50%" } },
+        1: { id: 1, type: "chat", style: { top: "0%", left: `${a31}%`, width: `${(100 - a31) * 2 - a31}%`, height: `${a31}%` } },
+        2: { id: 2, type: "chat", style: { top: "0%", left: `${(100 - a31) * 2}%`, width: `${100 - (100 - a31) * 2}%`, height: "50%" } },
+        3: { id: 3, type: "chat", style: { top: "50%", left: `${(100 - a31) * 2}%`, width: `${100 - (100 - a31) * 2}%`, height: "50%" } },
       },
     },
     layout2: {
