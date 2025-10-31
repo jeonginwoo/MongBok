@@ -64,18 +64,6 @@ export const layouts = {  // layouts[viewCount][layoutType][zoneType][zoneId]
     },
     layout2: {
       view: {
-        1: { id: 1, type: "view", style: { top: "0%", left: "0%", width: "50%", height: "50%" } },
-        2: { id: 2, type: "view", style: { top: "0%", left: "50%", width: "50%", height: "50%" } },
-        3: { id: 3, type: "view", style: { top: "50%", left: "0%", width: "50%", height: "50%" } },
-      },
-      chat: {
-        1: { id: 1, type: "chat", style: { top: "50%", left: "50%", width: `${(50 / 3)}%`, height: "50%" } },
-        2: { id: 2, type: "chat", style: { top: "50%", left: `${50 + (50 / 3)}%`, width: `${(50 / 3)}%`, height: "50%" } },
-        3: { id: 3, type: "chat", style: { top: "50%", left: `${50 + (50 / 3) * 2}%`, width: `${(50 / 3)}%`, height: "50%" } },
-      },
-    },
-    layout3: {
-      view: {
         1: { id: 1, type: "view", style: { top: "0%", left: "0%", width: `${(100 / 3)}%`, height: `${(100 / 3)}%` } },
         2: { id: 2, type: "view", style: { top: "0%", left: `${(100 / 3)}%`, width: `${(100 / 3)}%`, height: `${(100 / 3)}%` } },
         3: { id: 3, type: "view", style: { top: "0%", left: `${(100 / 3) * 2}%`, width: `${(100 / 3)}%`, height: `${(100 / 3)}%` } },
@@ -84,6 +72,18 @@ export const layouts = {  // layouts[viewCount][layoutType][zoneType][zoneId]
         1: { id: 1, type: "chat", style: { top: `${(100 / 3)}%`, left: "0%", width: `${(100 / 3)}%`, height: `${100 - (100 / 3)}%` } },
         2: { id: 2, type: "chat", style: { top: `${(100 / 3)}%`, left: `${(100 / 3)}%`, width: `${(100 / 3)}%`, height: `${100 - (100 / 3)}%` } },
         3: { id: 3, type: "chat", style: { top: `${(100 / 3)}%`, left: `${(100 / 3) * 2}%`, width: `${(100 / 3)}%`, height: `${100 - (100 / 3)}%` } },
+      },
+    },
+    layout3: {
+      view: {
+        1: { id: 1, type: "view", style: { top: "0%", left: "0%", width: "50%", height: "50%" } },
+        2: { id: 2, type: "view", style: { top: "0%", left: "50%", width: "50%", height: "50%" } },
+        3: { id: 3, type: "view", style: { top: "50%", left: "0%", width: "50%", height: "50%" } },
+      },
+      chat: {
+        1: { id: 1, type: "chat", style: { top: "50%", left: "50%", width: `${(50 / 3)}%`, height: "50%" } },
+        2: { id: 2, type: "chat", style: { top: "50%", left: `${50 + (50 / 3)}%`, width: `${(50 / 3)}%`, height: "50%" } },
+        3: { id: 3, type: "chat", style: { top: "50%", left: `${50 + (50 / 3) * 2}%`, width: `${(50 / 3)}%`, height: "50%" } },
       },
     },
   },
@@ -104,14 +104,6 @@ export const layouts = {  // layouts[viewCount][layoutType][zoneType][zoneId]
     },
     layout2: {
       view: {
-        1: { id: 1, type: "view", style: { top: "0%", left: "0%", width: "50%", height: "50%" } },
-        2: { id: 2, type: "view", style: { top: "0%", left: "50%", width: "50%", height: "50%" } },
-        3: { id: 3, type: "view", style: { top: "50%", left: "0%", width: "50%", height: "50%" } },
-        4: { id: 4, type: "view", style: { top: "50%", left: "50%", width: "50%", height: "50%" } },
-      },
-    },
-    layout3: {
-      view: {
         1: { id: 1, type: "view", style: { top: "0%", left: "0%", width: "25%", height: "25%" } },
         2: { id: 2, type: "view", style: { top: "0%", left: "25%", width: "25%", height: "25%" } },
         3: { id: 3, type: "view", style: { top: "0%", left: "50%", width: "25%", height: "25%" } },
@@ -122,6 +114,14 @@ export const layouts = {  // layouts[viewCount][layoutType][zoneType][zoneId]
         2: { id: 2, type: "chat", style: { top: "25%", left: "25%", width: "25%", height: "75%" } },
         3: { id: 3, type: "chat", style: { top: "25%", left: "50%", width: "25%", height: "75%" } },
         4: { id: 4, type: "chat", style: { top: "25%", left: "75%", width: "25%", height: "75%" } },
+      },
+    },
+    layout3: {
+      view: {
+        1: { id: 1, type: "view", style: { top: "0%", left: "0%", width: "50%", height: "50%" } },
+        2: { id: 2, type: "view", style: { top: "0%", left: "50%", width: "50%", height: "50%" } },
+        3: { id: 3, type: "view", style: { top: "50%", left: "0%", width: "50%", height: "50%" } },
+        4: { id: 4, type: "view", style: { top: "50%", left: "50%", width: "50%", height: "50%" } },
       },
     },
   },
