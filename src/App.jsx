@@ -15,17 +15,17 @@ import DropZone from "./components/DropZone";
 export default function App() {
   const [objects, setObjects] = useState({
     // TODO: Localstroage에서 가져오기
-    v1: { id: "v1", zoneId: 1, type: "view", label: "V1" },
-    v2: { id: "v2", zoneId: 2, type: "view", label: "V2" },
-    v3: { id: "v3", zoneId: 3, type: "view", label: "V3" },
-    v4: { id: "v4", zoneId: 4, type: "view", label: "V4" },
-    c1: { id: "c1", zoneId: 1, type: "chat", label: "C1" },
-    c2: { id: "c2", zoneId: 2, type: "chat", label: "C2" },
-    c3: { id: "c3", zoneId: 3, type: "chat", label: "C3" },
-    c4: { id: "c4", zoneId: 4, type: "chat", label: "C4" },
+    V34ea2a834c0022212290c26ac5e170a1: { id: "V34ea2a834c0022212290c26ac5e170a1", zoneId: 1, type: "view", platform: "chzzk", label: "V1" },
+    Vb3e262a2795f17734c149afc738ad250: { id: "Vb3e262a2795f17734c149afc738ad250", zoneId: 2, type: "view", platform: "chzzk", label: "V2" },
+    Vb2854dc0735e55fa86c53bd15242d30f: { id: "Vb2854dc0735e55fa86c53bd15242d30f", zoneId: 3, type: "view", platform: "chzzk", label: "V3" },
+    V6086f17b054010b0657af00aff6e6d05: { id: "V6086f17b054010b0657af00aff6e6d05", zoneId: 4, type: "view", platform: "chzzk", label: "V4" },
+    C34ea2a834c0022212290c26ac5e170a1: { id: "C34ea2a834c0022212290c26ac5e170a1", zoneId: 1, type: "chat", platform: "chzzk", label: "C1" },
+    Cb3e262a2795f17734c149afc738ad250: { id: "Cb3e262a2795f17734c149afc738ad250", zoneId: 2, type: "chat", platform: "chzzk", label: "C2" },
+    Cb2854dc0735e55fa86c53bd15242d30f: { id: "Cb2854dc0735e55fa86c53bd15242d30f", zoneId: 3, type: "chat", platform: "chzzk", label: "C3" },
+    C6086f17b054010b0657af00aff6e6d05: { id: "C6086f17b054010b0657af00aff6e6d05", zoneId: 4, type: "chat", platform: "chzzk", label: "C4" },
   });
 
-  const viewCount = 3;  // TODO: 목록에서 공개된 수
+  const viewCount = 4;  // TODO: 목록에서 공개된 수
   const layoutType = "layout1";
   const layout = layouts[viewCount][layoutType];
 

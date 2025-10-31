@@ -97,9 +97,9 @@ export const layouts = {  // layouts[viewCount][layoutType][zoneType][zoneId]
       },
       chat: {
         1: { id: 1, type: "chat", style: { top: "0%", left: `${a41}%`, width: `${(100 - a41) * 3 - a41}%`, height: `${a41}%` } },
-        2: { id: 2, type: "chat", style: { top: "0%", left: `${(100 - a41) * 3}%`, width: `${100 - (100 - a41) * 3}%`, height: "34%" } },
-        3: { id: 3, type: "chat", style: { top: "34%", left: `${(100 - a41) * 3}%`, width: `${100 - (100 - a41) * 3}%`, height: "33%" } },
-        4: { id: 4, type: "chat", style: { top: "67%", left: `${(100 - a41) * 3}%`, width: `${100 - (100 - a41) * 3}%`, height: "33%" } },
+        2: { id: 2, type: "chat", style: { top: "0%", left: `${(100 - a41) * 3}%`, width: `${100 - (100 - a41) * 3}%`, height: `${100 / 3}%` } },
+        3: { id: 3, type: "chat", style: { top: `${100 / 3}%`, left: `${(100 - a41) * 3}%`, width: `${100 - (100 - a41) * 3}%`, height: `${100 / 3}%` } },
+        4: { id: 4, type: "chat", style: { top: `${200 / 3}%`, left: `${(100 - a41) * 3}%`, width: `${100 - (100 - a41) * 3}%`, height: `${100 / 3}%` } },
       },
     },
     layout2: {
