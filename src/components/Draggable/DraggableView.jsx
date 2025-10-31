@@ -10,26 +10,30 @@ export default function DraggableView({ object, zone }) {
   
   const BASE_WIDTH = window.screen.width;
   useEffect(() => {
-    let frameId;
-
     const updateZoom = () => {
-      if (containerRef.current) {
-        cancelAnimationFrame(frameId);
-        frameId = requestAnimationFrame(() => {
-          const currentWidth = containerRef.current.offsetWidth;
-          const newZoom = currentWidth < BASE_WIDTH ? currentWidth / BASE_WIDTH : 1;
-          setZoom(newZoom);
-        });
+      if (!containerRef.current) return;
+
+      const canvas = containerRef.current.closest(".canvas");
+      if (!canvas) return;
+
+      const canvasWidth = canvas.clientWidth;
+
+      const widthStr = zone.style.width;
+      let percent = 1;
+      if (typeof widthStr === "string" && widthStr.endsWith("%")) {
+        percent = parseFloat(widthStr) / 100;
       }
+
+      const zonePixelWidth = canvasWidth * percent;
+
+      const newZoom = zonePixelWidth < BASE_WIDTH ? zonePixelWidth / BASE_WIDTH : 1;
+      setZoom(newZoom);
     };
 
     updateZoom();
     window.addEventListener("resize", updateZoom);
-    return () => {
-      window.removeEventListener("resize", updateZoom);
-      cancelAnimationFrame(frameId);
-    };
-  }, [BASE_WIDTH]);
+    return () => window.removeEventListener("resize", updateZoom);
+  }, [zone.style.width]);
 
 
   const style = {
@@ -40,7 +44,6 @@ export default function DraggableView({ object, zone }) {
       : undefined,
     background: isDragging ? "#91e3ff" : "#000",
     opacity: isDragging ? 0.6 : 1,
-    border: "2px solid #555",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -61,36 +64,15 @@ export default function DraggableView({ object, zone }) {
           transformOrigin: "top left",
         }}
       >
-        {(() => {
-          if (object.platform === "chzzk") {
-            return (
-              <iframe
-                src={`https://chzzk.naver.com/live/${object.id.substring(1)}`}
-                width="100%"
-                height="100%"
-                style={{
-                  border: "none",
-                  pointerEvents: "none",
-                }}
-              />
-            );
-          } else {
-            return (
-              <div
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#555",
-                }}
-              >
-                다른 타입: {object.type}
-              </div>
-            );
-          }
-        })()}
+        <iframe
+          src={`https://chzzk.naver.com/live/${object.id.substring(1)}`}
+          style={{
+            width: "100%",
+            height: "100%",
+            border: "none",
+            pointerEvents: "none",
+          }}
+        />
       </div>
     </div>
   );
