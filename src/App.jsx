@@ -80,6 +80,13 @@ export default function App() {
     });
   };
 
+  const fullscreen = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    canvas.requestFullscreen();
+  };
+
   return (
     <div className="container">
       <DndContext
@@ -98,7 +105,7 @@ export default function App() {
           handleDrop(active.id, Number(zoneId), zoneType);
         }}
       >
-        <div className="canvas" ref={canvasRef}>
+        <div className="canvas" ref={canvasRef} overflow="hidden">
           {isDraggingAny &&
             draggingType &&
             layout[draggingType] &&
@@ -116,6 +123,27 @@ export default function App() {
           })}
         </div>
       </DndContext>
+      <div
+        style={{
+          marginTop: "5px",
+          textAlign: "right",
+        }}
+      >
+        <button
+          onClick={fullscreen}
+          style={{
+            zIndex: 1000,
+            background: "rgba(0,0,0,0.6)",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            padding: "8px 12px",
+            cursor: "pointer",
+          }}
+        >
+          전체화면
+        </button>
+      </div>
     </div>
   );
 }
