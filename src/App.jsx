@@ -6,7 +6,7 @@ import {
   useSensors,
   pointerWithin
 } from "@dnd-kit/core";
-import { Box, Paper, Button } from "@mui/material";
+import { Box, Paper, Button, Select, MenuItem, Typography } from "@mui/material";
 
 import { layouts } from "./data/layouts";
 import DraggableView from "./components/DnD/Draggable/DraggableView";
@@ -14,6 +14,7 @@ import DraggableChat from "./components/DnD/Draggable/DraggableChat";
 import DropZone from "./components/DnD/DropZone";
 
 export default function App() {
+  // TODO: localstorage에서 가져오기
   const [objects, setObjects] = useState({
     V34ea2a834c0022212290c26ac5e170a1: { id: "V34ea2a834c0022212290c26ac5e170a1", zoneId: 1, type: "view", platform: "chzzk", label: "V1" },
     Vb3e262a2795f17734c149afc738ad250: { id: "Vb3e262a2795f17734c149afc738ad250", zoneId: 2, type: "view", platform: "chzzk", label: "V2" },
@@ -28,8 +29,9 @@ export default function App() {
   const [pointerEventsEnabled, setPointerEventsEnabled] = useState(false);
   const togglePointerEvents = () => setPointerEventsEnabled((prev) => !prev);
 
-  const viewCount = 1;
-  const layoutType = "layout1";
+  // TODO: localstorage에서 가져오기
+  const [viewCount, setViewCount] = useState(1);
+  const [layoutType, setLayoutType] = useState("layout1");
   const layout = layouts[viewCount][layoutType];
 
   const [isDraggingAny, setIsDraggingAny] = useState(false);
@@ -161,9 +163,43 @@ export default function App() {
           overflowY: "auto",
         }}
       >
-        <Box sx={{ flex: "1 1 auto" }}></Box>
+        
+        {/* ViewCount 선택 */}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle2">View Count</Typography>
+          <Select
+            value={viewCount}
+            onChange={(e) => {
+              setViewCount(Number(e.target.value));
+              setLayoutType("layout1");
+            }}
+            fullWidth
+          >
+            {Object.keys(layouts).map((key) => (
+              <MenuItem key={key} value={Number(key)}>
+                {key}
+              </MenuItem>
+            ))}
+          </Select>
+        </Box>
 
-        {/* 🔘 pointerEvents 토글 버튼 */}
+        {/* LayoutType 선택 */}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="subtitle2">Layout Type</Typography>
+          <Select
+            value={layoutType}
+            onChange={(e) => setLayoutType(e.target.value)}
+            fullWidth
+          >
+            {Object.keys(layouts[viewCount]).map((key) => (
+              <MenuItem key={key} value={key}>
+                {key}
+              </MenuItem>
+            ))}
+          </Select>
+        </Box>
+
+        {/* pointerEvents 토글 버튼 */}
         <Box sx={{ flex: "0 0 auto", mb: 2 }}>
           <Button
             variant="contained"
