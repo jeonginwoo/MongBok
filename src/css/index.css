@@ -1,20 +1,17 @@
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #121212;
+  font-family: "Roboto", sans-serif;
+}
+
 body {
-  font-family: sans-serif;
-  background-color: #fafafa;
-  display: flex;
-  justify-content: center;
-  margin-top: 40px;
-}
-
-.container {
-  text-align: center;
-}
-
-.canvas {
-  position: relative;
-  width: 70vw;
-  aspect-ratio: 16 / 9;
-  background: #000000;
+  display: block;
 }
 
 .zone {

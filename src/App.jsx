@@ -6,6 +6,7 @@ import {
   useSensors,
   pointerWithin
 } from "@dnd-kit/core";
+import { Box, Paper, Button } from "@mui/material";
 
 import { layouts } from "./data/layouts";
 import DraggableView from "./components/DnD/Draggable/DraggableView";
@@ -31,7 +32,6 @@ export default function App() {
 
   const [isDraggingAny, setIsDraggingAny] = useState(false);
   const [draggingType, setDraggingType] = useState(null);
-
   const canvasRef = useRef(null);
 
   // ✅ sensors 설정
@@ -82,70 +82,99 @@ export default function App() {
 
   const fullscreen = () => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    canvas.requestFullscreen();
+    if (canvas) canvas.requestFullscreen();
   };
 
   return (
-    <div className="container">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={pointerWithin}
-        onDragStart={({ active }) => {
-          setIsDraggingAny(true);
-          const obj = objects[active.id];
-          if (obj) setDraggingType(obj.type);
-        }}
-        onDragEnd={({ active, over }) => {
-          setIsDraggingAny(false);
-          setDraggingType(null);
-          if (!over) return;
-          const [zoneType, zoneId] = over.id.split("-");
-          handleDrop(active.id, Number(zoneId), zoneType);
-        }}
-      >
-        <div className="canvas" ref={canvasRef} overflow="hidden">
-          {isDraggingAny &&
-            draggingType &&
-            layout[draggingType] &&
-            Object.values(layout[draggingType]).map((zone) => (
-              <DropZone key={`${zone.type}-${zone.id}`} zone={zone} canvasRef={canvasRef} />
-            ))}
-
-          {Object.values(objects).map((obj) => {
-            if (!layout[obj.type]?.[obj.zoneId]) return null;
-            return obj.type === "view" ? (
-              <DraggableView key={obj.id} object={obj} zone={layout[obj.type][obj.zoneId]} />
-            ) : (
-              <DraggableChat key={obj.id} object={obj} zone={layout[obj.type][obj.zoneId]} />
-            );
-          })}
-        </div>
-      </DndContext>
-      <div
-        style={{
-          marginTop: "5px",
-          textAlign: "right",
+    <Box 
+      sx={{
+        display: "flex",
+        height: "100vh",
+        overflow: "hidden", // 페이지 스크롤 방지
+      }}
+    >
+      {/* View */}
+      <Box
+        sx={{
+          flex: "1 1 auto",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#1b1b1bff",
         }}
       >
-        <button
-          onClick={fullscreen}
-          style={buttonStyle}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={pointerWithin}
+          onDragStart={({ active }) => {
+            setIsDraggingAny(true);
+            const obj = objects[active.id];
+            if (obj) setDraggingType(obj.type);
+          }}
+          onDragEnd={({ active, over }) => {
+            setIsDraggingAny(false);
+            setDraggingType(null);
+            if (!over) return;
+            const [zoneType, zoneId] = over.id.split("-");
+            handleDrop(active.id, Number(zoneId), zoneType);
+          }}
         >
-          전체화면
-        </button>
-      </div>
-    </div>
-  );
-}
+          <Box
+            className="canvas" 
+            ref={canvasRef}
+            sx={{
+              position: "relative",
+              aspectRatio: "16/9",
+              width: "100%",
+              backgroundColor: "#000",
+              overflow: "hidden",
+            }}>
+            {isDraggingAny &&
+              draggingType &&
+              layout[draggingType] &&
+              Object.values(layout[draggingType]).map((zone) => (
+                <DropZone key={`${zone.type}-${zone.id}`} zone={zone} canvasRef={canvasRef} />
+              ))}
 
-const buttonStyle = {
-  marginLeft: "5px",
-  padding: "8px 12px",
-  background: "rgba(0,0,0,0.6)",
-  color: "white",
-  border: "none",
-  borderRadius: "6px",
-  cursor: "pointer",
+            {Object.values(objects).map((obj) => {
+              if (!layout[obj.type]?.[obj.zoneId]) return null;
+              return obj.type === "view" ? (
+                <DraggableView key={obj.id} object={obj} zone={layout[obj.type][obj.zoneId]} />
+              ) : (
+                <DraggableChat key={obj.id} object={obj} zone={layout[obj.type][obj.zoneId]} />
+              );
+            })}
+          </Box>
+        </DndContext>
+      </Box>
+
+      {/* Controller */}
+      <Paper
+        elevation={3}
+        sx={{
+          width: 320,
+          backgroundColor: "#1e1e1e",
+          color: "#fff",
+          display: "flex",
+          flexDirection: "column",
+          padding: 2,
+          overflowY: "auto",
+        }}
+      >
+        <Box sx={{ flex: "1 1 auto" }}>
+          
+        </Box>
+        <Box sx={{ flex: "0 0 auto", mb: 2 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            onClick={fullscreen}
+          >
+            전체화면
+          </Button>
+        </Box>
+      </Paper>
+    </Box>
+  );
 }
