@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 
-export default function DraggableView({ object, zone }) {
+export default function DraggableView({ object, zone, pointerEventsEnabled }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: object.id });
   const baseZIndex = zone.style?.zIndex || 0;
-
   const containerRef = useRef(null);
   const [zoom, setZoom] = useState(1);
-  
+
   const BASE_WIDTH = window.screen.width;
   useEffect(() => {
     const updateZoom = () => {
@@ -25,7 +24,6 @@ export default function DraggableView({ object, zone }) {
       }
 
       const zonePixelWidth = canvasWidth * percent;
-
       const newZoom = zonePixelWidth < BASE_WIDTH ? zonePixelWidth / BASE_WIDTH : 1;
       setZoom(newZoom);
     };
@@ -35,13 +33,10 @@ export default function DraggableView({ object, zone }) {
     return () => window.removeEventListener("resize", updateZoom);
   }, [zone.style.width]);
 
-
   const style = {
     position: "absolute",
     ...zone.style,
-    transform: transform
-      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-      : undefined,
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     background: isDragging ? "#91e3ff" : "#000",
     opacity: isDragging ? 0.6 : 1,
     display: "flex",
@@ -70,7 +65,7 @@ export default function DraggableView({ object, zone }) {
             width: "100%",
             height: "100%",
             border: "none",
-            pointerEvents: "none",
+            pointerEvents: pointerEventsEnabled ? "auto" : "none",
           }}
         />
       </div>
