@@ -8,9 +8,9 @@ import {
 } from "@dnd-kit/core";
 
 import { layouts } from "./data/layouts";
-import DraggableView from "./components/Draggable/DraggableView";
-import DraggableChat from "./components/Draggable/DraggableChat";
-import DropZone from "./components/DropZone";
+import DraggableView from "./components/DnD/Draggable/DraggableView";
+import DraggableChat from "./components/DnD/Draggable/DraggableChat";
+import DropZone from "./components/DnD/DropZone";
 
 export default function App() {
   const [objects, setObjects] = useState({
@@ -131,19 +131,21 @@ export default function App() {
       >
         <button
           onClick={fullscreen}
-          style={{
-            zIndex: 1000,
-            background: "rgba(0,0,0,0.6)",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            padding: "8px 12px",
-            cursor: "pointer",
-          }}
+          style={buttonStyle}
         >
           전체화면
         </button>
       </div>
     </div>
   );
+}
+
+const buttonStyle = {
+  marginLeft: "5px",
+  padding: "8px 12px",
+  background: "rgba(0,0,0,0.6)",
+  color: "white",
+  border: "none",
+  borderRadius: "6px",
+  cursor: "pointer",
 }

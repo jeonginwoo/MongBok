@@ -12,7 +12,7 @@ body {
 
 .canvas {
   position: relative;
-  width: 1000px;
+  width: 70vw;
   aspect-ratio: 16 / 9;
   background: #000000;
 }

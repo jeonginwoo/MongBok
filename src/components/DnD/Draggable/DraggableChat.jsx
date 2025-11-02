@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 
 export default function DraggableChat({ object, zone }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: object.id });
-  
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({ id: object.id });
+
   const containerRef = useRef(null);
   const [zoom, setZoom] = useState(1);
 
@@ -25,7 +26,8 @@ export default function DraggableChat({ object, zone }) {
 
       const zonePixelWidth = canvasWidth * percent;
 
-      const newZoom = zonePixelWidth < BASE_WIDTH ? zonePixelWidth / BASE_WIDTH : 1;
+      const newZoom =
+        zonePixelWidth < BASE_WIDTH ? zonePixelWidth / BASE_WIDTH : 1;
       setZoom(newZoom);
     };
 
@@ -49,7 +51,7 @@ export default function DraggableChat({ object, zone }) {
     transition: isDragging ? "none" : "0.5s ease",
     boxSizing: "border-box",
     zIndex: isDragging ? 300 : 100,
-    overflow:"hidden",
+    overflow: "hidden",
   };
 
   return (
@@ -81,5 +83,4 @@ export default function DraggableChat({ object, zone }) {
       </div>
     </div>
   );
-
 }
