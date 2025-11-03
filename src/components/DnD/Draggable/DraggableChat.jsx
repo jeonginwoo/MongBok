@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
+import { getChzzkLiveDetail } from "@/api/chzzkApi";
 import Box from "@mui/material/Box";
-import { getChzzkLiveDetail } from "../../../api/chzzkApi";
+
+import LiveTime from "@/components/Info/LiveTime";
 
 export default function DraggableChat({ object, zone }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: object.id });
@@ -109,14 +111,15 @@ export default function DraggableChat({ object, zone }) {
             position: "absolute",
             left: "0px",
             width: "100%",
+            maxHeight: "130px",
             aspectRatio: "100/40",
             border: "none",
             background: `
               linear-gradient(
                 to bottom,
                 rgba(0,0,0,0.9) 0%,
-                rgba(0,0,0,0.6) 50%,
-                rgba(0,0,0,0.3) 75%,
+                rgba(0,0,0,0.7) 40%,
+                rgba(0,0,0,0.2) 60%,
                 rgba(0,0,0,0) 100%
               )
             `,
@@ -125,10 +128,11 @@ export default function DraggableChat({ object, zone }) {
           {/* Channel Image */}
           <Box
             sx={{
-              height: "40%", // 부모 높이 기준으로 50%로 설정 가능
-              aspectRatio: "1/1", // 정사각형 → 원형
-              borderRadius: "50%", // 원형
+              height: "40%",
+              aspectRatio: "1/1",
+              borderRadius: "50%",
               overflow: "hidden",
+              flexShrink: 0,
             }}
           >
             <img
@@ -148,6 +152,13 @@ export default function DraggableChat({ object, zone }) {
               }}
             >
               {liveDetail?.content.liveTitle}
+            </Box>
+            <Box
+              sx={{
+                color: "white",
+              }}
+            >
+              <LiveTime status={liveDetail?.content.status} openDate={liveDetail?.content.openDate} />
             </Box>
           </Box>
         </Box>

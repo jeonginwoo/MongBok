@@ -8,10 +8,10 @@ import {
 } from "@dnd-kit/core";
 import { Box, Paper, Button, Select, MenuItem, Typography } from "@mui/material";
 
-import { layouts } from "./data/layouts";
-import DraggableView from "./components/DnD/Draggable/DraggableView";
-import DraggableChat from "./components/DnD/Draggable/DraggableChat";
-import DropZone from "./components/DnD/DropZone";
+import { layouts } from "@/data/layouts";
+import DraggableView from "@/components/DnD/Draggable/DraggableView";
+import DraggableChat from "@/components/DnD/Draggable/DraggableChat";
+import DropZone from "@/components/DnD/DropZone";
 
 export default function App() {
   // TODO: localstorage에서 가져오기
