@@ -1,12 +1,27 @@
 import { useEffect, useRef, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
+import Box from "@mui/material/Box";
+import { getChzzkLiveDetail } from "../../../api/chzzkApi";
 
 export default function DraggableChat({ object, zone }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ id: object.id });
-
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: object.id });
   const containerRef = useRef(null);
   const [zoom, setZoom] = useState(1);
+  const channelId = object.id.substring(1);
+  
+  const [liveDetail, setLiveDetail] = useState(null);
+  useEffect(() => {
+    const fetchLiveDetail = async () => {
+      try {
+        const data = await getChzzkLiveDetail(channelId);
+        setLiveDetail(data);
+      } catch (error) {
+        console.error("❌ 라이브 정보 가져오기 실패:", error);
+      }
+    };
+
+    fetchLiveDetail();
+  }, []);
 
   const BASE_WIDTH = 360;
   useEffect(() => {
@@ -55,10 +70,15 @@ export default function DraggableChat({ object, zone }) {
   };
 
   return (
-    <div ref={setNodeRef} {...listeners} {...attributes} style={style}>
-      <div
+    <Box
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      sx={style}
+    >
+      <Box
         ref={containerRef}
-        style={{
+        sx={{
           position: "relative",
           width: "100%",
           height: "100%",
@@ -67,20 +87,71 @@ export default function DraggableChat({ object, zone }) {
           overflow: "hidden",
         }}
       >
-        <iframe
-          src={`https://chzzk.naver.com/live/${object.id.substring(1)}/chat`}
-          style={{
+        <Box
+          component="iframe"
+          src={`https://chzzk.naver.com/live/${channelId}/chat`}
+          sx={{
             position: "absolute",
-            top: "-125px",
+            top: "-145px",
             left: "0px",
             width: "100%",
-            height: "calc(100% + 230px)",
+            height: "calc(100% + 250px)",
             border: "none",
             pointerEvents: "none",
             overflow: "hidden",
           }}
         />
-      </div>
-    </div>
+        <Box
+          sx={{
+            display: "flex",
+            gap: "4%",
+            padding: "3%",
+            position: "absolute",
+            left: "0px",
+            width: "100%",
+            aspectRatio: "100/40",
+            border: "none",
+            background: `
+              linear-gradient(
+                to bottom,
+                rgba(0,0,0,0.9) 0%,
+                rgba(0,0,0,0.6) 50%,
+                rgba(0,0,0,0.3) 75%,
+                rgba(0,0,0,0) 100%
+              )
+            `,
+          }}
+        >
+          {/* Channel Image */}
+          <Box
+            sx={{
+              height: "40%", // 부모 높이 기준으로 50%로 설정 가능
+              aspectRatio: "1/1", // 정사각형 → 원형
+              borderRadius: "50%", // 원형
+              overflow: "hidden",
+            }}
+          >
+            <img
+              src={liveDetail?.content.channel.channelImageUrl}
+              alt="profile"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          </Box>
+          
+          {/* Channel Info */}
+          <Box>
+            <Box
+              sx={{
+                color: "white",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+              }}
+            >
+              {liveDetail?.content.liveTitle}
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }

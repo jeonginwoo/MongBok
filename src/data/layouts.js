@@ -1,11 +1,11 @@
 // val of layouts[1][layout1]
-const a11 = 85;
+const a11 = 81;
 
 // val of layouts[2][layout1]
 const a21 = a11;
 const b21 = 28.8;
 
-// val of layouts[4][layout1]
+// val of layouts[3][layout1]
 const a31 = 60;
 
 // val of layouts[4][layout1]

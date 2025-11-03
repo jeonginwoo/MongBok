@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
+import Box from "@mui/material/Box";
 
 export default function DraggableView({ object, zone, pointerEventsEnabled }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: object.id });
   const baseZIndex = zone.style?.zIndex || 0;
   const containerRef = useRef(null);
   const [zoom, setZoom] = useState(1);
+  const channelId = object.id.substring(1);
 
   const BASE_WIDTH = window.screen.width;
   useEffect(() => {
@@ -49,26 +51,27 @@ export default function DraggableView({ object, zone, pointerEventsEnabled }) {
   };
 
   return (
-    <div ref={setNodeRef} {...listeners} {...attributes} style={style}>
-      <div
+    <Box ref={setNodeRef} {...listeners} {...attributes} sx={style}>
+      <Box
         ref={containerRef}
-        style={{
+        sx={{
           width: "100%",
           height: "100%",
           zoom: zoom,
           transformOrigin: "top left",
         }}
       >
-        <iframe
-          src={`https://chzzk.naver.com/live/${object.id.substring(1)}`}
-          style={{
+        <Box
+          component="iframe"
+          src={`https://chzzk.naver.com/live/${channelId}`}
+          sx={{
             width: "100%",
             height: "100%",
             border: "none",
             pointerEvents: pointerEventsEnabled ? "auto" : "none",
           }}
         />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
