@@ -4,6 +4,7 @@ import { getChzzkLiveDetail } from "@/api/chzzkApi";
 import Box from "@mui/material/Box";
 
 import LiveTime from "@/components/Info/LiveTime";
+import UserCount from "@/components/Info/UserCount";
 
 export default function DraggableChat({ object, zone }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: object.id });
@@ -155,10 +156,12 @@ export default function DraggableChat({ object, zone }) {
             </Box>
             <Box
               sx={{
-                color: "white",
+                display: "flex",
+                gap: 1,
               }}
             >
               <LiveTime status={liveDetail?.content.status} openDate={liveDetail?.content.openDate} />
+              <UserCount channelId={channelId} />
             </Box>
           </Box>
         </Box>
