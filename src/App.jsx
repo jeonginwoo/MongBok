@@ -12,6 +12,7 @@ import { layouts } from "@/data/layouts";
 import DraggableView from "@/components/DnD/Draggable/DraggableView";
 import DraggableChat from "@/components/DnD/Draggable/DraggableChat";
 import DropZone from "@/components/DnD/DropZone";
+import CurrentTime from "@/components/Info/CurrentTime";
 
 export default function App() {
   // TODO: localstorage에서 가져오기
@@ -146,6 +147,7 @@ export default function App() {
                 <DraggableChat key={obj.id} object={obj} zone={layout[obj.type][obj.zoneId]} />
               );
             })}
+            <CurrentTime />
           </Box>
         </DndContext>
       </Box>
