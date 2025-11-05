@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 
-const CurrentTime = () => {
+const CurrentTime = ({ onClick }) => {
   const [time, setTime] = useState(() => new Date());
 
   useEffect(() => {
@@ -30,6 +30,7 @@ const CurrentTime = () => {
 
   return (
     <Box
+      onClick={onClick}
       sx={{
         position: "absolute",
         margin: "3px",
@@ -41,6 +42,10 @@ const CurrentTime = () => {
         color: "#ffffffff",
         fontSize: "10px",
         zIndex: 1000,
+        "&:hover": {
+          cursor: "pointer",
+          backgroundColor: "rgba(255,255,255,0.1)",
+        },
       }}
     >
       {formattedTime}

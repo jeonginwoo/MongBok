@@ -3,13 +3,21 @@ import { useDraggable } from "@dnd-kit/core";
 import Box from "@mui/material/Box";
 
 export default function DraggableView({ object, zone, pointerEventsEnabled }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: object.id });
+  if (!object) return null;
+
+  const draggableId = `${object.id}-${object.type}`;
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: draggableId,
+  });
+  console.log(zone);
+
   const baseZIndex = zone.style?.zIndex || 0;
   const containerRef = useRef(null);
   const [zoom, setZoom] = useState(1);
-  const channelId = object.id.substring(1);
+  const channelId = object.id;
 
   const BASE_WIDTH = window.screen.width;
+
   useEffect(() => {
     const updateZoom = () => {
       if (!containerRef.current) return;
@@ -18,7 +26,6 @@ export default function DraggableView({ object, zone, pointerEventsEnabled }) {
       if (!canvas) return;
 
       const canvasWidth = canvas.clientWidth;
-
       const widthStr = zone.style.width;
       let percent = 1;
       if (typeof widthStr === "string" && widthStr.endsWith("%")) {

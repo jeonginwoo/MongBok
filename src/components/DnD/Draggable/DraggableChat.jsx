@@ -7,10 +7,16 @@ import LiveTime from "@/components/Info/LiveTime";
 import UserCount from "@/components/Info/UserCount";
 
 export default function DraggableChat({ object, zone }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: object.id });
+  if (!object) return null;
+
+  const draggableId = `${object.id}-${object.type}`;
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: draggableId,
+  });
+
   const containerRef = useRef(null);
   const [zoom, setZoom] = useState(1);
-  const channelId = object.id.substring(1);
+  const channelId = object.id;
   
   const [liveDetail, setLiveDetail] = useState(null);
   useEffect(() => {
@@ -107,7 +113,7 @@ export default function DraggableChat({ object, zone }) {
         <Box
           sx={{
             display: "flex",
-            gap: "4%",
+            gap: "2.5%",
             padding: "3%",
             position: "absolute",
             left: "0px",

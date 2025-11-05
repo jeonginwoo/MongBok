@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -16,15 +16,32 @@ import CurrentTime from "@/components/Info/CurrentTime";
 
 export default function App() {
   // TODO: localstorage에서 가져오기
-  const [objects, setObjects] = useState({
-    V34ea2a834c0022212290c26ac5e170a1: { id: "V34ea2a834c0022212290c26ac5e170a1", zoneId: 1, type: "view", platform: "chzzk", label: "V1" },
-    Vb3e262a2795f17734c149afc738ad250: { id: "Vb3e262a2795f17734c149afc738ad250", zoneId: 2, type: "view", platform: "chzzk", label: "V2" },
-    Vb2854dc0735e55fa86c53bd15242d30f: { id: "Vb2854dc0735e55fa86c53bd15242d30f", zoneId: 3, type: "view", platform: "chzzk", label: "V3" },
-    V6086f17b054010b0657af00aff6e6d05: { id: "V6086f17b054010b0657af00aff6e6d05", zoneId: 4, type: "view", platform: "chzzk", label: "V4" },
-    C34ea2a834c0022212290c26ac5e170a1: { id: "C34ea2a834c0022212290c26ac5e170a1", zoneId: 1, type: "chat", platform: "chzzk", label: "C1" },
-    Cb3e262a2795f17734c149afc738ad250: { id: "Cb3e262a2795f17734c149afc738ad250", zoneId: 2, type: "chat", platform: "chzzk", label: "C2" },
-    Cb2854dc0735e55fa86c53bd15242d30f: { id: "Cb2854dc0735e55fa86c53bd15242d30f", zoneId: 3, type: "chat", platform: "chzzk", label: "C3" },
-    C6086f17b054010b0657af00aff6e6d05: { id: "C6086f17b054010b0657af00aff6e6d05", zoneId: 4, type: "chat", platform: "chzzk", label: "C4" },
+  const [channels, setChannels] = useState({
+    "93fe884808459fb4e4a3c7d64f0eef03": {
+      id: "93fe884808459fb4e4a3c7d64f0eef03",
+      view: { id: "93fe884808459fb4e4a3c7d64f0eef03", zoneId: 1, type: "view", platform: "chzzk", label: "V1" },
+      chat: { id: "93fe884808459fb4e4a3c7d64f0eef03", zoneId: 1, type: "chat", platform: "chzzk", label: "C1" },
+    },
+    "34ea2a834c0022212290c26ac5e170a1": {
+      id: "34ea2a834c0022212290c26ac5e170a1",
+      view: { id: "34ea2a834c0022212290c26ac5e170a1", zoneId: 5, type: "view", platform: "chzzk", label: "V1" },
+      chat: { id: "34ea2a834c0022212290c26ac5e170a1", zoneId: 5, type: "chat", platform: "chzzk", label: "C1" },
+    },
+    "b3e262a2795f17734c149afc738ad250": {
+      id: "b3e262a2795f17734c149afc738ad250",
+      view: { id: "b3e262a2795f17734c149afc738ad250", zoneId: 2, type: "view", platform: "chzzk", label: "V2" },
+      chat: { id: "b3e262a2795f17734c149afc738ad250", zoneId: 2, type: "chat", platform: "chzzk", label: "C2" },
+    },
+    "b2854dc0735e55fa86c53bd15242d30f": {
+      id: "b2854dc0735e55fa86c53bd15242d30f",
+      view: { id: "b2854dc0735e55fa86c53bd15242d30f", zoneId: 3, type: "view", platform: "chzzk", label: "V3" },
+      chat: { id: "b2854dc0735e55fa86c53bd15242d30f", zoneId: 3, type: "chat", platform: "chzzk", label: "C3" },
+    },
+    "6086f17b054010b0657af00aff6e6d05": {
+      id: "6086f17b054010b0657af00aff6e6d05",
+      view: { id: "6086f17b054010b0657af00aff6e6d05", zoneId: 4, type: "view", platform: "chzzk", label: "V4" },
+      chat: { id: "6086f17b054010b0657af00aff6e6d05", zoneId: 4, type: "chat", platform: "chzzk", label: "C4" },
+    },
   });
 
   const [pointerEventsEnabled, setPointerEventsEnabled] = useState(false);
@@ -43,40 +60,43 @@ export default function App() {
     useSensor(PointerSensor, { activationConstraint: { distance: 1 } })
   );
 
-  const handleDrop = (objectId, targetZoneId, targetZoneType) => {
-    setObjects((prev) => {
-      const dragged = prev[objectId];
+  const handleDrop = (baseId, targetZoneId, targetZoneType, objectType) => {
+    setChannels((prev) => {
+      const updated = structuredClone(prev); // 깊은 복사 권장
+      const dragged = updated[baseId][objectType];
       const sourceZoneId = dragged.zoneId;
-      const sourceType = dragged.type;
 
-      if (sourceType !== targetZoneType) return prev;
-      const updated = { ...prev };
+      if (dragged.type !== targetZoneType) return prev;
 
-      const targetObject = Object.values(prev).find(
-        (obj) => obj.zoneId === targetZoneId && obj.type === sourceType
+      // 같은 type의 타겟 찾기
+      const targetEntry = Object.values(updated).find(
+        (obj) => obj[objectType].zoneId === targetZoneId
       );
 
-      if (targetObject) {
-        updated[objectId] = { ...dragged, zoneId: targetZoneId };
-        updated[targetObject.id] = { ...targetObject, zoneId: sourceZoneId };
+      if (targetEntry) {
+        const temp = targetEntry[objectType].zoneId;
+        updated[baseId][objectType].zoneId = targetZoneId;
+        targetEntry[objectType].zoneId = sourceZoneId;
       } else {
-        updated[objectId] = { ...dragged, zoneId: targetZoneId };
+        updated[baseId][objectType].zoneId = targetZoneId;
       }
 
-      const pairedType = sourceType === "view" ? "chat" : "view";
+      // paired type도 같이 이동
+      const pairedType = objectType === "view" ? "chat" : "view";
 
-      const sourcePair = Object.values(prev).find(
-        (obj) => obj.zoneId === sourceZoneId && obj.type === pairedType
+      const sourcePair = Object.values(updated).find(
+        (obj) => obj[pairedType].zoneId === sourceZoneId
       );
-      const targetPair = Object.values(prev).find(
-        (obj) => obj.zoneId === targetZoneId && obj.type === pairedType
+      const targetPair = Object.values(updated).find(
+        (obj) => obj[pairedType].zoneId === targetZoneId
       );
 
       if (sourcePair && targetPair) {
-        updated[sourcePair.id] = { ...sourcePair, zoneId: targetZoneId };
-        updated[targetPair.id] = { ...targetPair, zoneId: sourceZoneId };
+        const temp = sourcePair[pairedType].zoneId;
+        sourcePair[pairedType].zoneId = targetPair[pairedType].zoneId;
+        targetPair[pairedType].zoneId = temp;
       } else if (sourcePair) {
-        updated[sourcePair.id] = { ...sourcePair, zoneId: targetZoneId };
+        sourcePair[pairedType].zoneId = targetZoneId;
       }
 
       return updated;
@@ -85,13 +105,19 @@ export default function App() {
 
   const fullscreen = () => {
     const canvas = canvasRef.current;
-    if (canvas) canvas.requestFullscreen();
+
+    if (!document.fullscreenElement) {
+      if (canvas) canvas.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
   };
 
   return (
     <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       {/* View */}
       <Box
+        ref={canvasRef}
         sx={{
           flex: "1 1 auto",
           display: "flex",
@@ -105,20 +131,21 @@ export default function App() {
           collisionDetection={pointerWithin}
           onDragStart={({ active }) => {
             setIsDraggingAny(true);
-            const obj = objects[active.id];
-            if (obj) setDraggingType(obj.type);
+            const [baseId, type] = active.id.split("-");
+            setDraggingType(type);
           }}
+
           onDragEnd={({ active, over }) => {
             setIsDraggingAny(false);
             setDraggingType(null);
             if (!over) return;
             const [zoneType, zoneId] = over.id.split("-");
-            handleDrop(active.id, Number(zoneId), zoneType);
+            const [baseId, objectType] = active.id.split("-");
+            handleDrop(baseId, Number(zoneId), zoneType, objectType);
           }}
         >
           <Box
             className="canvas"
-            ref={canvasRef}
             sx={{
               position: "relative",
               aspectRatio: "16/9",
@@ -134,20 +161,31 @@ export default function App() {
                 <DropZone key={`${zone.type}-${zone.id}`} zone={zone} canvasRef={canvasRef} />
               ))}
 
-            {Object.values(objects).map((obj) => {
-              if (!layout[obj.type]?.[obj.zoneId]) return null;
-              return obj.type === "view" ? (
-                <DraggableView
-                  key={obj.id}
-                  object={obj}
-                  zone={layout[obj.type][obj.zoneId]}
-                  pointerEventsEnabled={pointerEventsEnabled}
-                />
-              ) : (
-                <DraggableChat key={obj.id} object={obj} zone={layout[obj.type][obj.zoneId]} />
+            {Object.values(channels).map((channel) => {
+              if (
+                !layout[channel.view.type]?.[channel.view.zoneId] ||
+                !layout[channel.chat.type]?.[channel.chat.zoneId]
+              ) return null;
+
+              return (
+                <React.Fragment key={channel.id}>
+                  {channel.view && (
+                    <DraggableView
+                      object={channel.view}
+                      zone={layout[channel.view.type][channel.view.zoneId]}
+                      pointerEventsEnabled={pointerEventsEnabled}
+                    />
+                  )}
+                  {channel.chat && (
+                    <DraggableChat
+                      object={channel.chat}
+                      zone={layout[channel.chat.type][channel.chat.zoneId]}
+                    />
+                  )}
+                </React.Fragment>
               );
             })}
-            <CurrentTime />
+            <CurrentTime onClick={fullscreen} />
           </Box>
         </DndContext>
       </Box>
