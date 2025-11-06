@@ -2,14 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import Box from "@mui/material/Box";
 
-export default function DraggableView({ object, zone, pointerEventsEnabled }) {
+export default function DraggableView({ object, zone, liveStatus, pointerEventsEnabled }) {
   if (!object) return null;
 
   const draggableId = `${object.id}-${object.type}`;
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: draggableId,
   });
-  console.log(zone);
 
   const baseZIndex = zone.style?.zIndex || 0;
   const containerRef = useRef(null);
@@ -70,6 +69,7 @@ export default function DraggableView({ object, zone, pointerEventsEnabled }) {
       >
         <Box
           component="iframe"
+          key={liveStatus?.isLive ? "live" : "offline"} // 🔥 상태 바뀌면 iframe 리렌더링됨
           src={`https://chzzk.naver.com/live/${channelId}`}
           sx={{
             width: "100%",

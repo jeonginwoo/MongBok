@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { getChzzkLiveDetail } from "@/api/chzzkApi";
+import { getChzzkChannelsImageUrl } from "@/api/chzzkApi";
 import Box from "@mui/material/Box";
 
 import LiveTime from "@/components/Info/LiveTime";
 import UserCount from "@/components/Info/UserCount";
 
-export default function DraggableChat({ object, zone }) {
+export default function DraggableChat({ object, zone, liveStatus }) {
   if (!object) return null;
 
   const draggableId = `${object.id}-${object.type}`;
@@ -16,21 +16,21 @@ export default function DraggableChat({ object, zone }) {
 
   const containerRef = useRef(null);
   const [zoom, setZoom] = useState(1);
+  const [imageUrl, setImageUrl] = useState(null);
   const channelId = object.id;
-  
-  const [liveDetail, setLiveDetail] = useState(null);
+
   useEffect(() => {
-    const fetchLiveDetail = async () => {
+    const fetchChannelImage = async () => {
       try {
-        const data = await getChzzkLiveDetail(channelId);
-        setLiveDetail(data);
+        const url = await getChzzkChannelsImageUrl(channelId);
+        setImageUrl(url);
       } catch (error) {
-        console.error("❌ 라이브 정보 가져오기 실패:", error);
+        console.error("❌ 채널 이미지 불러오기 실패:", error);
       }
     };
 
-    fetchLiveDetail();
-  }, []);
+    fetchChannelImage();
+  }, [channelId]);
 
   const BASE_WIDTH = 360;
   useEffect(() => {
@@ -143,7 +143,7 @@ export default function DraggableChat({ object, zone }) {
             }}
           >
             <img
-              src={liveDetail?.content.channel.channelImageUrl}
+              src={imageUrl}
               alt="profile"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
@@ -158,7 +158,7 @@ export default function DraggableChat({ object, zone }) {
                 overflow: "hidden",
               }}
             >
-              {liveDetail?.content.liveTitle}
+              {liveStatus?.liveTitle}
             </Box>
             <Box
               sx={{
@@ -166,8 +166,8 @@ export default function DraggableChat({ object, zone }) {
                 gap: 1,
               }}
             >
-              <LiveTime status={liveDetail?.content.status} openDate={liveDetail?.content.openDate} />
-              <UserCount channelId={channelId} />
+              <LiveTime status={liveStatus?.status} openDate={liveStatus?.openDate} />
+              <UserCount channelId={channelId} liveStatus={liveStatus} />
             </Box>
           </Box>
         </Box>

@@ -1,5 +1,5 @@
 // val of layouts[1][layout1]
-const a11 = 81;
+const a11 = 84;
 
 // val of layouts[2][layout1]
 const a21 = a11;
@@ -11,7 +11,7 @@ const a31 = 60;
 // val of layouts[4][layout1]
 const a41 = 71.2;
 
-export const layouts = {  // layouts[viewCount][layoutType][zoneType][zoneId]
+export const layouts = {  // layouts[ratio][viewCount][layoutType][zoneType][zoneId]
   1: {
     layout1: {
       view: {

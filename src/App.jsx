@@ -9,23 +9,17 @@ import {
 import { Box, Paper, Button, Select, MenuItem, Typography } from "@mui/material";
 
 import { layouts } from "@/data/layouts";
-import DraggableView from "@/components/DnD/Draggable/DraggableView";
-import DraggableChat from "@/components/DnD/Draggable/DraggableChat";
+import ChannelRenderer from "@/components/DnD/ChannelRenderer";
 import DropZone from "@/components/DnD/DropZone";
 import CurrentTime from "@/components/Info/CurrentTime";
 
 export default function App() {
   // TODO: localstorage에서 가져오기
   const [channels, setChannels] = useState({
-    "93fe884808459fb4e4a3c7d64f0eef03": {
-      id: "93fe884808459fb4e4a3c7d64f0eef03",
-      view: { id: "93fe884808459fb4e4a3c7d64f0eef03", zoneId: 1, type: "view", platform: "chzzk", label: "V1" },
-      chat: { id: "93fe884808459fb4e4a3c7d64f0eef03", zoneId: 1, type: "chat", platform: "chzzk", label: "C1" },
-    },
     "34ea2a834c0022212290c26ac5e170a1": {
       id: "34ea2a834c0022212290c26ac5e170a1",
-      view: { id: "34ea2a834c0022212290c26ac5e170a1", zoneId: 5, type: "view", platform: "chzzk", label: "V1" },
-      chat: { id: "34ea2a834c0022212290c26ac5e170a1", zoneId: 5, type: "chat", platform: "chzzk", label: "C1" },
+      view: { id: "34ea2a834c0022212290c26ac5e170a1", zoneId: 1, type: "view", platform: "chzzk", label: "V1" },
+      chat: { id: "34ea2a834c0022212290c26ac5e170a1", zoneId: 1, type: "chat", platform: "chzzk", label: "C1" },
     },
     "b3e262a2795f17734c149afc738ad250": {
       id: "b3e262a2795f17734c149afc738ad250",
@@ -169,19 +163,12 @@ export default function App() {
 
               return (
                 <React.Fragment key={channel.id}>
-                  {channel.view && (
-                    <DraggableView
-                      object={channel.view}
-                      zone={layout[channel.view.type][channel.view.zoneId]}
-                      pointerEventsEnabled={pointerEventsEnabled}
-                    />
-                  )}
-                  {channel.chat && (
-                    <DraggableChat
-                      object={channel.chat}
-                      zone={layout[channel.chat.type][channel.chat.zoneId]}
-                    />
-                  )}
+                  <ChannelRenderer
+                    key={channel.id}
+                    channel={channel}
+                    layout={layout}
+                    pointerEventsEnabled={pointerEventsEnabled}
+                  />
                 </React.Fragment>
               );
             })}
