@@ -103,41 +103,21 @@ export default function App() {
   );
 
   // Drop handler (기존 zone 이동 로직)
-  const handleDrop = (baseId, targetZoneId, targetZoneType, objectType) => {
+  const handleDrop = (baseId, targetZoneId) => {
     setChannels((prev) => {
       const updated = structuredClone(prev);
-      const dragged = updated[baseId][objectType];
+      const dragged = updated[baseId];
       const sourceZoneId = dragged.zoneId;
 
-      if (dragged.type !== targetZoneType) return prev;
-
       const targetEntry = Object.values(updated).find(
-        (obj) => obj[objectType].zoneId === targetZoneId
+        (obj) => obj.zoneId === targetZoneId
       );
 
       if (targetEntry) {
-        const temp = targetEntry[objectType].zoneId;
-        updated[baseId][objectType].zoneId = targetZoneId;
-        targetEntry[objectType].zoneId = sourceZoneId;
+        updated[baseId].zoneId = targetZoneId;
+        targetEntry.zoneId = sourceZoneId;
       } else {
-        updated[baseId][objectType].zoneId = targetZoneId;
-      }
-
-      // paired type도 같이 이동
-      const pairedType = objectType === "view" ? "chat" : "view";
-      const sourcePair = Object.values(updated).find(
-        (obj) => obj[pairedType].zoneId === sourceZoneId
-      );
-      const targetPair = Object.values(updated).find(
-        (obj) => obj[pairedType].zoneId === targetZoneId
-      );
-
-      if (sourcePair && targetPair) {
-        const temp = sourcePair[pairedType].zoneId;
-        sourcePair[pairedType].zoneId = targetPair[pairedType].zoneId;
-        targetPair[pairedType].zoneId = temp;
-      } else if (sourcePair) {
-        sourcePair[pairedType].zoneId = targetZoneId;
+        updated[baseId].zoneId = targetZoneId;
       }
 
       return updated;
@@ -180,7 +160,7 @@ export default function App() {
             if (!over) return;
             const [zoneType, zoneId] = over.id.split("-");
             const [baseId, objectType] = active.id.split("-");
-            handleDrop(baseId, Number(zoneId), zoneType, objectType);
+            handleDrop(baseId, Number(zoneId));
           }}
         >
           <Box
@@ -204,8 +184,8 @@ export default function App() {
                 .filter((c) => c.isVisible) // 👈 보이는 것만 렌더링
                 .map((channel) => {
                   if (
-                    !layout[channel.view.type]?.[channel.view.zoneId] ||
-                    !layout[channel.chat.type]?.[channel.chat.zoneId]
+                    !layout["view"]?.[channel.zoneId] ||
+                    !layout["chat"]?.[channel.zoneId]
                   ) return null;
 
                   return (

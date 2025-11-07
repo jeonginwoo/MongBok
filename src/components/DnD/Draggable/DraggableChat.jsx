@@ -6,31 +6,17 @@ import Box from "@mui/material/Box";
 import LiveTime from "@/components/Info/LiveTime";
 import UserCount from "@/components/Info/UserCount";
 
-export default function DraggableChat({ object, zone, liveStatus }) {
-  if (!object) return null;
+export default function DraggableChat({ channel, zone, liveStatus }) {
+  if (!channel) return null;
 
-  const draggableId = `${object.id}-${object.type}`;
+  const draggableId = `${channel.id}-chat`;
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: draggableId,
   });
 
   const containerRef = useRef(null);
   const [zoom, setZoom] = useState(1);
-  const [imageUrl, setImageUrl] = useState(null);
-  const channelId = object.id;
-
-  useEffect(() => {
-    const fetchChannelImage = async () => {
-      try {
-        const data = await getChzzkChannelInfo(channelId);
-        setImageUrl(data.imageUrl);
-      } catch (error) {
-        console.error("❌ 채널 이미지 불러오기 실패:", error);
-      }
-    };
-
-    fetchChannelImage();
-  }, [channelId]);
+  const channelId = channel.id;
 
   const BASE_WIDTH = 360;
   useEffect(() => {
@@ -42,7 +28,7 @@ export default function DraggableChat({ object, zone, liveStatus }) {
 
       const canvasWidth = canvas.clientWidth;
 
-      const widthStr = zone.style.width;
+      const widthStr = zone?.style.width;
       let percent = 1;
       if (typeof widthStr === "string" && widthStr.endsWith("%")) {
         percent = parseFloat(widthStr) / 100;
@@ -58,11 +44,11 @@ export default function DraggableChat({ object, zone, liveStatus }) {
     updateZoom();
     window.addEventListener("resize", updateZoom);
     return () => window.removeEventListener("resize", updateZoom);
-  }, [zone.style.width]);
+  }, [zone?.style.width]);
 
   const style = {
     position: "absolute",
-    ...zone.style,
+    ...zone?.style,
     transform: transform
       ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
       : undefined,
@@ -143,7 +129,7 @@ export default function DraggableChat({ object, zone, liveStatus }) {
             }}
           >
             <img
-              src={imageUrl}
+              src={channel.imageUrl}
               alt="profile"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />

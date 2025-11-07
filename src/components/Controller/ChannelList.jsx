@@ -25,7 +25,7 @@ export default function ChannelList({ channels, setChannels }) {
   const [activeId, setActiveId] = React.useState(null);
 
   const channelArray = React.useMemo(
-    () => Object.values(channels).sort((a, b) => a.view.zoneId - b.view.zoneId),
+    () => Object.values(channels).sort((a, b) => a.zoneId - b.zoneId),
     [channels]
   );
 
@@ -50,14 +50,12 @@ export default function ChannelList({ channels, setChannels }) {
       // ✅ visible zoneId 재배열
       reordered.forEach((c, i) => {
         const zoneId = i + 1;
-        updated[c.id].view.zoneId = zoneId;
-        updated[c.id].chat.zoneId = zoneId;
+        updated[c.id].zoneId = zoneId;
       });
 
       // ✅ hidden은 zoneId를 'none'으로 지정
       hidden.forEach((c) => {
-        updated[c.id].view.zoneId = "none";
-        updated[c.id].chat.zoneId = "none";
+        updated[c.id].zoneId = null;
       });
 
       return { ...updated };
@@ -65,7 +63,6 @@ export default function ChannelList({ channels, setChannels }) {
   };
 
   const handleToggle = (id) => {
-    console.log(`[handleToggle] click received for id=${id} at ${new Date().toISOString()}`);
 
     setChannels((prev) => {
       const updated = { ...prev };
@@ -78,17 +75,15 @@ export default function ChannelList({ channels, setChannels }) {
           return prev;
         }
         target.isVisible = true;
-        console.log(`[handleToggle] toggling ON id=${id}`);
       } else {
         target.isVisible = false;
-        console.log(`[handleToggle] toggling OFF id=${id}`);
       }
 
       updated[id] = target;
 
       // ✅ zoneId 재정렬
       const sorted = Object.values(updated).sort((a, b) => {
-        const getValue = (v) => (v.view.zoneId === "none" ? Infinity : v.view.zoneId);
+        const getValue = (v) => (v.zoneId === null ? Infinity : v.zoneId);
         return getValue(a) - getValue(b);
       });
 
@@ -98,19 +93,16 @@ export default function ChannelList({ channels, setChannels }) {
           visibleCount += 1;
           updated[c.id] = {
             ...updated[c.id],
-            view: { ...updated[c.id].view, zoneId: visibleCount },
-            chat: { ...updated[c.id].chat, zoneId: visibleCount },
+            zoneId: visibleCount,
           };
         } else {
           updated[c.id] = {
             ...updated[c.id],
-            view: { ...updated[c.id].view, zoneId: "none" },
-            chat: { ...updated[c.id].chat, zoneId: "none" },
+            zoneId: null,
           };
         }
       });
 
-      console.log("[handleToggle] result:", JSON.parse(JSON.stringify(updated)));
       return updated;
     });
   };
@@ -234,9 +226,9 @@ function SortableItem({ channel, onToggle }) {
             fontSize: 18,
             color: "#aaa",
             cursor: "grab",
-            outline: "none",
-            border: "none",
-            "&:focus": { outline: "none", border: "none" },
+            outline: null,
+            border: null,
+            "&:focus": { outline: null, border: null },
             "&:active": { cursor: "grabbing" },
           }}
         />

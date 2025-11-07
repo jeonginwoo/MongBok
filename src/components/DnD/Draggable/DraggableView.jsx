@@ -2,18 +2,18 @@ import { useEffect, useRef, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import Box from "@mui/material/Box";
 
-export default function DraggableView({ object, zone, liveStatus, pointerEventsEnabled }) {
-  if (!object) return null;
+export default function DraggableView({ channel, zone, liveStatus, pointerEventsEnabled }) {
+  if (!channel) return null;
 
-  const draggableId = `${object.id}-${object.type}`;
+  const draggableId = `${channel.id}-view`;
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: draggableId,
   });
 
-  const baseZIndex = zone.style?.zIndex || 0;
+  const baseZIndex = zone?.style.zIndex || 0;
   const containerRef = useRef(null);
   const [zoom, setZoom] = useState(1);
-  const channelId = object.id;
+  const channelId = channel.id;
 
   const BASE_WIDTH = window.screen.width;
 
@@ -25,7 +25,7 @@ export default function DraggableView({ object, zone, liveStatus, pointerEventsE
       if (!canvas) return;
 
       const canvasWidth = canvas.clientWidth;
-      const widthStr = zone.style.width;
+      const widthStr = zone?.style.width;
       let percent = 1;
       if (typeof widthStr === "string" && widthStr.endsWith("%")) {
         percent = parseFloat(widthStr) / 100;
@@ -39,11 +39,11 @@ export default function DraggableView({ object, zone, liveStatus, pointerEventsE
     updateZoom();
     window.addEventListener("resize", updateZoom);
     return () => window.removeEventListener("resize", updateZoom);
-  }, [zone.style.width]);
+  }, [zone?.style.width]);
 
   const style = {
     position: "absolute",
-    ...zone.style,
+    ...zone?.style,
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     background: isDragging ? "#91e3ff" : "#000",
     opacity: isDragging ? 0.6 : 1,

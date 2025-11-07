@@ -60,18 +60,6 @@ export const getChzzkAllChannelsData = async (localStorageData) => {
           imageUrl: info.imageUrl,
           zoneId: item.zoneId,
           platform: item.platform,
-          view: {
-            id: channelId,
-            zoneId: item.zoneId,
-            type: "view",
-            platform: item.platform,
-          },
-          chat: {
-            id: channelId,
-            zoneId: item.zoneId,
-            type: "chat",
-            platform: item.platform,
-          },
         };
       } catch (error) {
         console.error(`⚠️ ${channelId} 데이터 불러오기 실패:`, error);

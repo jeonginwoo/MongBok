@@ -19,25 +19,21 @@ export default function ChannelRenderer({ channel, layout, pointerEventsEnabled 
     fetchLiveStatus();
     const interval = setInterval(fetchLiveStatus, 10000);
     return () => clearInterval(interval);
-  }, [channel.id, channel.view.zoneId, channel.chat.znoeId]);
+  }, [channel.id, channel.zoneId]);
 
   return (
     <React.Fragment key={channel.id}>
-      {channel.view && (
-        <DraggableView
-          object={channel.view}
-          zone={layout[channel.view.type][channel.view.zoneId]}
-          liveStatus={liveStatus}
-          pointerEventsEnabled={pointerEventsEnabled}
-        />
-      )}
-      {channel.chat && (
-        <DraggableChat
-          object={channel.chat}
-          zone={layout[channel.chat.type][channel.chat.zoneId]}
-          liveStatus={liveStatus}
-        />
-      )}
+      <DraggableView
+        channel={channel}
+        zone={layout["view"][channel.zoneId]}
+        liveStatus={liveStatus}
+        pointerEventsEnabled={pointerEventsEnabled}
+      />
+      <DraggableChat
+        channel={channel}
+        zone={layout["chat"][channel.zoneId]}
+        liveStatus={liveStatus}
+      />
     </React.Fragment>
   );
 }
