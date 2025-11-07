@@ -4,12 +4,6 @@ import DraggableChat from "@/components/DnD/Draggable/DraggableChat";
 import { getChzzkLiveStatus } from "@/api/chzzkApi";
 
 export default function ChannelRenderer({ channel, layout, pointerEventsEnabled }) {
-
-  if (
-    !layout[channel.view.type]?.[channel.view.zoneId] ||
-    !layout[channel.chat.type]?.[channel.chat.zoneId]
-  ) return null;
-
   const [liveStatus, setLiveStatus] = useState(null);
 
   useEffect(() => {
@@ -25,7 +19,7 @@ export default function ChannelRenderer({ channel, layout, pointerEventsEnabled 
     fetchLiveStatus();
     const interval = setInterval(fetchLiveStatus, 10000);
     return () => clearInterval(interval);
-  }, [channel.id]);
+  }, [channel.id, channel.view.zoneId, channel.chat.znoeId]);
 
   return (
     <React.Fragment key={channel.id}>
