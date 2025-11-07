@@ -169,8 +169,7 @@ export default function ChannelList({ channels, setChannels }) {
             secondaryAction={<Switch checked={activeChannel.isVisible} disabled />}
           >
             <ListItemText
-              primary={`View: ${activeChannel.view.label}`}
-              secondary={`Chat: ${activeChannel.chat.label}`}
+              primary={activeChannel.name}
             />
           </ListItem>
         ) : null}
@@ -244,8 +243,7 @@ function SortableItem({ channel, onToggle }) {
       </Box>
 
       <ListItemText
-        primary={`View: ${channel.view.label}`}
-        secondary={`Chat: ${channel.chat.label}`}
+        primary={channel.name}
         secondaryTypographyProps={{ color: "#888" }}
       />
     </ListItem>
@@ -268,8 +266,7 @@ function HiddenItem({ channel, onToggle }) {
       }
     >
       <ListItemText
-        primary={`View: ${channel.view.label}`}
-        secondary={`Chat: ${channel.chat.label}`}
+        primary={channel.name}
         secondaryTypographyProps={{ color: "#888" }}
       />
     </ListItem>

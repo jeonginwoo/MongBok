@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { getChzzkChannelsImageUrl } from "@/api/chzzkApi";
+import { getChzzkChannelInfo } from "@/api/chzzkApi";
 import Box from "@mui/material/Box";
 
 import LiveTime from "@/components/Info/LiveTime";
@@ -22,8 +22,8 @@ export default function DraggableChat({ object, zone, liveStatus }) {
   useEffect(() => {
     const fetchChannelImage = async () => {
       try {
-        const url = await getChzzkChannelsImageUrl(channelId);
-        setImageUrl(url);
+        const data = await getChzzkChannelInfo(channelId);
+        setImageUrl(data.imageUrl);
       } catch (error) {
         console.error("❌ 채널 이미지 불러오기 실패:", error);
       }

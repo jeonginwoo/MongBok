@@ -20,60 +20,69 @@ import ChannelRenderer from "@/components/DnD/ChannelRenderer";
 import DropZone from "@/components/DnD/DropZone";
 import CurrentTime from "@/components/Info/CurrentTime";
 import ChannelList from "@/components/Controller/ChannelList";
+import { getChzzkAllChannelsData } from "@/api/chzzkApi";
 
 export default function App() {
-
-  // 초기 channels
-  const [channels, setChannels] = useState({
+  const localStorage = {
     "34ea2a834c0022212290c26ac5e170a1": {
-      id: "34ea2a834c0022212290c26ac5e170a1",
       isVisible: true,
-      view: { id: "34ea2a834c0022212290c26ac5e170a1", zoneId: 1, type: "view", platform: "chzzk", label: "웁" },
-      chat: { id: "34ea2a834c0022212290c26ac5e170a1", zoneId: 1, type: "chat", platform: "chzzk", label: "웁" },
+      zoneId: 1,
+      platform: "chzzk",
     },
     "b3e262a2795f17734c149afc738ad250": {
-      id: "b3e262a2795f17734c149afc738ad250",
-      isVisible: true,
-      view: { id: "b3e262a2795f17734c149afc738ad250", zoneId: 2, type: "view", platform: "chzzk", label: "양망두" },
-      chat: { id: "b3e262a2795f17734c149afc738ad250", zoneId: 2, type: "chat", platform: "chzzk", label: "양망두" },
+      isVisible: false,
+      zoneId: null,
+      platform: "chzzk",
     },
     "b2854dc0735e55fa86c53bd15242d30f": {
-      id: "b2854dc0735e55fa86c53bd15242d30f",
-      isVisible: true,
-      view: { id: "b2854dc0735e55fa86c53bd15242d30f", zoneId: 3, type: "view", platform: "chzzk", label: "마우쥐" },
-      chat: { id: "b2854dc0735e55fa86c53bd15242d30f", zoneId: 3, type: "chat", platform: "chzzk", label: "마우쥐" },
+      isVisible: false,
+      zoneId: null,
+      platform: "chzzk",
     },
     "6086f17b054010b0657af00aff6e6d05": {
-      id: "6086f17b054010b0657af00aff6e6d05",
-      isVisible: true,
-      view: { id: "6086f17b054010b0657af00aff6e6d05", zoneId: 4, type: "view", platform: "chzzk", label: "뵤오" },
-      chat: { id: "6086f17b054010b0657af00aff6e6d05", zoneId: 4, type: "chat", platform: "chzzk", label: "뵤오" },
-    },
-    "test1": {
-      id: "test1",
       isVisible: false,
-      view: { id: "test1", zoneId: null, type: "view", platform: "chzzk", label: "test1" },
-      chat: { id: "test1", zoneId: null, type: "chat", platform: "chzzk", label: "test1" },
+      zoneId: null,
+      platform: "chzzk",
     },
-    "test2": {
-      id: "test2",
+    "93fe884808459fb4e4a3c7d64f0eef03": {
       isVisible: false,
-      view: { id: "test2", zoneId: null, type: "view", platform: "chzzk", label: "test2" },
-      chat: { id: "test2", zoneId: null, type: "chat", platform: "chzzk", label: "test2" },
+      zoneId: null,
+      platform: "chzzk",
     },
-    "test3": {
-      id: "test3",
+    "80b36a0ae8e887e893ce0014dbfece4a": {
       isVisible: false,
-      view: { id: "test3", zoneId: null, type: "view", platform: "chzzk", label: "test3" },
-      chat: { id: "test3", zoneId: null, type: "chat", platform: "chzzk", label: "test3" },
+      zoneId: null,
+      platform: "chzzk",
     },
-    "test4": {
-      id: "test4",
+    "5f800579267362c952f76f3c6fe695b2": {
       isVisible: false,
-      view: { id: "test4", zoneId: null, type: "view", platform: "chzzk", label: "test4" },
-      chat: { id: "test4", zoneId: null, type: "chat", platform: "chzzk", label: "test4" },
+      zoneId: null,
+      platform: "chzzk",
     },
-  });
+    "60e2a319d889b3ef6979f68dc3c3fd79": {
+      isVisible: false,
+      zoneId: null,
+      platform: "chzzk",
+    },
+    "f2607c885c65b6776b9cf5bfb473753c": {
+      isVisible: false,
+      zoneId: null,
+      platform: "chzzk",
+    },
+  };
+
+  const [channels, setChannels] = useState({});
+  useEffect(() => {
+    const fetchChannels = async () => {
+      try {
+        const data = await getChzzkAllChannelsData(localStorage);
+        setChannels(data);
+      } catch (error) {
+        console.error("❌ 채널 데이터 불러오기 실패:", error);
+      }
+    };
+    fetchChannels();
+  }, []);
 
   const [pointerEventsEnabled, setPointerEventsEnabled] = useState(false);
   const togglePointerEvents = () => setPointerEventsEnabled((prev) => !prev);
@@ -245,9 +254,6 @@ export default function App() {
 
         {/* 채널 순서 및 표시 제어 */}
         <Box sx={{ flex: "1 1 auto" }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Channel Order / Visibility
-          </Typography>
           <ChannelList channels={channels} setChannels={setChannels} />
         </Box>
 
