@@ -2,20 +2,20 @@ import { useState, useEffect } from "react";
 import { Box } from "@mui/material";
 import dayjs from "dayjs";
 
-function LiveTime({ isLive, openDate }) {
+function LiveTime({ channel }) {
   const [time, setTime] = useState("00:00:00");
 
   useEffect(() => {
-    if (!openDate) return;
+    if (!channel.openDate) return;
 
-    if (!isLive) {
+    if (!channel.isLive) {
       setTime("00:00:00");
       return;
     }
 
     const interval = setInterval(() => {
       const now = dayjs();
-      const start = dayjs(openDate);
+      const start = dayjs(channel.openDate);
       const diff = now.diff(start);
 
       if (diff < 0) {
@@ -33,7 +33,7 @@ function LiveTime({ isLive, openDate }) {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [openDate, isLive]);
+  }, [channel.openDate, channel.isLive]);
 
   return <Box sx={{ color: "white" }}>{time}</Box>;
 }

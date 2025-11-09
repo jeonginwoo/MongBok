@@ -20,7 +20,8 @@ import ChannelRenderer from "@/components/DnD/ChannelRenderer";
 import DropZone from "@/components/DnD/DropZone";
 import CurrentTime from "@/components/Info/CurrentTime";
 import ChannelList from "@/components/Controller/ChannelList";
-import { getChzzkAllChannelsData } from "@/api/chzzkApi";
+
+import { getChzzkAllChannelsData, getChzzkLiveStatus } from "@/api/chzzkApi";
 
 export default function App() {
   const localStorage = {
@@ -72,37 +73,70 @@ export default function App() {
   };
 
   const [channels, setChannels] = useState({});
+  const [pointerEventsEnabled, setPointerEventsEnabled] = useState(false);
+  const [isDraggingAny, setIsDraggingAny] = useState(false);
+  const [draggingType, setDraggingType] = useState(null);
+  const [layoutType, setLayoutType] = useState("layout1");
+  const canvasRef = useRef(null);
+
+  /** 📦 초기 데이터 로드 + 라이브 상태 주기적 갱신 */
   useEffect(() => {
-    const fetchChannels = async () => {
+    // ✅ 1️⃣ 초기 데이터 1회 로드
+    const fetchInitialChannels = async () => {
       try {
         const data = await getChzzkAllChannelsData(localStorage);
         setChannels(data);
       } catch (error) {
-        console.error("❌ 채널 데이터 불러오기 실패:", error);
+        console.error("❌ 초기 채널 데이터 불러오기 실패:", error);
       }
     };
-    fetchChannels();
+
+    // ✅ 2️⃣ 라이브 상태만 주기적 갱신
+    const updateLiveStatus = async () => {
+      try {
+        setChannels((prev) => {
+          const updated = structuredClone(prev);
+          return updated; // 우선 그대로 반환하고, 아래에서 비동기로 갱신
+        });
+
+        // 병렬로 모든 채널 상태 갱신
+        const entries = Object.entries(localStorage);
+        await Promise.all(
+          entries.map(async ([channelId]) => {
+            try {
+              const live = await getChzzkLiveStatus(channelId);
+              setChannels((prev) => {
+                if (!prev[channelId]) return prev;
+                return {
+                  ...prev,
+                  [channelId]: {
+                    ...prev[channelId],
+                    ...live, // 🔥 liveTitle, openDate, isLive, userCount만 갱신
+                  },
+                };
+              });
+            } catch (err) {
+              console.error(`⚠️ ${channelId} 라이브 상태 갱신 실패:`, err);
+            }
+          })
+        );
+      } catch (error) {
+        console.error("❌ 라이브 상태 갱신 중 오류:", error);
+      }
+    };
+
+    fetchInitialChannels(); // 초기화 1회
+    const interval = setInterval(updateLiveStatus, 10000); // 10초마다 갱신
+    return () => clearInterval(interval);
   }, []);
 
-  const [pointerEventsEnabled, setPointerEventsEnabled] = useState(false);
-  const togglePointerEvents = () => setPointerEventsEnabled((prev) => !prev);
 
-  const viewCount = Object.values(channels).filter((c) => c.isVisible).length || 1;
-  const [layoutType, setLayoutType] = useState("layout1");
-  const layout = layouts[viewCount][layoutType];
-  useEffect(() => {
-    setLayoutType("layout1");
-  }, [viewCount]);
-
-  const [isDraggingAny, setIsDraggingAny] = useState(false);
-  const [draggingType, setDraggingType] = useState(null);
-  const canvasRef = useRef(null);
-
+  /** 🧩 DnD Sensors */
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 1 } })
   );
 
-  // Drop handler (기존 zone 이동 로직)
+  /** 🔄 Drop handler */
   const handleDrop = (baseId, targetZoneId) => {
     setChannels((prev) => {
       const updated = structuredClone(prev);
@@ -124,6 +158,7 @@ export default function App() {
     });
   };
 
+  /** 🧭 전체화면 */
   const fullscreen = () => {
     const canvas = canvasRef.current;
     if (!document.fullscreenElement) {
@@ -133,9 +168,17 @@ export default function App() {
     }
   };
 
+  /** 🧱 Layout 계산 */
+  const viewCount =
+    Object.values(channels).filter((c) => c.isVisible).length || 1;
+  const layout = layouts[viewCount][layoutType];
+  useEffect(() => {
+    setLayoutType("layout1");
+  }, [viewCount]);
+
   return (
     <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-      {/* View 영역 */}
+      {/* 🎥 View 영역 */}
       <Box
         ref={canvasRef}
         sx={{
@@ -177,33 +220,35 @@ export default function App() {
               draggingType &&
               layout[draggingType] &&
               Object.values(layout[draggingType]).map((zone) => (
-                <DropZone key={`${zone.type}-${zone.id}`} zone={zone} canvasRef={canvasRef} />
+                <DropZone
+                  key={`${zone.type}-${zone.id}`}
+                  zone={zone}
+                  canvasRef={canvasRef}
+                />
               ))}
 
-              {Object.values(channels)
-                .filter((c) => c.isVisible) // 👈 보이는 것만 렌더링
-                .map((channel) => {
-                  if (
-                    !layout["view"]?.[channel.zoneId] ||
-                    !layout["chat"]?.[channel.zoneId]
-                  ) return null;
+            {Object.values(channels)
+              .filter((c) => c.isVisible)
+              .map((channel) => {
+                if (!layout["view"]?.[channel.zoneId])
+                  return null;
 
-                  return (
-                    <React.Fragment key={channel.id}>
-                      <ChannelRenderer
-                        channel={channel}
-                        layout={layout}
-                        pointerEventsEnabled={pointerEventsEnabled}
-                      />
-                    </React.Fragment>
-                  );
-                })}
+                return (
+                  <React.Fragment key={channel.id}>
+                    <ChannelRenderer
+                      channel={channel}
+                      layout={layout}
+                      pointerEventsEnabled={pointerEventsEnabled}
+                    />
+                  </React.Fragment>
+                );
+              })}
             <CurrentTime onClick={fullscreen} />
           </Box>
         </DndContext>
       </Box>
 
-      {/* Controller 영역 */}
+      {/* ⚙️ Controller 영역 */}
       <Paper
         elevation={3}
         sx={{
@@ -243,7 +288,7 @@ export default function App() {
             variant="contained"
             color={pointerEventsEnabled ? "success" : "secondary"}
             fullWidth
-            onClick={togglePointerEvents}
+            onClick={() => setPointerEventsEnabled((prev) => !prev)}
           >
             {pointerEventsEnabled ? "조작 모드: ON" : "조작 모드: OFF"}
           </Button>
@@ -251,7 +296,12 @@ export default function App() {
 
         {/* 전체화면 버튼 */}
         <Box sx={{ mb: 2 }}>
-          <Button variant="contained" color="primary" fullWidth onClick={fullscreen}>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            onClick={fullscreen}
+          >
             전체화면
           </Button>
         </Box>

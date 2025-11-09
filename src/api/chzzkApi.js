@@ -51,13 +51,13 @@ export const getChzzkAllChannelsData = async (localStorageData) => {
 
         result[channelId] = {
           id: channelId,
-          isVisible: item.isVisible ?? false,
           name: info.name,
+          imageUrl: info.imageUrl,
           liveTitle: live.liveTitle,
           openDate: live.openDate,
           isLive: live.isLive,
           userCount: live.userCount,
-          imageUrl: info.imageUrl,
+          isVisible: item.isVisible ?? false,
           zoneId: item.zoneId,
           platform: item.platform,
         };

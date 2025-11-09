@@ -15,11 +15,11 @@ import {
   Switch,
   List,
   ListItem,
-  ListItemText,
   Divider,
   Box,
 } from "@mui/material";
 import DragHandleIcon from "@mui/icons-material/DragIndicator";
+import ChannelInfo from "@/components/Info/ChannelInfo";
 
 export default function ChannelList({ channels, setChannels }) {
   const [activeId, setActiveId] = React.useState(null);
@@ -31,6 +31,16 @@ export default function ChannelList({ channels, setChannels }) {
 
   const visible = channelArray.filter((c) => c.isVisible);
   const hidden = channelArray.filter((c) => !c.isVisible);
+
+  // ✅ hidden 목록 정렬: userCount (내림차순), name (오름차순)
+  const sortedHidden = React.useMemo(() => {
+    return [...hidden].sort((a, b) => {
+      if ((b.userCount ?? 0) !== (a.userCount ?? 0)) {
+        return (b.userCount ?? 0) - (a.userCount ?? 0); // userCount 기준 내림차순
+      }
+      return (a.name || "").localeCompare(b.name || ""); // 이름 기준 오름차순
+    });
+  }, [hidden]);
 
   const activeChannel = activeId
     ? channelArray.find((c) => c.id === activeId)
@@ -129,14 +139,14 @@ export default function ChannelList({ channels, setChannels }) {
         </List>
       </SortableContext>
 
-      {/* 🔹 hidden 목록 */}
-      {hidden.length > 0 && (
+      {/* 🔹 hidden 목록 (정렬) */}
+      {sortedHidden.length > 0 && (
         <>
           <Box sx={{ my: 2, textAlign: "center" }}>
             <Divider sx={{ borderColor: "#555" }} />
           </Box>
           <List>
-            {hidden.map((channel) => (
+            {sortedHidden.map((channel) => (
               <HiddenItem
                 key={channel.id}
                 channel={channel}
@@ -160,9 +170,7 @@ export default function ChannelList({ channels, setChannels }) {
             }}
             secondaryAction={<Switch checked={activeChannel.isVisible} disabled />}
           >
-            <ListItemText
-              primary={activeChannel.name}
-            />
+            <ChannelInfo channel={activeChannel} />
           </ListItem>
         ) : null}
       </DragOverlay>
@@ -233,11 +241,7 @@ function SortableItem({ channel, onToggle }) {
           }}
         />
       </Box>
-
-      <ListItemText
-        primary={channel.name}
-        secondaryTypographyProps={{ color: "#888" }}
-      />
+      <ChannelInfo channel={channel} />
     </ListItem>
   );
 }
@@ -257,10 +261,7 @@ function HiddenItem({ channel, onToggle }) {
         <Switch checked={channel.isVisible} onChange={() => onToggle(channel.id)} />
       }
     >
-      <ListItemText
-        primary={channel.name}
-        secondaryTypographyProps={{ color: "#888" }}
-      />
+      <ChannelInfo channel={channel} />
     </ListItem>
   );
 }

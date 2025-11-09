@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { getChzzkChannelInfo } from "@/api/chzzkApi";
 import Box from "@mui/material/Box";
 
-import LiveTime from "@/components/Info/LiveTime";
-import UserCount from "@/components/Info/UserCount";
+import ChannelInfo from "@/components/Info/ChannelInfo";
 
-export default function DraggableChat({ channel, zone, liveStatus }) {
+export default function DraggableChat({ channel, zone }) {
   if (!channel) return null;
 
   const draggableId = `${channel.id}-chat`;
@@ -98,63 +96,23 @@ export default function DraggableChat({ channel, zone, liveStatus }) {
         />
         <Box
           sx={{
-            display: "flex",
-            gap: "2.5%",
-            padding: "3%",
             position: "absolute",
-            left: "0px",
+            left: 0,
             width: "100%",
-            maxHeight: "130px",
-            aspectRatio: "100/40",
-            border: "none",
+            aspectRatio: "100/30",
             background: `
               linear-gradient(
                 to bottom,
                 rgba(0,0,0,0.9) 0%,
-                rgba(0,0,0,0.7) 40%,
-                rgba(0,0,0,0.2) 60%,
+                rgba(0,0,0,0.7) 60%,
+                rgba(0,0,0,0.3) 80%,
                 rgba(0,0,0,0) 100%
               )
             `,
-          }}
-        >
-          {/* Channel Image */}
-          <Box
-            sx={{
-              height: "40%",
-              aspectRatio: "1/1",
-              borderRadius: "50%",
-              overflow: "hidden",
-              flexShrink: 0,
-            }}
-          >
-            <img
-              src={channel.imageUrl}
-              alt="profile"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          </Box>
-          
-          {/* Channel Info */}
+            p: "3%"
+          }}>
           <Box>
-            <Box
-              sx={{
-                color: "white",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-              }}
-            >
-              {liveStatus?.liveTitle}
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                gap: 1,
-              }}
-            >
-              <LiveTime status={liveStatus?.status} openDate={liveStatus?.openDate} />
-              <UserCount channelId={channelId} liveStatus={liveStatus} />
-            </Box>
+            <ChannelInfo channel={channel} />
           </Box>
         </Box>
       </Box>
