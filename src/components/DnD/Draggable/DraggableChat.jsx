@@ -104,8 +104,8 @@ export default function DraggableChat({ channel, zone }) {
               linear-gradient(
                 to bottom,
                 rgba(0,0,0,0.9) 0%,
-                rgba(0,0,0,0.7) 60%,
-                rgba(0,0,0,0.3) 80%,
+                rgba(0,0,0,0.7) 40%,
+                rgba(0,0,0,0.3) 70%,
                 rgba(0,0,0,0) 100%
               )
             `,

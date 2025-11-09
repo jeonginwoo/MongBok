@@ -230,9 +230,6 @@ export default function App() {
             {Object.values(channels)
               .filter((c) => c.isVisible)
               .map((channel) => {
-                if (!layout["view"]?.[channel.zoneId])
-                  return null;
-
                 return (
                   <React.Fragment key={channel.id}>
                     <ChannelRenderer
@@ -263,14 +260,27 @@ export default function App() {
       >
         {/* LayoutType 선택 */}
         <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2">Layout Type</Typography>
           <Select
             value={layoutType}
             onChange={(e) => setLayoutType(e.target.value)}
             fullWidth
+            sx={{
+              color: "#d3d3d3ff", // 선택된 텍스트 색
+              border: "1px solid #d3d3d3ff", // 테두리 색
+              ".MuiOutlinedInput-notchedOutline": {
+                borderColor: "#d3d3d3ff", // 아웃라인 테두리
+              },
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "d3d3d3ff", // 호버 시 테두리
+              },
+              ".MuiSvgIcon-root": { color: "#d3d3d3ff" }, // 드롭다운 아이콘 색
+            }}
           >
             {Object.keys(layouts[viewCount]).map((key) => (
-              <MenuItem key={key} value={key}>
+              <MenuItem
+                key={key}
+                value={key}
+              >
                 {key}
               </MenuItem>
             ))}
