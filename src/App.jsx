@@ -26,48 +26,31 @@ import { getChzzkAllChannelsData, getChzzkLiveStatus } from "@/api/chzzkApi";
 export default function App() {
   const localStorage = {
     "34ea2a834c0022212290c26ac5e170a1": {
-      isVisible: true,
       zoneId: 1,
       platform: "chzzk",
     },
     "b3e262a2795f17734c149afc738ad250": {
-      isVisible: false,
-      zoneId: null,
       platform: "chzzk",
     },
     "b2854dc0735e55fa86c53bd15242d30f": {
-      isVisible: false,
-      zoneId: null,
       platform: "chzzk",
     },
     "6086f17b054010b0657af00aff6e6d05": {
-      isVisible: false,
-      zoneId: null,
       platform: "chzzk",
     },
     "93fe884808459fb4e4a3c7d64f0eef03": {
-      isVisible: false,
-      zoneId: null,
       platform: "chzzk",
     },
     "80b36a0ae8e887e893ce0014dbfece4a": {
-      isVisible: false,
-      zoneId: null,
       platform: "chzzk",
     },
     "5f800579267362c952f76f3c6fe695b2": {
-      isVisible: false,
-      zoneId: null,
       platform: "chzzk",
     },
     "60e2a319d889b3ef6979f68dc3c3fd79": {
-      isVisible: false,
-      zoneId: null,
       platform: "chzzk",
     },
     "f2607c885c65b6776b9cf5bfb473753c": {
-      isVisible: false,
-      zoneId: null,
       platform: "chzzk",
     },
   };

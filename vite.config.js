@@ -18,10 +18,15 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/api": {
+      "/chzzk_api": {
         target: "https://api.chzzk.naver.com",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
+        rewrite: (path) => path.replace(/^\/chzzk_api/, ""),
+      },
+      "/chzzk_game": {
+        target: "https://comm-api.game.naver.com/nng_main",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/chzzk_game/, ""),
       },
     },
   },

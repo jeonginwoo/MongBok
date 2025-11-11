@@ -1,35 +1,23 @@
-import axios from "axios";
+import { ChzzkClient } from "chzzk"
 
-const chzzkApi = axios.create({
-  baseURL: "/api",
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-export const getChzzkChannelInfo = async (channelId) => {
-  try {
-    const response = await chzzkApi.get(`/service/v1/channels/${channelId}`);
-    const data = response.data;
-    return {
-      name: data?.content?.channelName ?? "",
-      imageUrl: data?.content?.channelImageUrl ?? null,
-    };
-  } catch (error) {
-    console.error("❌ 채널 이미지 가져오기 실패:", error);
-    throw error;
-  }
-};
+const client = new ChzzkClient({
+    baseUrls: {
+        chzzkBaseUrl: "/chzzk_api",
+        gameBaseUrl: "/chzzk_game"
+    }
+})
 
 export const getChzzkLiveStatus = async (channelId) => {
   try {
-    const response = await chzzkApi.get(`/polling/v3.1/channels/${channelId}/live-status`);
-    const data = response.data;
+    const data = await client.live.detail(channelId);
+
     return {
-      liveTitle: data?.content?.liveTitle ?? "",
-      openDate: data?.content?.openDate ?? null,
-      isLive: data?.content?.status === "OPEN",
-      userCount: data?.content?.status === "CLOSE" ? 0 : data?.content?.concurrentUserCount ?? 0,
+      name: data?.channel?.channelName ?? "",
+      imageUrl: data?.channel?.channelImageUrl ?? null,
+      liveTitle: data?.liveTitle ?? "",
+      openDate: data?.openDate ?? null,
+      isLive: data?.status === "OPEN",
+      userCount: data?.status === "CLOSE" ? 0 : data?.concurrentUserCount ?? 0,
     };
   } catch (error) {
     console.error("❌ 라이브 상태 가져오기 실패:", error);
@@ -44,21 +32,18 @@ export const getChzzkAllChannelsData = async (localStorageData) => {
   await Promise.all(
     entries.map(async ([channelId, item]) => {
       try {
-        const [info, live] = await Promise.all([
-          getChzzkChannelInfo(channelId),
-          getChzzkLiveStatus(channelId),
-        ]);
+        const live = await getChzzkLiveStatus(channelId)
 
         result[channelId] = {
           id: channelId,
-          name: info.name,
-          imageUrl: info.imageUrl,
+          name: live.name,
+          imageUrl: live.imageUrl,
           liveTitle: live.liveTitle,
           openDate: live.openDate,
           isLive: live.isLive,
           userCount: live.userCount,
-          isVisible: item.isVisible ?? false,
-          zoneId: item.zoneId,
+          isVisible: item.zoneId != null,
+          zoneId: item.zoneId ?? null,
           platform: item.platform,
         };
       } catch (error) {

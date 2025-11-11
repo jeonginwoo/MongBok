@@ -55,7 +55,7 @@ export default function ChannelList({ channels, setChannels }) {
     const reordered = arrayMove(visible, oldIndex, newIndex);
 
     setChannels((prev) => {
-      const updated = { ...prev };
+      const updated = structuredClone(prev);
 
       // ✅ visible zoneId 재배열
       reordered.forEach((c, i) => {
