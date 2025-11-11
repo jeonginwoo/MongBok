@@ -75,7 +75,7 @@ export default function ChannelList({ channels, setChannels }) {
   const handleToggle = (id) => {
 
     setChannels((prev) => {
-      const updated = { ...prev };
+      const updated = structuredClone(prev);
       const target = { ...updated[id] };
       const visibleList = Object.values(updated).filter((c) => c.isVisible);
 

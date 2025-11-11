@@ -62,6 +62,11 @@ export default function DraggableChat({ channel, zone }) {
     overflow: "hidden",
   };
 
+  const iframeSrc =
+    channel.platform === "chzzk" ? `https://chzzk.naver.com/live/${channelId}/chat`
+  : channel.platform === "soop" ? ``
+  : "";
+
   return (
     <Box
       ref={setNodeRef}
@@ -82,7 +87,7 @@ export default function DraggableChat({ channel, zone }) {
       >
         <Box
           component="iframe"
-          src={`https://chzzk.naver.com/live/${channelId}/chat`}
+          src={iframeSrc}
           sx={{
             position: "absolute",
             top: "-145px",

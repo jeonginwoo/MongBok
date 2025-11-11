@@ -28,6 +28,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/chzzk_game/, ""),
       },
+      "/soop_api": {
+        target: "https://chapi.sooplive.co.kr",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/soop_api/, ""),
+      },
     },
   },
 })

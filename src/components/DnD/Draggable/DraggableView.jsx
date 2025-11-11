@@ -56,6 +56,11 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
     zIndex: isDragging ? 300 : 100 + baseZIndex,
   };
 
+  const iframeSrc =
+    channel.platform === "chzzk" ? `https://chzzk.naver.com/live/${channelId}`
+  : channel.platform === "soop" ? `https://play.sooplive.co.kr/${channelId}/embed`
+  : "";
+  
   return (
     <Box ref={setNodeRef} {...listeners} {...attributes} sx={style}>
       <Box
@@ -70,7 +75,7 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
         <Box
           component="iframe"
           key={channel?.isLive ? "live" : "offline"} // 🔥 상태 바뀌면 iframe 리렌더링됨
-          src={`https://chzzk.naver.com/live/${channelId}`}
+          src={iframeSrc}
           sx={{
             width: "100%",
             height: "100%",

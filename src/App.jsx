@@ -21,7 +21,7 @@ import DropZone from "@/components/DnD/DropZone";
 import CurrentTime from "@/components/Info/CurrentTime";
 import ChannelList from "@/components/Controller/ChannelList";
 
-import { getChzzkAllChannelsData, getChzzkLiveStatus } from "@/api/chzzkApi";
+import { getAllChannelsData, getChzzkLiveStatus, getSoopLiveStatus } from "@/api/liveApi";
 
 export default function App() {
   const localStorage = {
@@ -53,6 +53,9 @@ export default function App() {
     "f2607c885c65b6776b9cf5bfb473753c": {
       platform: "chzzk",
     },
+    "w2rdoo": {
+      platform: "soop",
+    },
   };
 
   const [channels, setChannels] = useState({});
@@ -67,7 +70,7 @@ export default function App() {
     // ✅ 1️⃣ 초기 데이터 1회 로드
     const fetchInitialChannels = async () => {
       try {
-        const data = await getChzzkAllChannelsData(localStorage);
+        const data = await getAllChannelsData(localStorage);
         setChannels(data);
       } catch (error) {
         console.error("❌ 초기 채널 데이터 불러오기 실패:", error);
@@ -87,7 +90,16 @@ export default function App() {
         await Promise.all(
           entries.map(async ([channelId]) => {
             try {
-              const live = await getChzzkLiveStatus(channelId);
+              let live = null;
+              if (item.platform === "chzzk") {
+                live = await getChzzkLiveStatus(channelId);
+              } else if (item.platform === "soop") {
+                live = await getSoopLiveStatus(channelId);
+              } else {
+                console.warn(`⚠️ 지원하지 않는 플랫폼: ${item.platform}`);
+                return;
+              }
+              
               setChannels((prev) => {
                 if (!prev[channelId]) return prev;
                 return {
@@ -112,7 +124,6 @@ export default function App() {
     const interval = setInterval(updateLiveStatus, 10000); // 10초마다 갱신
     return () => clearInterval(interval);
   }, []);
-
 
   /** 🧩 DnD Sensors */
   const sensors = useSensors(
