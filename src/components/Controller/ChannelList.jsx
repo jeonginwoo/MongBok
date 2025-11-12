@@ -21,7 +21,7 @@ import {
 import DragHandleIcon from "@mui/icons-material/DragIndicator";
 import ChannelInfo from "@/components/Info/ChannelInfo";
 
-export default function ChannelList({ channels, setChannels }) {
+export default function ChannelList({ channels, setChannels, setLayoutType }) {
   const [activeId, setActiveId] = React.useState(null);
 
   const channelArray = React.useMemo(
@@ -115,6 +115,8 @@ export default function ChannelList({ channels, setChannels }) {
 
       return updated;
     });
+
+    setLayoutType("layout1");
   };
 
   return (

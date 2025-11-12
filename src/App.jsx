@@ -156,12 +156,8 @@ export default function App() {
   };
 
   /** 🧱 Layout 계산 */
-  const viewCount =
-    Object.values(channels).filter((c) => c.isVisible).length || 1;
+  const viewCount = Object.values(channels).filter((c) => c.isVisible).length || 1;
   const layout = layouts[viewCount][layoutType];
-  useEffect(() => {
-    setLayoutType("layout1");
-  }, [viewCount]);
 
   return (
     <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
@@ -276,7 +272,7 @@ export default function App() {
 
         {/* 채널 순서 및 표시 제어 */}
         <Box sx={{ flex: "1 1 auto" }}>
-          <ChannelList channels={channels} setChannels={setChannels} />
+          <ChannelList channels={channels} setChannels={setChannels} setLayoutType={setLayoutType} />
         </Box>
 
         {/* PointerEvents 토글 */}
