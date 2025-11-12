@@ -18,6 +18,7 @@ import {
   Divider,
   Box,
 } from "@mui/material";
+import { COLORS } from "@/data/color";
 import DragHandleIcon from "@mui/icons-material/DragIndicator";
 import ChannelInfo from "@/components/Info/ChannelInfo";
 
@@ -164,11 +165,11 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
         {activeChannel ? (
           <ListItem
             sx={{
-              border: "1px solid #00bfff",
+              border: `1px solid ${COLORS[activeChannel.platform].main}`,
               borderRadius: "8px",
               background: "#2c2c2c",
               cursor: "grabbing",
-              boxShadow: "0 0 10px rgba(0,191,255,0.4)",
+              boxShadow: `0 0 10px ${COLORS[activeChannel.platform].shadow}`,
             }}
             secondaryAction={<Switch checked={activeChannel.isVisible} disabled />}
           >

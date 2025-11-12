@@ -1,5 +1,6 @@
 import React from "react";
 import { Box, Typography, Tooltip } from "@mui/material";
+import { COLORS } from "@/data/color";
 import LiveTime from "@/components/info/LiveTime";
 import UserCount from "@/components/info/UserCount";
 
@@ -25,7 +26,7 @@ export default function ChannelInfo({ channel, sx = {} }) {
       }}
       title={
         <span>
-          <span style={{ color: "#00ffa3", fontWeight: 600 }}>
+          <span style={{ color: `${COLORS[channel.platform].main}`, fontWeight: 600 }}>
             {channel.name || "채널명 없음"}
           </span>
           {" : "}
@@ -51,23 +52,38 @@ export default function ChannelInfo({ channel, sx = {} }) {
         {/* 🖼️ Channel Image */}
         <Box
           sx={{
-            width: 50,
-            height: 50,
+            width: 54, // border 두께만큼 크게
+            height: 54,
             borderRadius: "50%",
-            overflow: "hidden",
             flexShrink: 0,
-            boxShadow: "0 0 6px rgba(0,0,0,0.4)",
+            background: channel.isLive
+              ? COLORS[channel.platform].gradient
+              : "transparent",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          <img
-            src={channel.imageUrl}
-            alt={`${channel.name || "channel"} profile`}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
+          <Box
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: "50%",
+              overflow: "hidden",
+              boxShadow: "0 0 6px rgba(0,0,0,0.4)",
+              backgroundColor: "#141517",
             }}
-          />
+          >
+            <img
+              src={channel.imageUrl}
+              alt={`${channel.name || "channel"} profile`}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
+          </Box>
         </Box>
 
         {/* ℹ️ Channel Info */}
