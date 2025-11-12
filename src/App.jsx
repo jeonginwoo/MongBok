@@ -12,7 +12,6 @@ import {
   Button,
   Select,
   MenuItem,
-  Typography,
 } from "@mui/material";
 
 import { layouts } from "@/data/layouts";
@@ -21,7 +20,7 @@ import DropZone from "@/components/DnD/DropZone";
 import CurrentTime from "@/components/Info/CurrentTime";
 import ChannelList from "@/components/Controller/ChannelList";
 
-import { getAllChannelsData, getChzzkLiveStatus, getSoopLiveStatus } from "@/api/liveApi";
+import { getAllChannelsData, getLiveStatus } from "@/api/liveApi";
 
 export default function App() {
   const localStorage = {
@@ -56,6 +55,9 @@ export default function App() {
     "w2rdoo": {
       platform: "soop",
     },
+    "ooojoijo": {
+      platform: "soop",
+    },
   };
 
   const [channels, setChannels] = useState({});
@@ -88,25 +90,16 @@ export default function App() {
         // 병렬로 모든 채널 상태 갱신
         const entries = Object.entries(localStorage);
         await Promise.all(
-          entries.map(async ([channelId]) => {
+          entries.map(async ([channelId, item]) => {
             try {
-              let live = null;
-              if (item.platform === "chzzk") {
-                live = await getChzzkLiveStatus(channelId);
-              } else if (item.platform === "soop") {
-                live = await getSoopLiveStatus(channelId);
-              } else {
-                console.warn(`⚠️ 지원하지 않는 플랫폼: ${item.platform}`);
-                return;
-              }
-              
+              const liveStatus = await getLiveStatus(channelId, item.platform);
               setChannels((prev) => {
                 if (!prev[channelId]) return prev;
                 return {
                   ...prev,
                   [channelId]: {
                     ...prev[channelId],
-                    ...live, // 🔥 liveTitle, openDate, isLive, userCount만 갱신
+                    ...liveStatus,
                   },
                 };
               });

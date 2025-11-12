@@ -1,5 +1,5 @@
 import { ChzzkClient } from "chzzk";
-import axios from "axios";
+import { SoopClient } from "soop-extension"
 
 const chzzk_client = new ChzzkClient({
   baseUrls: {
@@ -8,15 +8,10 @@ const chzzk_client = new ChzzkClient({
   },
 });
 
-const soop_client = axios.create({
-  baseURL: "/soop_api",
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+const soop_client = new SoopClient();
 
 // ✅ 치지직 라이브 상태 조회
-export const getChzzkLiveStatus = async (channelId) => {
+const getChzzkLiveStatus = async (channelId) => {
   try {
     const data = await chzzk_client.live.detail(channelId);
 
@@ -26,8 +21,7 @@ export const getChzzkLiveStatus = async (channelId) => {
       liveTitle: data?.liveTitle ?? "",
       openDate: data?.openDate ?? null,
       isLive: data?.status === "OPEN",
-      userCount:
-        data?.status === "CLOSE" ? 0 : data?.concurrentUserCount ?? 0,
+      userCount: data?.status === "CLOSE" ? 0 : data?.concurrentUserCount ?? 0,
     };
   } catch (error) {
     console.error("❌ [Chzzk] 라이브 상태 가져오기 실패:", error);
@@ -36,10 +30,9 @@ export const getChzzkLiveStatus = async (channelId) => {
 };
 
 // ✅ 숲 라이브 상태 조회
-export const getSoopLiveStatus = async (channelId) => {
+const getSoopLiveStatus = async (channelId) => {
   try {
-    const response = await soop_client.get(`/api/${channelId}/station`);
-    const data = response.data;
+    const data = await soop_client.channel.station(channelId, "/soop_api");
 
     return {
       name: data?.station?.user_nick ?? "",
@@ -47,13 +40,27 @@ export const getSoopLiveStatus = async (channelId) => {
       liveTitle: data?.broad?.broad_title ?? "",
       openDate: data?.station?.broad_start ?? null,
       isLive: data?.broad != null,
-      userCount:
-        data?.broad == null ? 0 : data?.broad?.current_sum_viewer ?? 0,
+      userCount: data?.broad == null ? 0 : data?.broad?.current_sum_viewer ?? 0,
     };
   } catch (error) {
     console.error("❌ [Soop] 라이브 상태 가져오기 실패:", error);
     throw error;
   }
+};
+
+// ✅ 라이브 상태 조회
+export const getLiveStatus = async (channelId, platform) => {
+  let liveStatus = null;
+  if (platform === "chzzk") {
+    liveStatus = await getChzzkLiveStatus(channelId);
+  } else if (platform === "soop") {
+    liveStatus = await getSoopLiveStatus(channelId);
+  } else {
+    console.warn(`⚠️ 지원하지 않는 플랫폼: ${platform}`);
+    return;
+  }
+
+  return liveStatus;
 };
 
 // ✅ 플랫폼별로 라이브 데이터 가져오기
@@ -64,15 +71,7 @@ export const getAllChannelsData = async (localStorageData) => {
   await Promise.all(
     entries.map(async ([channelId, item]) => {
       try {
-        let live = null;
-        if (item.platform === "chzzk") {
-          live = await getChzzkLiveStatus(channelId);
-        } else if (item.platform === "soop") {
-          live = await getSoopLiveStatus(channelId);
-        } else {
-          console.warn(`⚠️ 지원하지 않는 플랫폼: ${item.platform}`);
-          return;
-        }
+        const live = await getLiveStatus(channelId, item.platform);
 
         result[channelId] = {
           id: channelId,
