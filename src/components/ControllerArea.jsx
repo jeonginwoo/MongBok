@@ -1,6 +1,5 @@
 import React from "react";
-import { Box, Paper, Button, Select, MenuItem } from "@mui/material";
-import { layouts } from "@/data/layouts";
+import { Box, Paper, Button } from "@mui/material";
 import ChannelList from "@/components/Controller/ChannelList";
 import LayoutToggleGroup from "@/components/Controller/LayoutToggleGroup";
 
@@ -25,11 +24,10 @@ export default function ControllerArea({
         display: "flex",
         flexDirection: "column",
         padding: "12px 12px 12px 30px",
-        overflowY: "auto",
       }}
     >
-      {/* LayoutType 선택 */}
-      <Box sx={{ mb: 2 }}>
+      {/* 🔹 LayoutType 선택 */}
+      <Box sx={{ mb: 2, pr: 1 }}>
         <LayoutToggleGroup
           layoutType={layoutType}
           setLayoutType={setLayoutType}
@@ -37,8 +35,8 @@ export default function ControllerArea({
         />
       </Box>
 
-      {/* 채널 리스트 */}
-      <Box sx={{ flex: "1 1 auto" }}>
+      {/* 🔹 채널 리스트 (남은 공간 전부 차지) */}
+      <Box sx={{ flexGrow: 1, minHeight: 0 }}>
         <ChannelList
           channels={channels}
           setChannels={setChannels}
@@ -46,8 +44,8 @@ export default function ControllerArea({
         />
       </Box>
 
-      {/* PointerEvents 토글 */}
-      <Box sx={{ mb: 2 }}>
+      {/* 🔹 PointerEvents 토글 */}
+      <Box sx={{ mt: 2, pr: 1 }}>
         <Button
           variant="contained"
           color={pointerEventsEnabled ? "success" : "secondary"}
@@ -58,8 +56,8 @@ export default function ControllerArea({
         </Button>
       </Box>
 
-      {/* 전체화면 버튼 */}
-      <Box sx={{ mb: 2 }}>
+      {/* 🔹 전체화면 버튼 */}
+      <Box sx={{ mt: 1, pr: 1 }}>
         <Button variant="contained" color="primary" fullWidth onClick={fullscreen}>
           전체화면
         </Button>

@@ -128,7 +128,13 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
   };
 
   return (
-    <>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+      }}
+    >
       <DndContext
         collisionDetection={closestCenter}
         onDragStart={(e) => setActiveId(e.active.id)}
@@ -139,7 +145,7 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
           items={visible.map((c) => c.id)}
           strategy={verticalListSortingStrategy}
         >
-          <List>
+          <List sx={{ pr: 1 }}>
             {visible.map((channel) => (
               <SortableItem
                 key={channel.id}
@@ -150,12 +156,43 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
           </List>
         </SortableContext>
 
-        {/* 🔹 hidden 목록 (정렬) */}
-        {sortedHidden.length > 0 && (
-          <>
-            <Box sx={{ my: 2, textAlign: "center" }}>
-              <Divider sx={{ borderColor: "#555" }} />
-            </Box>
+        {/* ✅ 드래그 중 표시 */}
+        <DragOverlay adjustScale={false}>
+          {activeChannel ? (
+            <ListItem
+              sx={{
+                pr: 1,
+                border: `1px solid ${COLORS[activeChannel.platform].main}`,
+                borderRadius: "8px",
+                background: "#2c2c2c",
+                cursor: "grabbing",
+                boxShadow: `0 0 10px ${COLORS[activeChannel.platform].shadow}`,
+              }}
+              secondaryAction={<Switch checked={activeChannel.isVisible} />}
+            >
+              <ChannelInfo channel={activeChannel} />
+            </ListItem>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+      
+      {/* ✅ Divider + hidden 목록 */}
+      {sortedHidden.length > 0 && (
+        <>
+          <Divider sx={{ borderColor: "#555", my: 2 }} />
+          <Box
+            sx={{
+              flexGrow: 1, // 남은 공간 모두 차지
+              overflowY: "auto",
+              pr: 1,
+              "&::-webkit-scrollbar": { width: "6px" },
+              "&::-webkit-scrollbar-thumb": {
+                backgroundColor: "#555",
+                borderRadius: "4px",
+              },
+              "&::-webkit-scrollbar-thumb:hover": { backgroundColor: "#777" },
+            }}
+          >
             <List>
               {sortedHidden.map((channel) => (
                 <HiddenItem
@@ -165,27 +202,9 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
                 />
               ))}
             </List>
-          </>
-        )}
-
-        {/* ✅ 드래그 중 표시 */}
-        <DragOverlay adjustScale={false}>
-          {activeChannel ? (
-            <ListItem
-              sx={{
-                border: `1px solid ${COLORS[activeChannel.platform].main}`,
-                borderRadius: "8px",
-                background: "#2c2c2c",
-                cursor: "grabbing",
-                boxShadow: `0 0 10px ${COLORS[activeChannel.platform].shadow}`,
-              }}
-              secondaryAction={<Switch checked={activeChannel.isVisible} disabled />}
-            >
-              <ChannelInfo channel={activeChannel} />
-            </ListItem>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+          </Box>
+        </>
+      )}
 
       {/* ✅ Snackbar */}
       <Snackbar
@@ -198,7 +217,7 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
           표시 가능한 채널은 최대 4개입니다.
         </Alert>
       </Snackbar>
-    </>
+    </Box>
   );
 }
 
@@ -210,7 +229,7 @@ function SortableItem({ channel, onToggle }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition: transition || "transform 200ms ease",
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.3 : 1,
   };
 
   return (

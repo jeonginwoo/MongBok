@@ -44,7 +44,6 @@ export default function ChannelInfo({ channel, sx = {} }) {
           boxSizing: "border-box",
           border: "none",
           transition: "filter 0.3s ease",
-          cursor: "pointer",
           ...inactiveStyle,
           ...sx,
         }}
