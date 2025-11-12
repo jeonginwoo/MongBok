@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Paper, Button, Select, MenuItem } from "@mui/material";
 import { layouts } from "@/data/layouts";
 import ChannelList from "@/components/Controller/ChannelList";
+import LayoutToggleGroup from "@/components/Controller/LayoutToggleGroup";
 
 export default function ControllerArea({
   channels,
@@ -12,8 +13,7 @@ export default function ControllerArea({
   setPointerEventsEnabled,
   fullscreen,
 }) {
-  const viewCount =
-    Object.values(channels).filter((c) => c.isVisible).length || 1;
+  const viewCount = Object.values(channels).filter((c) => c.isVisible).length || 1;
 
   return (
     <Paper
@@ -30,28 +30,11 @@ export default function ControllerArea({
     >
       {/* LayoutType 선택 */}
       <Box sx={{ mb: 2 }}>
-        <Select
-          value={layoutType}
-          onChange={(e) => setLayoutType(e.target.value)}
-          fullWidth
-          sx={{
-            color: "#d3d3d3ff",
-            border: "1px solid #d3d3d3ff",
-            ".MuiOutlinedInput-notchedOutline": {
-              borderColor: "#d3d3d3ff",
-            },
-            "&:hover .MuiOutlinedInput-notchedOutline": {
-              borderColor: "d3d3d3ff",
-            },
-            ".MuiSvgIcon-root": { color: "#d3d3d3ff" },
-          }}
-        >
-          {Object.keys(layouts[viewCount]).map((key) => (
-            <MenuItem key={key} value={key}>
-              {key}
-            </MenuItem>
-          ))}
-        </Select>
+        <LayoutToggleGroup
+          layoutType={layoutType}
+          setLayoutType={setLayoutType}
+          viewCount={viewCount}
+        />
       </Box>
 
       {/* 채널 리스트 */}

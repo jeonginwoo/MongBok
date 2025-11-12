@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -12,6 +12,8 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  Alert,
+  Snackbar,
   Switch,
   List,
   ListItem,
@@ -73,8 +75,8 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
     });
   };
 
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const handleToggle = (id) => {
-
     setChannels((prev) => {
       const updated = structuredClone(prev);
       const target = { ...updated[id] };
@@ -82,7 +84,7 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
 
       if (!target.isVisible) {
         if (visibleList.length >= 4) {
-          alert("표시 가능한 채널은 최대 4개입니다.");
+          setSnackbarOpen(true);
           return prev;
         }
         target.isVisible = true;
@@ -120,64 +122,83 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
     setLayoutType("layout1");
   };
 
-  return (
-    <DndContext
-      collisionDetection={closestCenter}
-      onDragStart={(e) => setActiveId(e.active.id)}
-      onDragEnd={handleDragEnd}
-    >
-      {/* ✅ visible만 드래그 가능 */}
-      <SortableContext
-        items={visible.map((c) => c.id)}
-        strategy={verticalListSortingStrategy}
-      >
-        <List>
-          {visible.map((channel) => (
-            <SortableItem
-              key={channel.id}
-              channel={channel}
-              onToggle={handleToggle}
-            />
-          ))}
-        </List>
-      </SortableContext>
+  const handleCloseSnackbar = (_, reason) => {
+    if (reason === "clickaway") return;
+    setSnackbarOpen(false);
+  };
 
-      {/* 🔹 hidden 목록 (정렬) */}
-      {sortedHidden.length > 0 && (
-        <>
-          <Box sx={{ my: 2, textAlign: "center" }}>
-            <Divider sx={{ borderColor: "#555" }} />
-          </Box>
+  return (
+    <>
+      <DndContext
+        collisionDetection={closestCenter}
+        onDragStart={(e) => setActiveId(e.active.id)}
+        onDragEnd={handleDragEnd}
+      >
+        {/* ✅ visible만 드래그 가능 */}
+        <SortableContext
+          items={visible.map((c) => c.id)}
+          strategy={verticalListSortingStrategy}
+        >
           <List>
-            {sortedHidden.map((channel) => (
-              <HiddenItem
+            {visible.map((channel) => (
+              <SortableItem
                 key={channel.id}
                 channel={channel}
                 onToggle={handleToggle}
               />
             ))}
           </List>
-        </>
-      )}
+        </SortableContext>
 
-      {/* ✅ 드래그 중 표시 */}
-      <DragOverlay adjustScale={false}>
-        {activeChannel ? (
-          <ListItem
-            sx={{
-              border: `1px solid ${COLORS[activeChannel.platform].main}`,
-              borderRadius: "8px",
-              background: "#2c2c2c",
-              cursor: "grabbing",
-              boxShadow: `0 0 10px ${COLORS[activeChannel.platform].shadow}`,
-            }}
-            secondaryAction={<Switch checked={activeChannel.isVisible} disabled />}
-          >
-            <ChannelInfo channel={activeChannel} />
-          </ListItem>
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+        {/* 🔹 hidden 목록 (정렬) */}
+        {sortedHidden.length > 0 && (
+          <>
+            <Box sx={{ my: 2, textAlign: "center" }}>
+              <Divider sx={{ borderColor: "#555" }} />
+            </Box>
+            <List>
+              {sortedHidden.map((channel) => (
+                <HiddenItem
+                  key={channel.id}
+                  channel={channel}
+                  onToggle={handleToggle}
+                />
+              ))}
+            </List>
+          </>
+        )}
+
+        {/* ✅ 드래그 중 표시 */}
+        <DragOverlay adjustScale={false}>
+          {activeChannel ? (
+            <ListItem
+              sx={{
+                border: `1px solid ${COLORS[activeChannel.platform].main}`,
+                borderRadius: "8px",
+                background: "#2c2c2c",
+                cursor: "grabbing",
+                boxShadow: `0 0 10px ${COLORS[activeChannel.platform].shadow}`,
+              }}
+              secondaryAction={<Switch checked={activeChannel.isVisible} disabled />}
+            >
+              <ChannelInfo channel={activeChannel} />
+            </ListItem>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+
+      {/* ✅ Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="warning" sx={{ width: "100%" }}>
+          표시 가능한 채널은 최대 4개입니다.
+        </Alert>
+      </Snackbar>
+    </>
   );
 }
 

@@ -104,6 +104,7 @@ export default function DraggableChat({ channel, zone }) {
             position: "absolute",
             left: 0,
             width: "100%",
+            maxHeight: "100px",
             aspectRatio: "100/30",
             background: `
               linear-gradient(
