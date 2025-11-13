@@ -1,8 +1,10 @@
 import React from "react";
 import { Box, Typography, Tooltip } from "@mui/material";
 import { COLORS } from "@/data/color";
+
 import LiveTime from "@/components/info/LiveTime";
 import UserCount from "@/components/info/UserCount";
+import ProfileImage from "@/components/info/ProfileImage";
 
 export default function ChannelInfo({ channel, sx = {} }) {
   if (!channel) return null;
@@ -48,42 +50,7 @@ export default function ChannelInfo({ channel, sx = {} }) {
           ...sx,
         }}
       >
-        {/* 🖼️ Channel Image */}
-        <Box
-          sx={{
-            width: 54, // border 두께만큼 크게
-            height: 54,
-            borderRadius: "50%",
-            flexShrink: 0,
-            background: channel.isLive
-              ? COLORS[channel.platform].gradient
-              : "transparent",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Box
-            sx={{
-              width: 48,
-              height: 48,
-              borderRadius: "50%",
-              overflow: "hidden",
-              boxShadow: "0 0 6px rgba(0,0,0,0.4)",
-              backgroundColor: "#141517",
-            }}
-          >
-            <img
-              src={channel.imageUrl}
-              alt={`${channel.name || "channel"} profile`}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-              }}
-            />
-          </Box>
-        </Box>
+        <ProfileImage channel={channel} />
 
         {/* ℹ️ Channel Info */}
         <Box
