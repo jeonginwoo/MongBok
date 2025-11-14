@@ -62,10 +62,25 @@ export default function DraggableChat({ channel, zone }) {
     overflow: "hidden",
   };
 
-  const iframeSrc =
-    channel.platform === "chzzk" ? `https://chzzk.naver.com/live/${channelId}/chat`
-  : channel.platform === "soop" ? ``
-  : "";
+  // platform별 iframeSrc와 스타일 분리
+  let iframeSrc = "";
+  let iframeStyle = {};
+
+  if (channel.platform === "chzzk") {
+    iframeSrc = `https://chzzk.naver.com/live/${channelId}/chat`;
+    iframeStyle = {
+            width: "100%",
+      height: "calc(100% + 250px)",
+      top: "-145px",
+    };
+  } else if (channel.platform === "soop") {
+    iframeSrc = `https://chazzy.vercel.app/--${channelId}-`;
+    iframeStyle = {
+      width: "calc(100% + 110px)",
+      height: "calc(100% + 0px)",
+      left: "-60px",
+    };
+  }
 
   return (
     <Box
@@ -90,13 +105,12 @@ export default function DraggableChat({ channel, zone }) {
           src={iframeSrc}
           sx={{
             position: "absolute",
-            top: "-145px",
+            top: "0px",
             left: "0px",
-            width: "100%",
-            height: "calc(100% + 250px)",
             border: "none",
             pointerEvents: "none",
             overflow: "hidden",
+            ...iframeStyle,
           }}
         />
         <Box
@@ -116,7 +130,8 @@ export default function DraggableChat({ channel, zone }) {
               )
             `,
             p: "3%"
-          }}>
+          }}
+        >
           <Box>
             <ChannelInfo channel={channel} />
           </Box>
