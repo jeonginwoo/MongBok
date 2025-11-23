@@ -72,7 +72,7 @@ export default function ChannelInfo({ channel, sx = {} }) {
               overflow: "hidden",
             }}
           >
-            {channel.liveTitle || channel.name}
+            {channel.name}
           </Typography>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>

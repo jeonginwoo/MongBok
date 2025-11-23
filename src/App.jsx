@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Box } from "@mui/material";
-import { getAllChannelsData, getLiveStatus } from "@/api/liveApi";
+import { getAllChannelsData, getLiveStatus } from "@/api/live";
 import { layouts } from "@/data/layouts";
 
 import ViewArea from "@/components/ViewArea";

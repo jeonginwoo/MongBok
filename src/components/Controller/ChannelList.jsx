@@ -211,7 +211,7 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
         open={snackbarOpen}
         autoHideDuration={3000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
         <Alert onClose={handleCloseSnackbar} severity="warning" sx={{ width: "100%" }}>
           표시 가능한 채널은 최대 4개입니다.
