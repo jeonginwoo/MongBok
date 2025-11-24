@@ -1,27 +1,32 @@
-import { ChzzkClient } from "chzzk";
-import { SoopClient } from "soop-extension"
+import axios from "axios";
 
-const chzzk_client = new ChzzkClient({
-  baseUrls: {
-    chzzkBaseUrl: "/chzzk_api",
-    gameBaseUrl: "/chzzk_game",
+const chzzk_client = axios.create({
+  baseURL: "/chzzk_api",
+  headers: {
+    "Content-Type": "application/json",
   },
 });
 
-const soop_client = new SoopClient();
+const soop_client = axios.create({
+  baseURL: "/soop_api",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
 // ✅ 치지직 라이브 상태 조회
 const getChzzkLiveStatus = async (channelId) => {
   try {
-    const data = await chzzk_client.live.detail(channelId);
-
+    const response = await chzzk_client.get(`/service/v3.2/channels/${channelId}/live-detail`);
+    const data = response.data?.content;
+    
     return {
       name: data?.channel?.channelName ?? "",
       imageUrl: data?.channel?.channelImageUrl ?? "",
       liveTitle: data?.liveTitle ?? "",
       openDate: data?.openDate ?? null,
       isLive: data?.status === "OPEN",
-      userCount: data?.status === "CLOSE" ? 0 : data?.concurrentUserCount ?? 0,
+      userCount: (data?.status === "CLOSE") ? 0 : (data?.concurrentUserCount ?? 0),
     };
   } catch (error) {
     console.error("❌ [Chzzk] 라이브 상태 가져오기 실패:", error);
@@ -32,15 +37,15 @@ const getChzzkLiveStatus = async (channelId) => {
 // ✅ 숲 라이브 상태 조회
 const getSoopLiveStatus = async (channelId) => {
   try {
-    const data = await soop_client.channel.station(channelId, "/soop_api");
-
+    const response = await soop_client.get(`/api/${channelId}/station`);
+    const data = response.data;
     return {
       name: data?.station?.user_nick ?? "",
       imageUrl: data?.profile_image ?? "",
       liveTitle: data?.broad?.broad_title ?? "",
       openDate: data?.station?.broad_start ?? null,
       isLive: data?.broad != null,
-      userCount: data?.broad == null ? 0 : data?.broad?.current_sum_viewer ?? 0,
+      userCount: (data?.broad == null) ? 0 : (data?.broad?.current_sum_viewer ?? 0),
     };
   } catch (error) {
     console.error("❌ [Soop] 라이브 상태 가져오기 실패:", error);
