@@ -22,7 +22,7 @@ import {
 } from "@mui/material";
 import { COLORS } from "@/data/color";
 import DragHandleIcon from "@mui/icons-material/DragIndicator";
-import ChannelInfo from "@/components/Info/ChannelInfo";
+import ChannelInfo from "@/components/Info/ChannelInfo/ChannelListChannelInfo";
 
 export default function ChannelList({ channels, setChannels, setLayoutType }) {
   const [activeId, setActiveId] = React.useState(null);

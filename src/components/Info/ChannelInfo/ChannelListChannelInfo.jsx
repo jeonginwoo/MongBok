@@ -52,7 +52,6 @@ export default function ChannelInfo({ channel, sx = {} }) {
       >
         <ProfileImage channel={channel} />
 
-        {/* ℹ️ Channel Info */}
         <Box
           sx={{
             display: "flex",
@@ -74,11 +73,12 @@ export default function ChannelInfo({ channel, sx = {} }) {
           >
             {channel.name}
           </Typography>
-
+          {channel.isLive?
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <LiveTime channel={channel} />
             <UserCount channel={channel} />
           </Box>
+          : null}
         </Box>
       </Box>
     </Tooltip>

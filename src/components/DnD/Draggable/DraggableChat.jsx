@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import Box from "@mui/material/Box";
 
-import ChannelInfo from "@/components/Info/ChannelInfo";
+import ChannelInfo from "@/components/Info/ChannelInfo/ViewAreaChannelInfo";
 
 export default function DraggableChat({ channel, zone }) {
   if (!channel) return null;
