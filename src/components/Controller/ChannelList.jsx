@@ -20,6 +20,7 @@ import {
   Divider,
   Box,
 } from "@mui/material";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { COLORS } from "@/data/color";
 import DragHandleIcon from "@mui/icons-material/DragIndicator";
 import ChannelInfo from "@/components/Info/ChannelInfo/ChannelListChannelInfo";
@@ -127,6 +128,14 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
     setSnackbarOpen(false);
   };
 
+  const handleDelete = (id) => {
+    setChannels((prev) => {
+      const updated = structuredClone(prev);
+      delete updated[id];
+      return updated;
+    });
+  };
+
   return (
     <Box
       sx={{
@@ -199,6 +208,7 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
                   key={channel.id}
                   channel={channel}
                   onToggle={handleToggle}
+                  onDelete={handleDelete}
                 />
               ))}
             </List>
@@ -290,10 +300,11 @@ function SortableItem({ channel, onToggle }) {
 }
 
 /** ❌ 드래그 불가한 숨김 아이템 */
-function HiddenItem({ channel, onToggle }) {
+function HiddenItem({ channel, onToggle, onDelete }) {
   return (
     <ListItem
       sx={{
+        position: "relative",
         borderRadius: "8px",
         mb: "8px",
         background: "#262626",
@@ -304,6 +315,21 @@ function HiddenItem({ channel, onToggle }) {
         <Switch checked={channel.isVisible} onChange={() => onToggle(channel.id)} />
       }
     >
+      {/* 🔥 삭제 버튼 */}
+      <DeleteOutlineIcon
+        onClick={() => onDelete(channel.id)}
+        sx={{
+          position: "absolute",
+          right: "5px",
+          bottom: "5px",
+          fontSize: 18,
+          cursor: "pointer",
+          color: "#aaa",
+          opacity: 0.5,
+          "&:hover": { color: "#ff5555" },
+        }}
+      />
+
       <ChannelInfo channel={channel} />
     </ListItem>
   );
