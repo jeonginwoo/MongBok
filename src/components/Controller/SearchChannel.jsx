@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { Box, TextField, Paper, CircularProgress } from "@mui/material";
 import SearchChannelInfo from "@/components/Info/ChannelInfo/SearchChannelInfo";
 import { searchAllPlatforms } from "@/api/search";
-import { getLiveStatus } from "@/api/live";
 
 export default function SearchChannel({ setChannels }) {
   const [keyword, setKeyword] = useState("");

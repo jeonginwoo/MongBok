@@ -1,7 +1,6 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 
-import LiveTime from "@/components/info/LiveTime";
 import UserCount from "@/components/info/UserCount";
 import ProfileImage from "@/components/info/ProfileImage";
 

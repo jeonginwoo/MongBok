@@ -8,8 +8,8 @@ import {
   pointerWithin,
 } from "@dnd-kit/core";
 
-import ChannelRenderer from "@/components/DnD/ChannelRenderer";
-import DropZone from "@/components/DnD/DropZone";
+import ChannelRenderer from "@/components/View/ChannelRenderer";
+import DropZone from "@/components/View/DropZone";
 import CurrentTime from "@/components/Info/CurrentTime";
 
 export default function ViewArea({
