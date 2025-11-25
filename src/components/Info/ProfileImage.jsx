@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import { COLORS } from "@/data/color";
 
-export default function ProfileImage({ channel }) {
+export default function ProfileImage({ channel, isBoardered = false }) {
 
   return (
     <Box
@@ -10,7 +10,7 @@ export default function ProfileImage({ channel }) {
         height: 54,
         borderRadius: "50%",
         flexShrink: 0,
-        background: channel.isLive
+        background: isBoardered || channel.isLive
           ? COLORS[channel.platform].gradient
           : "transparent",
         display: "flex",

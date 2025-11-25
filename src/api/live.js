@@ -1,28 +1,22 @@
-import axios from "axios";
+import {
+  chzzk_client,
+  soop_channel_client,
+} from "@/api/client";
 
-const chzzk_client = axios.create({
-  baseURL: "/chzzk_api",
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-const soop_client = axios.create({
-  baseURL: "/soop_api",
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+const chzzk_default_profile_img = "https://ssl.pstatic.net/static/nng/glive/image/default_profile_dark.png?type=f120_120_na"
 
 // ✅ 치지직 라이브 상태 조회
 const getChzzkLiveStatus = async (channelId) => {
   try {
     const response = await chzzk_client.get(`/service/v3.2/channels/${channelId}/live-detail`);
     const data = response.data?.content;
-    
+    if (!data) {
+      return await getChzzkLiveStatus2(channelId);
+    }
+
     return {
       name: data?.channel?.channelName ?? "",
-      imageUrl: data?.channel?.channelImageUrl ?? "",
+      imageUrl: data?.channel?.channelImageUrl || chzzk_default_profile_img,
       liveTitle: data?.liveTitle ?? "",
       openDate: data?.openDate ?? null,
       isLive: data?.status === "OPEN",
@@ -34,10 +28,29 @@ const getChzzkLiveStatus = async (channelId) => {
   }
 };
 
+const getChzzkLiveStatus2 = async (channelId) => {
+  try {
+    const response = await chzzk_client.get(`/service/v1/channels/${channelId}`);
+    const data = response.data?.content;
+
+    return {
+      name: data?.channelName ?? "",
+      imageUrl: data?.channelImageUrl || chzzk_default_profile_img,
+      liveTitle: "",
+      openDate: null,
+      isLive: data?.openLive,
+      userCount: 0,
+    };
+  } catch (error) {
+    console.error("❌ [Chzzk] 라이브 상태 가져오기 실패:", error);
+    throw error;
+  }
+};
+
 // ✅ 숲 라이브 상태 조회
 const getSoopLiveStatus = async (channelId) => {
   try {
-    const response = await soop_client.get(`/api/${channelId}/station`);
+    const response = await soop_channel_client.get(`/api/${channelId}/station`);
     const data = response.data;
     return {
       name: data?.station?.user_nick ?? "",

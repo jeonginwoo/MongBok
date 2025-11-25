@@ -62,7 +62,7 @@ export default function App() {
     };
 
     fetchInitialChannels();
-    const interval = setInterval(updateLiveStatus, 10000);
+    const interval = setInterval(updateLiveStatus, 15000000);
     return () => clearInterval(interval);
   }, []);
 

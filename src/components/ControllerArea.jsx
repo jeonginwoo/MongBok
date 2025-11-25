@@ -1,7 +1,8 @@
 import React from "react";
 import { Box, Paper, Button } from "@mui/material";
-import ChannelList from "@/components/Controller/ChannelList";
 import LayoutToggleGroup from "@/components/Controller/LayoutToggleGroup";
+import SearchChannel from "@/components/Controller/SearchChannel";
+import ChannelList from "@/components/Controller/ChannelList";
 
 export default function ControllerArea({
   channels,
@@ -33,6 +34,11 @@ export default function ControllerArea({
           setLayoutType={setLayoutType}
           viewCount={viewCount}
         />
+      </Box>
+
+      {/* 🔹 검색 컴포넌트 추가 */}
+      <Box sx={{ mb: 2, pr: 1 }}>
+        <SearchChannel setChannels={setChannels} />
       </Box>
 
       {/* 🔹 채널 리스트 (남은 공간 전부 차지) */}

@@ -23,15 +23,15 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/chzzk_api/, ""),
       },
-      "/chzzk_game": {
-        target: "https://comm-api.game.naver.com/nng_main",
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/chzzk_game/, ""),
-      },
-      "/soop_api": {
+      "/soop_channel_api": {
         target: "https://chapi.sooplive.co.kr",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/soop_api/, ""),
+        rewrite: (path) => path.replace(/^\/soop_channel_api/, ""),
+      },
+      "/soop_search_api": {
+        target: "https://sch.sooplive.co.kr",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/soop_search_api/, ""),
       },
     },
   },

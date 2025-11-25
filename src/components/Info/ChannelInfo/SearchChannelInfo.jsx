@@ -4,11 +4,11 @@ import { Box, Typography } from "@mui/material";
 import UserCount from "@/components/info/UserCount";
 import ProfileImage from "@/components/info/ProfileImage";
 
-export default function ChannelInfo({ channel, sx = {} }) {
-  if (!channel) return null;
+export default function ChannelInfo({ searchChannel, sx = {} }) {
+  if (!searchChannel) return null;
 
   // 🔹 라이브 중이 아닐 때 흑백 & 밝기 낮춤
-  const inactiveStyle = !channel.isLive
+  const inactiveStyle = !searchChannel.isLive
     ? { filter: "grayscale(100%) brightness(0.7)" }
     : {};
 
@@ -34,7 +34,7 @@ export default function ChannelInfo({ channel, sx = {} }) {
           overflow: "hidden",
         }}
       >
-        <ProfileImage channel={channel} />
+        <ProfileImage channel={searchChannel} isBoardered={true} />
 
         <Typography
           variant="subtitle2"
@@ -46,12 +46,12 @@ export default function ChannelInfo({ channel, sx = {} }) {
             overflow: "hidden",
           }}
         >
-          {channel.name}
+          {searchChannel.name}
         </Typography>
       </Box>
         
       <Box sx={{ ...inactiveStyle }}>
-        <UserCount channel={channel} />
+        <UserCount channel={searchChannel} />
       </Box>
     </Box>
   );
