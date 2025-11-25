@@ -1,13 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Box, TextField, Paper, CircularProgress } from "@mui/material";
+import { Box, TextField, Paper, CircularProgress, Typography } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import SearchChannelInfo from "@/components/Info/ChannelInfo/SearchChannelInfo";
-import { searchAllPlatforms } from "@/api/search";
+import { searchChannels } from "@/api/search";
 
 export default function SearchChannel({ setChannels }) {
   const [keyword, setKeyword] = useState("");
-  const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showList, setShowList] = useState(false); // 🔹 검색 리스트 표시 여부
+  const [showList, setShowList] = useState(false);
+
+  // 🔹 플랫폼별 검색 결과 구조
+  const [results, setResults] = useState({
+    chzzk: [],
+    soop: [],
+  });
 
   const containerRef = useRef(null);
 
@@ -25,7 +31,7 @@ export default function SearchChannel({ setChannels }) {
   // 🔹 0.5초 디바운스 검색
   useEffect(() => {
     if (!keyword.trim()) {
-      setResults([]);
+      setResults({ chzzk: [], soop: [] });
       setShowList(false);
       return;
     }
@@ -33,9 +39,17 @@ export default function SearchChannel({ setChannels }) {
     const handler = setTimeout(async () => {
       setLoading(true);
       try {
-        const list = await searchAllPlatforms(keyword);
-        setResults(list);
-        setShowList(true); // 검색 성공 → 리스트 열기
+        const platforms = ["chzzk", "soop"];
+
+        const promises = platforms.map((p) => searchChannels(keyword, p));
+        const [chzzkRes, soopRes] = await Promise.all(promises);
+
+        setResults({
+          chzzk: chzzkRes,
+          soop: soopRes,
+        });
+
+        setShowList(true);
       } catch (e) {
         console.error("검색 실패:", e);
       } finally {
@@ -46,7 +60,8 @@ export default function SearchChannel({ setChannels }) {
     return () => clearTimeout(handler);
   }, [keyword]);
 
-  const addChannel = async (selectChannel) => {
+  // 🔹 채널 추가
+  const addChannel = (selectChannel) => {
     try {
       setChannels((prev) => ({
         ...prev,
@@ -57,11 +72,9 @@ export default function SearchChannel({ setChannels }) {
         },
       }));
 
-      // 🔹 선택 후 검색창 초기화 + 리스트 닫기
       setKeyword("");
-      setResults([]);
+      setResults({ chzzk: [], soop: [] });
       setShowList(false);
-
     } catch (err) {
       console.error(`⚠️ ${selectChannel.id} 채널 추가 실패:`, err);
     }
@@ -93,34 +106,86 @@ export default function SearchChannel({ setChannels }) {
         </Box>
       )}
 
-      {/* 🔹 검색 결과 리스트 */}
-      {showList && results.length > 0 && (
+      {/* 🔹 검색 결과 플랫폼별 칼럼 UI */}
+      {showList && (
         <Paper
           sx={{
             position: "absolute",
             top: "48px",
-            left: 0,
             right: 0,
             zIndex: 1000,
-            overflowY: "auto",
+            overflowX: "auto",
             backgroundColor: "#2a2a2a",
-            padding: "6px",
+            padding: "10px",
             borderRadius: "6px",
             boxShadow: "0px 4px 10px rgba(0,0,0,0.4)",
+            display: "flex",
+            gap: 2,
           }}
         >
-          {results.map((selectChannel) => (
+          {/* 플랫폼별 컬럼 렌더링 함수 */}
+          {["chzzk", "soop"].map((platform) => (
             <Box
-              key={`${selectChannel.platform}-${selectChannel.id}`}
+              key={platform}
               sx={{
-                padding: "6px 4px",
-                cursor: "pointer",
-                borderRadius: "4px",
-                "&:hover": { backgroundColor: "#3a3a3a" },
+                width: "220px",
+                backgroundColor: "#1f1f1f",
+                borderRadius: "6px",
+                padding: "8px",
               }}
-              onClick={() => addChannel(selectChannel)}
             >
-              <SearchChannelInfo searchChannel={selectChannel} />
+              <Typography sx={{ color: "#bbb", fontSize: "14px", mb: 1 }}>
+                {platform.toUpperCase()}
+              </Typography>
+
+              {results[platform]?.length > 0 ? (
+                results[platform].map((ch) => (
+                  <Box
+                    key={`${ch.platform}-${ch.id}`}
+                    sx={{
+                      position: "relative",
+                      padding: "6px 4px",
+                      cursor: "pointer",
+                      borderRadius: "4px",
+                      overflow: "hidden",
+                      "&:hover .hoverOverlay": {
+                        opacity: 1,
+                      },
+                      "&:hover .content": {
+                        opacity: 0.2,
+                      },
+                    }}
+                    onClick={() => addChannel(ch)}
+                  >
+                    {/* 🔹 기본 콘텐츠 */}
+                    <Box className="content" sx={{ transition: "opacity 0.2s" }}>
+                      <SearchChannelInfo searchChannel={ch} />
+                    </Box>
+
+                    {/* 🔹 중앙에 나타나는 + 아이콘 오버레이 */}
+                    <Box
+                      className="hoverOverlay"
+                      sx={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "rgba(0, 0, 0, 0.4)",
+                        opacity: 0,
+                        transition: "opacity 0.2s",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      <AddIcon sx={{ fontSize: 36, color: "white" }} />
+                    </Box>
+                  </Box>
+                ))
+              ) : (
+                <Typography sx={{ color: "#777", fontSize: "13px" }}>
+                  결과 없음
+                </Typography>
+              )}
             </Box>
           ))}
         </Paper>
