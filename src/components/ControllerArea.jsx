@@ -13,6 +13,8 @@ export default function ControllerArea({
   pointerEventsEnabled,
   setPointerEventsEnabled,
   fullscreen,
+  showCurrentTime,
+  setShowCurrentTime,
 }) {
   const viewCount = Object.values(channels).filter((c) => c.isVisible).length;
 
@@ -58,6 +60,8 @@ export default function ControllerArea({
         fullscreen={fullscreen}
         channels={channels}
         setChannels={setChannels}
+        showCurrentTime={showCurrentTime}
+        setShowCurrentTime={setShowCurrentTime}
       />
     </Paper>
   );

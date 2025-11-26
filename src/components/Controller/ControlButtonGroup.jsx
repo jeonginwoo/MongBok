@@ -4,6 +4,7 @@ import MouseIcon from "@mui/icons-material/Mouse";
 import PanToolIcon from "@mui/icons-material/PanTool";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import AccessTimeIcon from '@mui/icons-material/AccessTime'; 
 import { getLiveStatus } from "@/api/live";
 
 export default function ControlButtonGroup({
@@ -12,6 +13,8 @@ export default function ControlButtonGroup({
   fullscreen,
   channels,
   setChannels,
+  showCurrentTime,
+  setShowCurrentTime,
 }) {
   const [refreshing, setRefreshing] = useState(false);
 
@@ -48,6 +51,25 @@ export default function ControlButtonGroup({
 
   return (
     <Box sx={{ display: "flex", gap: 1, justifyContent: "end", mt: 2 }}>
+      {/* 🟢 CurrentTime 토글 버튼 추가 */}
+      <Tooltip 
+        title={
+          showCurrentTime ? "현재 시간 on" : "현재 시간 off"
+        }
+      >
+        <IconButton
+          color="primary"
+          onClick={() => setShowCurrentTime((prev) => !prev)}
+          sx={{
+            "& .MuiSvgIcon-root": !showCurrentTime
+              ? { color: "#aaa" } // 비활성화 색상 적용
+              : {},
+          }}
+        >
+          <AccessTimeIcon />
+        </IconButton>
+      </Tooltip>
+      
       {/* 🔹 포인터 이벤트 토글 */}
       <Tooltip
         title={
@@ -60,7 +82,7 @@ export default function ControlButtonGroup({
           color="primary"
           onClick={() => setPointerEventsEnabled((prev) => !prev)}
         >
-          {pointerEventsEnabled ? <MouseIcon /> : <PanToolIcon />}
+          {pointerEventsEnabled ? <MouseIcon fontSize="small" /> : <PanToolIcon fontSize="small" />}
         </IconButton>
       </Tooltip>
       

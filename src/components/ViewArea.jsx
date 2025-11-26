@@ -19,6 +19,7 @@ export default function ViewArea({
   canvasRef,
   pointerEventsEnabled,
   fullscreen,
+  showCurrentTime, 
 }) {
   const [isDraggingAny, setIsDraggingAny] = useState(false);
   const [draggingType, setDraggingType] = useState(null);
@@ -111,7 +112,7 @@ export default function ViewArea({
               />
             ))}
 
-          <CurrentTime onClick={fullscreen} />
+          {showCurrentTime && <CurrentTime onClick={fullscreen} />}
         </Box>
       </DndContext>
     </Box>

@@ -10,6 +10,7 @@ export default function App() {
   const [channels, setChannels] = useState({});
   const [pointerEventsEnabled, setPointerEventsEnabled] = useState(false);
   const [layoutType, setLayoutType] = useState(localStorage.layout || "layout1");
+  const [showCurrentTime, setShowCurrentTime] = useState(true); 
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -89,6 +90,7 @@ export default function App() {
           canvasRef={canvasRef}
           pointerEventsEnabled={pointerEventsEnabled}
           fullscreen={fullscreen}
+          showCurrentTime={showCurrentTime}
         />
         <ControllerArea
           channels={channels}
@@ -98,6 +100,8 @@ export default function App() {
           pointerEventsEnabled={pointerEventsEnabled}
           setPointerEventsEnabled={setPointerEventsEnabled}
           fullscreen={fullscreen}
+          showCurrentTime={showCurrentTime}
+          setShowCurrentTime={setShowCurrentTime}
         />
       </Box>
     </>

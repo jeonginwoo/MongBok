@@ -87,7 +87,7 @@ export default function SearchChannel({ setChannels }) {
   };
 
   return (
-    <Box ref={containerRef} sx={{ mb: 2, pr: 1, position: "relative" }}>
+    <Box ref={containerRef} sx={{ mb: 2, position: "relative" }}>
       {/* 검색 입력창 */}
       <TextField
         fullWidth
