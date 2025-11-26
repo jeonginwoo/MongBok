@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/chzzk/(.*)",
+      "destination": "https://api.chzzk.naver.com/$1"
+    },
+    {
+      "source": "/api/soop/channel/(.*)",
+      "destination": "https://chapi.sooplive.co.kr/$1"
+    },
+    {
+      "source": "/api/soop/search/(.*)",
+      "destination": "https://sch.sooplive.co.kr/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
