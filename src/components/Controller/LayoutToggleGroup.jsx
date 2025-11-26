@@ -24,6 +24,7 @@ export default function LayoutToggleGroup({ layoutType, setLayoutType, viewCount
   const handleChange = (_, newType) => {
     if (newType !== null) {
       setLayoutType(newType);
+      window.localStorage.setItem("layout", newType);
     }
   };
 

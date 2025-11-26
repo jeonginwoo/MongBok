@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Box, TextField, Paper, CircularProgress, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SearchChannelInfo from "@/components/Info/ChannelInfo/SearchChannelInfo";
+import ChannelSnackbar from "@/components/Info/ChannelSnackbar";
 import { searchChannels } from "@/api/search";
 
 export default function SearchChannel({ setChannels }) {
@@ -9,15 +10,9 @@ export default function SearchChannel({ setChannels }) {
   const [loading, setLoading] = useState(false);
   const [showList, setShowList] = useState(false);
 
-  // 🔹 플랫폼별 검색 결과 구조
-  const [results, setResults] = useState({
-    chzzk: [],
-    soop: [],
-  });
-
+  const [results, setResults] = useState({ chzzk: [], soop: [] });
   const containerRef = useRef(null);
 
-  // 🔹 외부 클릭 감지
   useEffect(() => {
     function handleClickOutside(e) {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -28,7 +23,6 @@ export default function SearchChannel({ setChannels }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 🔹 0.5초 디바운스 검색
   useEffect(() => {
     if (!keyword.trim()) {
       setResults({ chzzk: [], soop: [] });
@@ -40,15 +34,10 @@ export default function SearchChannel({ setChannels }) {
       setLoading(true);
       try {
         const platforms = ["chzzk", "soop"];
-
         const promises = platforms.map((p) => searchChannels(keyword, p));
         const [chzzkRes, soopRes] = await Promise.all(promises);
 
-        setResults({
-          chzzk: chzzkRes,
-          soop: soopRes,
-        });
-
+        setResults({ chzzk: chzzkRes, soop: soopRes });
         setShowList(true);
       } catch (e) {
         console.error("검색 실패:", e);
@@ -60,29 +49,45 @@ export default function SearchChannel({ setChannels }) {
     return () => clearTimeout(handler);
   }, [keyword]);
 
-  // 🔹 채널 추가
-  const addChannel = (selectChannel) => {
-    try {
-      setChannels((prev) => ({
-        ...prev,
-        [selectChannel.id]: {
-          ...selectChannel,
-          isVisible: false,
-          zoneId: null,
-        },
-      }));
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
-      setKeyword("");
-      setResults({ chzzk: [], soop: [] });
-      setShowList(false);
-    } catch (err) {
-      console.error(`⚠️ ${selectChannel.id} 채널 추가 실패:`, err);
-    }
+  const addChannel = (selectChannel) => {
+    setChannels((prev) => {
+      if (Object.keys(prev).length >= 5) {
+        setSnackbarMessage("채널은 최대 30개까지 추가 가능합니다.");
+        setSnackbarOpen(true);
+        return prev;
+      }
+
+      const updated = {
+        ...prev,
+        [selectChannel.id]: { ...selectChannel, isVisible: false, zoneId: null },
+      };
+
+      window.localStorage.setItem(
+        "channels",
+        JSON.stringify(
+          Object.fromEntries(
+            Object.entries(updated).map(([id, ch]) => [
+              id,
+              { platform: ch.platform, zoneId: ch.zoneId ?? null },
+            ])
+          )
+        )
+      );
+
+      return updated;
+    });
+
+    setKeyword("");
+    setResults({ chzzk: [], soop: [] });
+    setShowList(false);
   };
 
   return (
     <Box ref={containerRef} sx={{ mb: 2, pr: 1, position: "relative" }}>
-      {/* 🔹 검색 입력창 */}
+      {/* 검색 입력창 */}
       <TextField
         fullWidth
         size="small"
@@ -99,14 +104,14 @@ export default function SearchChannel({ setChannels }) {
         }}
       />
 
-      {/* 🔹 로딩 스피너 */}
+      {/* 로딩 스피너 */}
       {loading && (
         <Box sx={{ position: "absolute", mt: 1, textAlign: "center" }}>
           <CircularProgress size={24} />
         </Box>
       )}
 
-      {/* 🔹 검색 결과 플랫폼별 칼럼 UI */}
+      {/* 검색 결과 */}
       {showList && (
         <Paper
           sx={{
@@ -123,7 +128,6 @@ export default function SearchChannel({ setChannels }) {
             gap: 2,
           }}
         >
-          {/* 플랫폼별 컬럼 렌더링 함수 */}
           {["chzzk", "soop"].map((platform) => (
             <Box
               key={platform}
@@ -148,21 +152,14 @@ export default function SearchChannel({ setChannels }) {
                       cursor: "pointer",
                       borderRadius: "4px",
                       overflow: "hidden",
-                      "&:hover .hoverOverlay": {
-                        opacity: 1,
-                      },
-                      "&:hover .content": {
-                        opacity: 0.2,
-                      },
+                      "&:hover .hoverOverlay": { opacity: 1 },
+                      "&:hover .content": { opacity: 0.2 },
                     }}
                     onClick={() => addChannel(ch)}
                   >
-                    {/* 🔹 기본 콘텐츠 */}
                     <Box className="content" sx={{ transition: "opacity 0.2s" }}>
                       <SearchChannelInfo searchChannel={ch} />
                     </Box>
-
-                    {/* 🔹 중앙에 나타나는 + 아이콘 오버레이 */}
                     <Box
                       className="hoverOverlay"
                       sx={{
@@ -190,6 +187,13 @@ export default function SearchChannel({ setChannels }) {
           ))}
         </Paper>
       )}
+
+      <ChannelSnackbar
+        open={snackbarOpen}
+        onClose={() => setSnackbarOpen(false)}
+        message={snackbarMessage}
+      />
     </Box>
   );
 }
+

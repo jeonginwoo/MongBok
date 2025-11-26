@@ -12,8 +12,6 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
-  Alert,
-  Snackbar,
   Switch,
   List,
   ListItem,
@@ -24,6 +22,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { COLORS } from "@/data/color";
 import DragHandleIcon from "@mui/icons-material/DragIndicator";
 import ChannelInfo from "@/components/Info/ChannelInfo/ChannelListChannelInfo";
+import ChannelSnackbar from "@/components/Info/ChannelSnackbar";
 
 export default function ChannelList({ channels, setChannels, setLayoutType }) {
   const [activeId, setActiveId] = React.useState(null);
@@ -77,6 +76,8 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
   };
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
   const handleToggle = (id) => {
     setChannels((prev) => {
       const updated = structuredClone(prev);
@@ -85,6 +86,7 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
 
       if (!target.isVisible) {
         if (visibleList.length >= 4) {
+          setSnackbarMessage("표시 가능한 채널은 최대 4개입니다.");
           setSnackbarOpen(true);
           return prev;
         }
@@ -95,27 +97,27 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
 
       updated[id] = target;
 
-      // ✅ zoneId 재정렬
-      const sorted = Object.values(updated).sort((a, b) => {
-        const getValue = (v) => (v.zoneId === null ? Infinity : v.zoneId);
-        return getValue(a) - getValue(b);
-      });
-
       let visibleCount = 0;
-      sorted.forEach((c) => {
+      Object.values(updated).forEach((c) => {
         if (c.isVisible) {
           visibleCount += 1;
-          updated[c.id] = {
-            ...updated[c.id],
-            zoneId: visibleCount,
-          };
+          updated[c.id].zoneId = visibleCount;
         } else {
-          updated[c.id] = {
-            ...updated[c.id],
-            zoneId: null,
-          };
+          updated[c.id].zoneId = null;
         }
       });
+
+      window.localStorage.setItem(
+        "channels",
+        JSON.stringify(
+          Object.fromEntries(
+            Object.entries(updated).map(([id, ch]) => [
+              id,
+              { platform: ch.platform, zoneId: ch.zoneId },
+            ])
+          )
+        )
+      );
 
       return updated;
     });
@@ -132,6 +134,16 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
     setChannels((prev) => {
       const updated = structuredClone(prev);
       delete updated[id];
+
+      // 📌 localStorage 업데이트
+      const storeObj = Object.fromEntries(
+        Object.entries(updated).map(([id, ch]) => [
+          id,
+          { platform: ch.platform },
+        ])
+      );
+      window.localStorage.setItem("channels", JSON.stringify(storeObj));
+
       return updated;
     });
   };
@@ -216,17 +228,12 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
         </>
       )}
 
-      {/* ✅ Snackbar */}
-      <Snackbar
+      <ChannelSnackbar
         open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity="warning" sx={{ width: "100%" }}>
-          표시 가능한 채널은 최대 4개입니다.
-        </Alert>
-      </Snackbar>
+        onClose={() => setSnackbarOpen(false)}
+        message={snackbarMessage}
+      />
+
     </Box>
   );
 }
