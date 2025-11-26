@@ -1,8 +1,9 @@
 import React from "react";
-import { Box, Paper, Button } from "@mui/material";
+import { Box, Paper } from "@mui/material";
 import LayoutToggleGroup from "@/components/Controller/LayoutToggleGroup";
 import SearchChannel from "@/components/Controller/SearchChannel";
 import ChannelList from "@/components/Controller/ChannelList";
+import ControlButtonGroup from "@/components/Controller/ControlButtonGroup";
 
 export default function ControllerArea({
   channels,
@@ -50,24 +51,14 @@ export default function ControllerArea({
         />
       </Box>
 
-      {/* 🔹 PointerEvents 토글 */}
-      <Box sx={{ mt: 2, pr: 1 }}>
-        <Button
-          variant="contained"
-          color={pointerEventsEnabled ? "success" : "secondary"}
-          fullWidth
-          onClick={() => setPointerEventsEnabled((prev) => !prev)}
-        >
-          {pointerEventsEnabled ? "조작 모드: ON" : "조작 모드: OFF"}
-        </Button>
-      </Box>
-
-      {/* 🔹 전체화면 버튼 */}
-      <Box sx={{ mt: 1, pr: 1 }}>
-        <Button variant="contained" color="primary" fullWidth onClick={fullscreen}>
-          전체화면
-        </Button>
-      </Box>
+      {/* 🔹 버튼 그룹 */}
+      <ControlButtonGroup
+        pointerEventsEnabled={pointerEventsEnabled}
+        setPointerEventsEnabled={setPointerEventsEnabled}
+        fullscreen={fullscreen}
+        channels={channels}
+        setChannels={setChannels}
+      />
     </Paper>
   );
 }
