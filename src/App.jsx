@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Box } from "@mui/material";
+import { CssBaseline, Box } from "@mui/material";
 import { getAllChannelsData, getLiveStatus } from "@/api/live";
 import { layouts } from "@/data/layouts";
 
@@ -79,24 +79,27 @@ export default function App() {
   };
 
   return (
-    <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-      <ViewArea
-        channels={channels}
-        setChannels={setChannels}
-        layout={layout}
-        canvasRef={canvasRef}
-        pointerEventsEnabled={pointerEventsEnabled}
-        fullscreen={fullscreen}
-      />
-      <ControllerArea
-        channels={channels}
-        setChannels={setChannels}
-        layoutType={layoutType}
-        setLayoutType={setLayoutType}
-        pointerEventsEnabled={pointerEventsEnabled}
-        setPointerEventsEnabled={setPointerEventsEnabled}
-        fullscreen={fullscreen}
-      />
-    </Box>
+    <>
+      <CssBaseline />
+      <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+        <ViewArea
+          channels={channels}
+          setChannels={setChannels}
+          layout={layout}
+          canvasRef={canvasRef}
+          pointerEventsEnabled={pointerEventsEnabled}
+          fullscreen={fullscreen}
+        />
+        <ControllerArea
+          channels={channels}
+          setChannels={setChannels}
+          layoutType={layoutType}
+          setLayoutType={setLayoutType}
+          pointerEventsEnabled={pointerEventsEnabled}
+          setPointerEventsEnabled={setPointerEventsEnabled}
+          fullscreen={fullscreen}
+        />
+      </Box>
+    </>
   );
 }
