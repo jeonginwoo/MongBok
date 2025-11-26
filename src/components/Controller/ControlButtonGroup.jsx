@@ -48,10 +48,26 @@ export default function ControlButtonGroup({
 
   return (
     <Box sx={{ display: "flex", gap: 1, justifyContent: "end", mt: 2 }}>
+      {/* 🔹 포인터 이벤트 토글 */}
+      <Tooltip
+        title={
+          pointerEventsEnabled
+            ? "iframe 조작 모드"
+            : "화면 이동 모드"
+        }
+      >
+        <IconButton
+          color="primary"
+          onClick={() => setPointerEventsEnabled((prev) => !prev)}
+        >
+          {pointerEventsEnabled ? <MouseIcon /> : <PanToolIcon />}
+        </IconButton>
+      </Tooltip>
+      
       {/* 🔹 채널 정보 갱신 */}
       <Tooltip title="채널 정보 갱신">
         <IconButton
-          color="info"
+          color="primary"
           onClick={handleRefresh}
           disabled={refreshing}
           sx={{
@@ -69,22 +85,6 @@ export default function ControlButtonGroup({
           }}
         >
           <RefreshIcon />
-        </IconButton>
-      </Tooltip>
-      
-      {/* 🔹 포인터 이벤트 토글 */}
-      <Tooltip
-        title={
-          pointerEventsEnabled
-            ? "iframe 조작 모드"
-            : "화면 이동 모드"
-        }
-      >
-        <IconButton
-          color={pointerEventsEnabled ? "success" : "secondary"}
-          onClick={() => setPointerEventsEnabled((prev) => !prev)}
-        >
-          {pointerEventsEnabled ? <MouseIcon /> : <PanToolIcon />}
         </IconButton>
       </Tooltip>
 

@@ -14,7 +14,7 @@ export default function ControllerArea({
   setPointerEventsEnabled,
   fullscreen,
 }) {
-  const viewCount = Object.values(channels).filter((c) => c.isVisible).length || 1;
+  const viewCount = Object.values(channels).filter((c) => c.isVisible).length;
 
   return (
     <Paper

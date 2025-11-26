@@ -68,7 +68,7 @@ export default function App() {
   };
 
   /** 🧱 Layout 계산 */
-  const viewCount = Object.values(channels).filter((c) => c.isVisible).length || 1;
+  const viewCount = Object.values(channels).filter((c) => c.isVisible).length;
   const layout = layouts[viewCount][layoutType];
 
   /** 🧭 전체화면 */

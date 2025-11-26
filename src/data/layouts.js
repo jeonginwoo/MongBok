@@ -12,6 +12,9 @@ const a31 = 60;
 const a41 = 71.2;
 
 export const layouts = {  // layouts[viewCount][layoutType][zoneType][zoneId]
+  0: {
+    layout1: {},
+  },
   1: {
     layout1: {
       view: {

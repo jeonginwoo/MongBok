@@ -30,7 +30,7 @@ export default function LayoutToggleGroup({ layoutType, setLayoutType, viewCount
 
   return (
     <StyledToggleButtonGroup
-      value={layoutType}
+      value={viewCount === 0 ? null : layoutType}
       exclusive
       onChange={handleChange}
       aria-label="layout selection"
