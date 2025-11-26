@@ -1,8 +1,8 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 
-import UserCount from "@/components/info/UserCount";
-import ProfileImage from "@/components/info/ProfileImage";
+import UserCount from "@/components/Info/UserCount";
+import ProfileImage from "@/components/Info/ProfileImage";
 
 export default function ChannelInfo({ channel, sx = {} }) {
   if (!channel) return null;

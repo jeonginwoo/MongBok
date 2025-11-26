@@ -2,9 +2,9 @@ import React from "react";
 import { Box, Typography, Tooltip } from "@mui/material";
 import { COLORS } from "@/data/color";
 
-import LiveTime from "@/components/info/LiveTime";
-import UserCount from "@/components/info/UserCount";
-import ProfileImage from "@/components/info/ProfileImage";
+import LiveTime from "@/components/Info/LiveTime";
+import UserCount from "@/components/Info/UserCount";
+import ProfileImage from "@/components/Info/ProfileImage";
 
 export default function ChannelInfo({ channel, sx = {} }) {
   if (!channel) return null;
