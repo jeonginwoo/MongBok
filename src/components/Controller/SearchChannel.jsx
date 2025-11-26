@@ -54,8 +54,9 @@ export default function SearchChannel({ setChannels }) {
 
   const addChannel = (selectChannel) => {
     setChannels((prev) => {
-      if (Object.keys(prev).length >= 5) {
-        setSnackbarMessage("채널은 최대 30개까지 추가 가능합니다.");
+      const limit = 30;
+      if (Object.keys(prev).length >= limit) {
+        setSnackbarMessage(`채널은 최대 ${limit}개까지 추가 가능합니다.`);
         setSnackbarOpen(true);
         return prev;
       }

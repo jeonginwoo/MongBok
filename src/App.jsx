@@ -62,7 +62,7 @@ export default function App() {
       } catch (error) {
         console.error("❌ 라이브 상태 갱신 오류:", error);
       }
-    }, 15000);
+    }, 60000);
 
     return () => clearInterval(interval);
   };

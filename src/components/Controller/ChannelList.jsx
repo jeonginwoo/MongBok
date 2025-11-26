@@ -123,6 +123,7 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
     });
 
     setLayoutType("layout1");
+    window.localStorage.setItem("layout", "layout1");
   };
 
   const handleCloseSnackbar = (_, reason) => {
