@@ -18,20 +18,20 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/chzzk_api": {
+      "/api/chzzk": {
         target: "https://api.chzzk.naver.com",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/chzzk_api/, ""),
+        rewrite: (path) => path.replace(/^\/api\/chzzk/, ""),
       },
-      "/soop_channel_api": {
+      "/api/soop/channel": {
         target: "https://chapi.sooplive.co.kr",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/soop_channel_api/, ""),
+        rewrite: (path) => path.replace(/^\/api\/soop\/channel/, ""),
       },
-      "/soop_search_api": {
+      "/api/soop/search": {
         target: "https://sch.sooplive.co.kr",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/soop_search_api/, ""),
+        rewrite: (path) => path.replace(/^\/api\/soop\/search/, ""),
       },
     },
   },

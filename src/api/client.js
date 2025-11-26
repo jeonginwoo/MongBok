@@ -1,21 +1,21 @@
 import axios from "axios";
 
 export const chzzk_client = axios.create({
-  baseURL: "/chzzk_api",
+  baseURL: "/api/chzzk",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
 export const soop_channel_client = axios.create({
-  baseURL: "/soop_channel_api",
+  baseURL: "/api/soop/channel",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
 export const soop_search_client = axios.create({
-  baseURL: "/soop_search_api",
+  baseURL: "/api/soop/search",
   headers: {
     "Content-Type": "application/json",
   },
