@@ -3,6 +3,8 @@ import { COLORS } from "@/data/color";
 
 export default function ProfileImage({ channel, isBoardered = false }) {
 
+  const default_profile_img = "https://ssl.pstatic.net/static/nng/glive/image/default_profile_dark.png?type=f120_120_na";
+
   return (
     <Box
       sx={{
@@ -29,7 +31,7 @@ export default function ProfileImage({ channel, isBoardered = false }) {
         }}
       >
         <img
-          src={channel.imageUrl}
+          src={channel.imageUrl || default_profile_img}
           alt={`${channel.name || "channel"} profile`}
           style={{
             width: "100%",

@@ -3,8 +3,6 @@ import {
   soop_channel_client,
 } from "@/api/client";
 
-const chzzk_default_profile_img = "https://ssl.pstatic.net/static/nng/glive/image/default_profile_dark.png?type=f120_120_na"
-
 // ✅ 치지직 라이브 상태 조회
 const getChzzkLiveStatus = async (channelId) => {
   try {
@@ -16,7 +14,7 @@ const getChzzkLiveStatus = async (channelId) => {
 
     return {
       name: data?.channel?.channelName ?? "",
-      imageUrl: data?.channel?.channelImageUrl || chzzk_default_profile_img,
+      imageUrl: data?.channel?.channelImageUrl ?? "",
       liveTitle: data?.liveTitle ?? "",
       openDate: data?.openDate ?? null,
       isLive: data?.status === "OPEN",
@@ -35,7 +33,7 @@ const getChzzkLiveStatus2 = async (channelId) => {
 
     return {
       name: data?.channelName ?? "",
-      imageUrl: data?.channelImageUrl || chzzk_default_profile_img,
+      imageUrl: data?.channelImageUrl ?? "",
       liveTitle: "",
       openDate: null,
       isLive: data?.openLive,

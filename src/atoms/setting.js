@@ -1,27 +1,70 @@
 import { atom } from "jotai";
 import { layouts } from "@/data/layouts";
+import { getAllChannelsData } from "@/api/live";
+
 
 // ----------------------------------------------------
-// 1. 기본 상태 (읽기/쓰기 가능)
+// 1. 헬퍼 함수
+// ----------------------------------------------------
+const getSavedChannels = () => {
+  if (typeof window === 'undefined') return {};
+  try {
+    const saved = window.localStorage.getItem("channels");
+    return saved ? JSON.parse(saved) : {};
+  } catch (e) {
+    console.error("❌ localStorage 파싱 실패:", e);
+    return {};
+  }
+};
+
+
+// ----------------------------------------------------
+// 2. 기본 상태
 // ----------------------------------------------------
 
 export const channelsAtom = atom({});
+channelsAtom.onMount = (setAtom) => {
+  const savedChannels = getSavedChannels();
 
-// layoutType 상태: localStorage 기반 초기화
-const initialLayoutType = typeof window !== 'undefined' 
+  if (Object.keys(savedChannels).length > 0) {
+    getAllChannelsData(savedChannels)
+      .then((data) => {
+        setAtom(data);
+      })
+      .catch((err) => {
+        console.error("❌ 초기 데이터 셋팅 실패:", err);
+      });
+  }
+};
+
+// layoutType 상태
+export const layoutTypeAtom = atom(
+    window !== 'undefined' 
     ? window.localStorage.getItem("layout") || "layout1" 
-    : "layout1";
-export const layoutTypeAtom = atom(initialLayoutType);
+    : "layout1"
+);
 
 // pointerEventsEnabled 상태
-export const pointerEventsEnabledAtom = atom(false);
+export const pointerEventsEnabledAtom = atom(
+    window !== 'undefined' 
+    ? JSON.parse(window.localStorage.getItem("pointerEventsEnabled")) || false
+    : false
+);
 
 // 현재 시간 표시 여부 상태
-export const showCurrentTimeAtom = atom(true);
+export const showCurrentTimeAtom = atom(
+    window !== 'undefined' 
+    ? (
+        window.localStorage.getItem("showCurrentTime") === null 
+            ? true
+            : JSON.parse(window.localStorage.getItem("showCurrentTime"))
+    )
+    : true
+);
 
 
 // ----------------------------------------------------
-// 2. 파생된 상태 (읽기 전용)
+// 3. 파생된 상태 (읽기 전용)
 // ----------------------------------------------------
 
 export const viewCountAtom = atom((get) => {

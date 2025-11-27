@@ -1,58 +1,32 @@
 import React, { useEffect, useRef } from "react";
 import { CssBaseline, Box } from "@mui/material";
-import { getAllChannelsData, getLiveStatus } from "@/api/live";
+import { getLiveStatus } from "@/api/live";
 
 import ViewArea from "@/components/ViewArea";
 import ControllerArea from "@/components/ControllerArea";
 
 import { useAtom } from 'jotai';
-import { 
-  channelsAtom, 
-  layoutTypeAtom, 
-} from '@/atoms/setting'; 
+import { channelsAtom } from '@/atoms/setting'; 
 
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react'; 
 
 export default function App() {
-  const [, setChannels] = useAtom(channelsAtom);
-  const [, setLayoutType] = useAtom(layoutTypeAtom);
+  const [channels, setChannels] = useAtom(channelsAtom);
   const canvasRef = useRef(null);
-
+  
   useEffect(() => {
-    try {
-      const savedChannels = JSON.parse(window.localStorage.getItem("channels"));
-      const savedLayout = window.localStorage.getItem("layout");
-
-      if (savedChannels && typeof savedChannels === "object") {
-        loadInitialChannels(savedChannels);
-      }
-
-      if (savedLayout) {
-        setLayoutType(savedLayout);
-      }
-    } catch (e) {
-      console.error("❌ localStorage 불러오기 실패:", e);
+    if (channels && Object.keys(channels).length > 0) {
+      const cleanup = startLiveStatusInterval(channels);
+      return cleanup;
     }
   }, []);
 
-  /** 📦 초기 데이터 로드 */
-  const loadInitialChannels = async (savedChannels) => {
-    try {
-      const data = await getAllChannelsData(savedChannels);
-      setChannels(data);
-      startLiveStatusInterval(savedChannels);
-    } catch (error) {
-      console.error("❌ 초기 채널 데이터 불러오기 실패:", error);
-    }
-  };
-
-  /** 🔁 라이브 상태 자동 갱신 */
-  const startLiveStatusInterval = (savedChannels) => {
-    // 라이브 상태 갱신 로직 (생략하지 않고 포함)
+  /** 🔁 라이브 상태 자동 갱신 로직 */
+  const startLiveStatusInterval = (currentChannels) => {
     const interval = setInterval(async () => {
       try {
-        const entries = Object.entries(savedChannels);
+        const entries = Object.entries(currentChannels);
 
         await Promise.all(
           entries.map(async ([channelId, item]) => {
@@ -86,7 +60,6 @@ export default function App() {
     <>
       <Analytics />
       <SpeedInsights />
-      
       <CssBaseline />
       <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
         <ViewArea

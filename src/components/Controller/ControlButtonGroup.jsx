@@ -21,6 +21,22 @@ export default function ControlButtonGroup({ fullscreen}) {
   const [showCurrentTime, setShowCurrentTime] = useAtom(showCurrentTimeAtom);
   const [channels, setChannels] = useAtom(channelsAtom);
 
+  const handleTogglePointerEvents = () => {
+    setPointerEventsEnabled((prev) => {
+      const nextState = !prev;
+      window.localStorage.setItem("pointerEventsEnabled", JSON.stringify(nextState));
+      return nextState;
+    });
+  };
+
+  const handleToggleCurrentTime = () => {
+    setShowCurrentTime((prev) => {
+      const nextState = !prev;
+      window.localStorage.setItem("showCurrentTime", JSON.stringify(nextState));
+      return nextState;
+    });
+  };
+  
   const handleRefresh = async () => {
     if (refreshing) return;
     setRefreshing(true);
@@ -62,7 +78,7 @@ export default function ControlButtonGroup({ fullscreen}) {
       >
         <IconButton
           color="primary"
-          onClick={() => setShowCurrentTime((prev) => !prev)}
+          onClick={handleToggleCurrentTime} 
           sx={{
             "& .MuiSvgIcon-root": !showCurrentTime
               ? { color: "#aaa" }
@@ -83,7 +99,7 @@ export default function ControlButtonGroup({ fullscreen}) {
       >
         <IconButton
           color="primary"
-          onClick={() => setPointerEventsEnabled((prev) => !prev)}
+          onClick={handleTogglePointerEvents} 
         >
           {pointerEventsEnabled ? <MouseIcon fontSize="small" /> : <PanToolIcon fontSize="small" />}
         </IconButton>
