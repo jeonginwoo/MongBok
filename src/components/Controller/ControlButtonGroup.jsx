@@ -4,19 +4,22 @@ import MouseIcon from "@mui/icons-material/Mouse";
 import PanToolIcon from "@mui/icons-material/PanTool";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import AccessTimeIcon from '@mui/icons-material/AccessTime'; 
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { getLiveStatus } from "@/api/live";
 
-export default function ControlButtonGroup({
-  pointerEventsEnabled,
-  setPointerEventsEnabled,
-  fullscreen,
-  channels,
-  setChannels,
-  showCurrentTime,
-  setShowCurrentTime,
-}) {
+import { useAtom } from 'jotai';
+import { 
+  pointerEventsEnabledAtom, 
+  showCurrentTimeAtom, 
+  channelsAtom 
+} from '@/atoms/setting'; 
+
+export default function ControlButtonGroup({ fullscreen}) {
   const [refreshing, setRefreshing] = useState(false);
+
+  const [pointerEventsEnabled, setPointerEventsEnabled] = useAtom(pointerEventsEnabledAtom);
+  const [showCurrentTime, setShowCurrentTime] = useAtom(showCurrentTimeAtom);
+  const [channels, setChannels] = useAtom(channelsAtom);
 
   const handleRefresh = async () => {
     if (refreshing) return;
@@ -51,7 +54,7 @@ export default function ControlButtonGroup({
 
   return (
     <Box sx={{ display: "flex", gap: 1, justifyContent: "end", mt: 2 }}>
-      {/* 🟢 CurrentTime 토글 버튼 추가 */}
+      {/* 🔹 CurrentTime 토글 버튼 */}
       <Tooltip 
         title={
           showCurrentTime ? "현재 시간 on" : "현재 시간 off"
@@ -62,7 +65,7 @@ export default function ControlButtonGroup({
           onClick={() => setShowCurrentTime((prev) => !prev)}
           sx={{
             "& .MuiSvgIcon-root": !showCurrentTime
-              ? { color: "#aaa" } // 비활성화 색상 적용
+              ? { color: "#aaa" }
               : {},
           }}
         >

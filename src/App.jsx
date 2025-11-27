@@ -1,16 +1,19 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { CssBaseline, Box } from "@mui/material";
 import { getAllChannelsData, getLiveStatus } from "@/api/live";
-import { layouts } from "@/data/layouts";
 
 import ViewArea from "@/components/ViewArea";
 import ControllerArea from "@/components/ControllerArea";
 
+import { useAtom } from 'jotai';
+import { 
+  channelsAtom, 
+  layoutTypeAtom, 
+} from '@/atoms/setting'; 
+
 export default function App() {
-  const [channels, setChannels] = useState({});
-  const [pointerEventsEnabled, setPointerEventsEnabled] = useState(false);
-  const [layoutType, setLayoutType] = useState(localStorage.layout || "layout1");
-  const [showCurrentTime, setShowCurrentTime] = useState(true); 
+  const [, setChannels] = useAtom(channelsAtom);
+  const [, setLayoutType] = useAtom(layoutTypeAtom);
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -68,10 +71,6 @@ export default function App() {
     return () => clearInterval(interval);
   };
 
-  /** 🧱 Layout 계산 */
-  const viewCount = Object.values(channels).filter((c) => c.isVisible).length;
-  const layout = layouts[viewCount][layoutType];
-
   /** 🧭 전체화면 */
   const fullscreen = () => {
     const canvas = canvasRef.current;
@@ -84,24 +83,11 @@ export default function App() {
       <CssBaseline />
       <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
         <ViewArea
-          channels={channels}
-          setChannels={setChannels}
-          layout={layout}
           canvasRef={canvasRef}
-          pointerEventsEnabled={pointerEventsEnabled}
           fullscreen={fullscreen}
-          showCurrentTime={showCurrentTime}
         />
         <ControllerArea
-          channels={channels}
-          setChannels={setChannels}
-          layoutType={layoutType}
-          setLayoutType={setLayoutType}
-          pointerEventsEnabled={pointerEventsEnabled}
-          setPointerEventsEnabled={setPointerEventsEnabled}
           fullscreen={fullscreen}
-          showCurrentTime={showCurrentTime}
-          setShowCurrentTime={setShowCurrentTime}
         />
       </Box>
     </>

@@ -5,7 +5,12 @@ import SearchChannelInfo from "@/components/Info/ChannelInfo/SearchChannelInfo";
 import ChannelSnackbar from "@/components/Info/ChannelSnackbar";
 import { searchChannels } from "@/api/search";
 
-export default function SearchChannel({ setChannels }) {
+import { useSetAtom } from 'jotai';
+import { channelsAtom } from '@/atoms/setting';
+
+export default function SearchChannel() {
+  const setChannels = useSetAtom(channelsAtom);
+
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showList, setShowList] = useState(false);
@@ -91,8 +96,6 @@ export default function SearchChannel({ setChannels }) {
       {/* 검색 입력창 */}
       <TextField
         fullWidth
-        size="small"
-        variant="outlined"
         placeholder="채널 검색..."
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}
@@ -171,7 +174,6 @@ export default function SearchChannel({ setChannels }) {
                         justifyContent: "center",
                         backgroundColor: "rgba(0, 0, 0, 0.4)",
                         opacity: 0,
-                        transition: "opacity 0.2s",
                         pointerEvents: "none",
                       }}
                     >
@@ -197,4 +199,3 @@ export default function SearchChannel({ setChannels }) {
     </Box>
   );
 }
-

@@ -5,18 +5,11 @@ import SearchChannel from "@/components/Controller/SearchChannel";
 import ChannelList from "@/components/Controller/ChannelList";
 import ControlButtonGroup from "@/components/Controller/ControlButtonGroup";
 
-export default function ControllerArea({
-  channels,
-  setChannels,
-  layoutType,
-  setLayoutType,
-  pointerEventsEnabled,
-  setPointerEventsEnabled,
-  fullscreen,
-  showCurrentTime,
-  setShowCurrentTime,
-}) {
-  const viewCount = Object.values(channels).filter((c) => c.isVisible).length;
+import { useAtomValue } from 'jotai';
+import { viewCountAtom } from '@/atoms/setting'; 
+
+export default function ControllerArea({ fullscreen}) {
+  const viewCount = useAtomValue(viewCountAtom);
 
   return (
     <Paper
@@ -32,37 +25,21 @@ export default function ControllerArea({
     >
       {/* 🔹 LayoutType 선택 */}
       <Box sx={{ mb: 2, pr: 1 }}>
-        <LayoutToggleGroup
-          layoutType={layoutType}
-          setLayoutType={setLayoutType}
-          viewCount={viewCount}
-        />
+        <LayoutToggleGroup viewCount={viewCount} />
       </Box>
 
       {/* 🔹 검색 컴포넌트 추가 */}
       <Box sx={{ mb: 2, pr: 1 }}>
-        <SearchChannel setChannels={setChannels} />
+        <SearchChannel/>
       </Box>
 
       {/* 🔹 채널 리스트 (남은 공간 전부 차지) */}
       <Box sx={{ flexGrow: 1, minHeight: 0 }}>
-        <ChannelList
-          channels={channels}
-          setChannels={setChannels}
-          setLayoutType={setLayoutType}
-        />
+        <ChannelList />
       </Box>
 
       {/* 🔹 버튼 그룹 */}
-      <ControlButtonGroup
-        pointerEventsEnabled={pointerEventsEnabled}
-        setPointerEventsEnabled={setPointerEventsEnabled}
-        fullscreen={fullscreen}
-        channels={channels}
-        setChannels={setChannels}
-        showCurrentTime={showCurrentTime}
-        setShowCurrentTime={setShowCurrentTime}
-      />
+      <ControlButtonGroup fullscreen={fullscreen} />
     </Paper>
   );
 }

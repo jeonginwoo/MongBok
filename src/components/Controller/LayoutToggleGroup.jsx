@@ -2,6 +2,9 @@ import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { layouts } from "@/data/layouts";
 
+import { useAtom, useAtomValue } from 'jotai';
+import { layoutTypeAtom, viewCountAtom } from '@/atoms/setting';
+
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   display: "flex",
   justifyContent: "space-between",
@@ -20,13 +23,20 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   },
 }));
 
-export default function LayoutToggleGroup({ layoutType, setLayoutType, viewCount }) {
+export default function LayoutToggleGroup() {
+  const [layoutType, setLayoutType] = useAtom(layoutTypeAtom);
+  const viewCount = useAtomValue(viewCountAtom); // viewCount는 읽기 전용
+
   const handleChange = (_, newType) => {
     if (newType !== null) {
       setLayoutType(newType);
       window.localStorage.setItem("layout", newType);
     }
   };
+
+  if (!layouts[viewCount]) {
+    return null;
+  }
 
   return (
     <StyledToggleButtonGroup

@@ -12,17 +12,24 @@ import ChannelRenderer from "@/components/View/ChannelRenderer";
 import DropZone from "@/components/View/DropZone";
 import CurrentTime from "@/components/Info/CurrentTime";
 
+import { useAtom, useAtomValue } from 'jotai';
+import { 
+  channelsAtom, 
+  layoutAtom, 
+  pointerEventsEnabledAtom, 
+  showCurrentTimeAtom 
+} from '@/atoms/setting'; 
+
 export default function ViewArea({
-  channels,
-  setChannels,
-  layout,
   canvasRef,
-  pointerEventsEnabled,
   fullscreen,
-  showCurrentTime, 
 }) {
   const [isDraggingAny, setIsDraggingAny] = useState(false);
   const [draggingType, setDraggingType] = useState(null);
+  const [channels, setChannels] = useAtom(channelsAtom);
+  const layout = useAtomValue(layoutAtom);
+  const pointerEventsEnabled = useAtomValue(pointerEventsEnabledAtom);
+  const showCurrentTime = useAtomValue(showCurrentTimeAtom);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 1 } })

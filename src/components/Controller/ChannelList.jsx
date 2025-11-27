@@ -24,11 +24,16 @@ import DragHandleIcon from "@mui/icons-material/DragIndicator";
 import ChannelInfo from "@/components/Info/ChannelInfo/ChannelListChannelInfo";
 import ChannelSnackbar from "@/components/Info/ChannelSnackbar";
 
-export default function ChannelList({ channels, setChannels, setLayoutType }) {
-  const [activeId, setActiveId] = React.useState(null);
+import { useAtom, useSetAtom } from 'jotai';
+import { channelsAtom, layoutTypeAtom } from '@/atoms/setting';
+
+export default function ChannelList() {
+  const [activeId, setActiveId] = useState(null);
+  const [channels, setChannels] = useAtom(channelsAtom);
+  const setLayoutType = useSetAtom(layoutTypeAtom);
 
   const channelArray = React.useMemo(
-    () => Object.values(channels).sort((a, b) => a.zoneId - b.zoneId),
+    () => Object.values(channels).sort((a, b) => (a.zoneId ?? Infinity) - (b.zoneId ?? Infinity)),
     [channels]
   );
 
@@ -66,12 +71,24 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
         updated[c.id].zoneId = zoneId;
       });
 
-      // ✅ hidden은 zoneId를 'none'으로 지정
       hidden.forEach((c) => {
         updated[c.id].zoneId = null;
       });
 
-      return { ...updated };
+      // 📌 localStorage 업데이트 (Channels Atom setter 내에서 처리)
+      window.localStorage.setItem(
+        "channels",
+        JSON.stringify(
+          Object.fromEntries(
+            Object.entries(updated).map(([id, ch]) => [
+              id,
+              { platform: ch.platform, zoneId: ch.zoneId },
+            ])
+          )
+        )
+      );
+
+      return updated;
     });
   };
 
@@ -197,14 +214,14 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
           ) : null}
         </DragOverlay>
       </DndContext>
-      
+
       {/* ✅ Divider + hidden 목록 */}
       {sortedHidden.length > 0 && (
         <>
           <Divider sx={{ borderColor: "#555", my: 2 }} />
           <Box
             sx={{
-              flexGrow: 1, // 남은 공간 모두 차지
+              flexGrow: 1,
               overflowY: "auto",
               pr: 1,
               "&::-webkit-scrollbar": { width: "6px" },
@@ -231,7 +248,7 @@ export default function ChannelList({ channels, setChannels, setLayoutType }) {
 
       <ChannelSnackbar
         open={snackbarOpen}
-        onClose={() => setSnackbarOpen(false)}
+        onClose={handleCloseSnackbar}
         message={snackbarMessage}
       />
 
@@ -327,6 +344,7 @@ function HiddenItem({ channel, onToggle, onDelete }) {
       <DeleteOutlineIcon
         onClick={() => onDelete(channel.id)}
         sx={{
+          zIndex: 10,
           position: "absolute",
           right: "5px",
           bottom: "5px",
