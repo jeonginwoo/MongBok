@@ -184,7 +184,7 @@ export default function ChannelList() {
           items={visible.map((c) => c.id)}
           strategy={verticalListSortingStrategy}
         >
-          <List sx={{ pr: 1 }}>
+          <List sx={{ pr: 1.5 }}>
             {visible.map((channel) => (
               <SortableItem
                 key={channel.id}
@@ -218,13 +218,13 @@ export default function ChannelList() {
       {/* ✅ Divider + hidden 목록 */}
       {sortedHidden.length > 0 && (
         <>
-          <Divider sx={{ borderColor: "#555", my: 2 }} />
+          <Divider sx={{ borderColor: "#555", my: 2, mr: 1.5 }} />
           <Box
             sx={{
               flexGrow: 1,
-              overflowY: "auto",
+              overflowY: "scroll",
               pr: 1,
-              "&::-webkit-scrollbar": { width: "6px" },
+              "&::-webkit-scrollbar": { width: "4px" },
               "&::-webkit-scrollbar-thumb": {
                 backgroundColor: "#555",
                 borderRadius: "4px",
@@ -232,7 +232,7 @@ export default function ChannelList() {
               "&::-webkit-scrollbar-thumb:hover": { backgroundColor: "#777" },
             }}
           >
-            <List>
+            <List disablePadding>
               {sortedHidden.map((channel) => (
                 <HiddenItem
                   key={channel.id}

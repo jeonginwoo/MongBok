@@ -20,16 +20,16 @@ export default function ControllerArea({ fullscreen}) {
         color: "#fff",
         display: "flex",
         flexDirection: "column",
-        padding: "12px 12px 12px 30px",
+        padding: "12px 12px 12px 24px",
       }}
     >
       {/* 🔹 LayoutType 선택 */}
-      <Box sx={{ mb: 2, pr: 1 }}>
+      <Box sx={{ mb: 2, pr: 1.5 }}>
         <LayoutToggleGroup viewCount={viewCount} />
       </Box>
 
       {/* 🔹 검색 컴포넌트 추가 */}
-      <Box sx={{ mb: 2, pr: 1 }}>
+      <Box sx={{ mb: 2, pr: 1.5 }}>
         <SearchChannel/>
       </Box>
 
