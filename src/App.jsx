@@ -16,38 +16,23 @@ export default function App() {
   const canvasRef = useRef(null);
   
   useEffect(() => {
-    if (channels && Object.keys(channels).length > 0) {
-      const cleanup = startLiveStatusInterval(channels);
-      return cleanup;
-    }
-  }, []);
+    if (Object.keys(channels).length === 0) return;
 
-  /** 🔁 라이브 상태 자동 갱신 로직 */
-  const startLiveStatusInterval = (currentChannels) => {
     const interval = setInterval(async () => {
-      try {
-        const entries = Object.entries(currentChannels);
-
-        await Promise.all(
-          entries.map(async ([channelId, item]) => {
-            try {
-              const liveStatus = await getLiveStatus(channelId, item.platform);
-              setChannels((prev) => ({
-                ...prev,
-                [channelId]: { ...prev[channelId], ...liveStatus },
-              }));
-            } catch (err) {
-              console.error(`⚠️ ${channelId} 라이브 상태 갱신 실패:`, err);
-            }
-          })
-        );
-      } catch (error) {
-        console.error("❌ 라이브 상태 갱신 오류:", error);
-      }
+      const entries = Object.entries(channels);
+      await Promise.all(
+        entries.map(async ([channelId, item]) => {
+          const liveStatus = await getLiveStatus(channelId, item.platform);
+          setChannels((prev) => ({
+            ...prev,
+            [channelId]: { ...prev[channelId], ...liveStatus },
+          }));
+        })
+      );
     }, 60000);
 
     return () => clearInterval(interval);
-  };
+  }, [channels]);
 
   /** 🧭 전체화면 */
   const fullscreen = () => {
