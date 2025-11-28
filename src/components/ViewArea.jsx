@@ -12,18 +12,15 @@ import ChannelRenderer from "@/components/View/ChannelRenderer";
 import DropZone from "@/components/View/DropZone";
 import CurrentTime from "@/components/Info/CurrentTime";
 
-import { useAtom, useAtomValue } from 'jotai';
-import { 
-  channelsAtom, 
-  layoutAtom, 
-  pointerEventsEnabledAtom, 
-  showCurrentTimeAtom 
-} from '@/atoms/setting'; 
+import { useAtom, useAtomValue } from "jotai";
+import {
+  channelsAtom,
+  layoutAtom,
+  pointerEventsEnabledAtom,
+  showCurrentTimeAtom,
+} from "@/atoms/setting";
 
-export default function ViewArea({
-  canvasRef,
-  fullscreen,
-}) {
+export default function ViewArea({ canvasRef, fullscreen }) {
   const [isDraggingAny, setIsDraggingAny] = useState(false);
   const [draggingType, setDraggingType] = useState(null);
   const [channels, setChannels] = useAtom(channelsAtom);
@@ -91,6 +88,8 @@ export default function ViewArea({
             position: "relative",
             aspectRatio: "16/9",
             width: "100%",
+            maxWidth: "100%",
+            maxHeight: "100%",
             backgroundColor: "#000",
             overflow: "hidden",
           }}
