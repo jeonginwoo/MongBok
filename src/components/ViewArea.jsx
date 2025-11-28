@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Box } from "@mui/material";
 import {
   DndContext,
-  PointerSensor,
+  MouseSensor, // 추가
+  TouchSensor, // 추가
   useSensor,
   useSensors,
   pointerWithin,
@@ -28,14 +29,29 @@ export default function ViewArea({ canvasRef, fullscreen }) {
   const pointerEventsEnabled = useAtomValue(pointerEventsEnabledAtom);
   const showCurrentTime = useAtomValue(showCurrentTimeAtom);
 
+  // 🔹 센서 설정 변경 (핵심 수정 부분)
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 1 } })
+    // 데스크탑: 10픽셀 움직이면 드래그 시작
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        distance: 10,
+      },
+    }),
+    // 모바일: 250ms 동안 꾹 누르면 드래그 시작 (스크롤 오동작 방지)
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5, // 5px 정도의 떨림은 허용
+      },
+    })
   );
 
   /** 🔄 Drop handler */
   const handleDrop = (baseId, targetZoneId) => {
     setChannels((prev) => {
       const updated = structuredClone(prev);
+      if (!updated[baseId]) return prev;
+
       const dragged = updated[baseId];
       const sourceZoneId = dragged.zoneId;
 

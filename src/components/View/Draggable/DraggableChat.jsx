@@ -60,6 +60,7 @@ export default function DraggableChat({ channel, zone }) {
     boxSizing: "border-box",
     zIndex: isDragging ? 300 : 100,
     overflow: "hidden",
+    touchAction: "none",
   };
 
   // platform별 iframeSrc와 스타일 분리
