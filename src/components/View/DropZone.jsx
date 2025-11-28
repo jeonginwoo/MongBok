@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 
 export default function DropZone({ zone, canvasRef }) {
-  const { setNodeRef, isOver } = useDroppable({ id: `${zone.type}-${zone.id}` });
+  const { setNodeRef, isOver } = useDroppable({
+    id: `${zone.type}-${zone.id}`,
+  });
   const [fontSize, setFontSize] = useState(12);
   const zoneAlias = { 1: "①", 2: "②", 3: "③", 4: "④" };
 

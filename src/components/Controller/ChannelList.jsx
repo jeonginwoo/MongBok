@@ -1,9 +1,5 @@
 import React, { useState } from "react";
-import {
-  DndContext,
-  closestCenter,
-  DragOverlay,
-} from "@dnd-kit/core";
+import { DndContext, closestCenter, DragOverlay } from "@dnd-kit/core";
 import {
   SortableContext,
   useSortable,
@@ -11,21 +7,15 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  Switch,
-  List,
-  ListItem,
-  Divider,
-  Box,
-} from "@mui/material";
+import { Switch, List, ListItem, Divider, Box } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { COLORS } from "@/data/color";
 import DragHandleIcon from "@mui/icons-material/DragIndicator";
 import ChannelInfo from "@/components/Info/ChannelInfo/ChannelListChannelInfo";
 import ChannelSnackbar from "@/components/Info/ChannelSnackbar";
 
-import { useAtom, useSetAtom } from 'jotai';
-import { channelsAtom, layoutTypeAtom } from '@/atoms/setting';
+import { useAtom, useSetAtom } from "jotai";
+import { channelsAtom, layoutTypeAtom } from "@/atoms/setting";
 
 export default function ChannelList() {
   const [activeId, setActiveId] = useState(null);
@@ -33,7 +23,10 @@ export default function ChannelList() {
   const setLayoutType = useSetAtom(layoutTypeAtom);
 
   const channelArray = React.useMemo(
-    () => Object.values(channels).sort((a, b) => (a.zoneId ?? Infinity) - (b.zoneId ?? Infinity)),
+    () =>
+      Object.values(channels).sort(
+        (a, b) => (a.zoneId ?? Infinity) - (b.zoneId ?? Infinity)
+      ),
     [channels]
   );
 
@@ -251,15 +244,20 @@ export default function ChannelList() {
         onClose={handleCloseSnackbar}
         message={snackbarMessage}
       />
-
     </Box>
   );
 }
 
 /** ✅ 드래그 가능한 아이템 */
 function SortableItem({ channel, onToggle }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: channel.id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: channel.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -284,7 +282,10 @@ function SortableItem({ channel, onToggle }) {
         },
       }}
       secondaryAction={
-        <Switch checked={channel.isVisible} onChange={() => onToggle(channel.id)} />
+        <Switch
+          checked={channel.isVisible}
+          onChange={() => onToggle(channel.id)}
+        />
       }
     >
       {/* ✅ 핸들 영역 */}
@@ -337,7 +338,10 @@ function HiddenItem({ channel, onToggle, onDelete }) {
         opacity: 1,
       }}
       secondaryAction={
-        <Switch checked={channel.isVisible} onChange={() => onToggle(channel.id)} />
+        <Switch
+          checked={channel.isVisible}
+          onChange={() => onToggle(channel.id)}
+        />
       }
     >
       {/* 🔥 삭제 버튼 */}

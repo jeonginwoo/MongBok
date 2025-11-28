@@ -8,9 +8,10 @@ export default function DraggableChat({ channel, zone }) {
   if (!channel) return null;
 
   const draggableId = `${channel.id}-chat`;
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: draggableId,
-  });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: draggableId,
+    });
 
   const containerRef = useRef(null);
   const [zoom, setZoom] = useState(1);
@@ -70,7 +71,7 @@ export default function DraggableChat({ channel, zone }) {
   if (channel.platform === "chzzk") {
     iframeSrc = `https://chzzk.naver.com/live/${channelId}/chat`;
     iframeStyle = {
-            width: "100%",
+      width: "100%",
       height: "calc(100% + 250px)",
       top: "-145px",
     };
@@ -84,12 +85,7 @@ export default function DraggableChat({ channel, zone }) {
   }
 
   return (
-    <Box
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      sx={style}
-    >
+    <Box ref={setNodeRef} {...listeners} {...attributes} sx={style}>
       <Box
         ref={containerRef}
         sx={{
@@ -130,7 +126,7 @@ export default function DraggableChat({ channel, zone }) {
                 rgba(0,0,0,0) 100%
               )
             `,
-            p: "3%"
+            p: "3%",
           }}
         >
           <Box>

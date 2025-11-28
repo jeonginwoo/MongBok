@@ -19,14 +19,19 @@ const shortcutStyle = { color: "#4fc3f7", fontWeight: "bold" };
 
 export default function ControlButtonGroup({ fullscreen }) {
   const [refreshing, setRefreshing] = useState(false);
-  const [pointerEventsEnabled, setPointerEventsEnabled] = useAtom(pointerEventsEnabledAtom);
+  const [pointerEventsEnabled, setPointerEventsEnabled] = useAtom(
+    pointerEventsEnabledAtom
+  );
   const [showCurrentTime, setShowCurrentTime] = useAtom(showCurrentTimeAtom);
   const [channels, setChannels] = useAtom(channelsAtom);
 
   const handleTogglePointerEvents = () => {
     setPointerEventsEnabled((prev) => {
       const nextState = !prev;
-      window.localStorage.setItem("pointerEventsEnabled", JSON.stringify(nextState));
+      window.localStorage.setItem(
+        "pointerEventsEnabled",
+        JSON.stringify(nextState)
+      );
       return nextState;
     });
   };

@@ -6,9 +6,10 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
   if (!channel) return null;
 
   const draggableId = `${channel.id}-view`;
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: draggableId,
-  });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: draggableId,
+    });
 
   const baseZIndex = zone?.style.zIndex || 0;
   const containerRef = useRef(null);
@@ -32,7 +33,8 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
       }
 
       const zonePixelWidth = canvasWidth * percent;
-      const newZoom = zonePixelWidth < BASE_WIDTH ? zonePixelWidth / BASE_WIDTH : 1;
+      const newZoom =
+        zonePixelWidth < BASE_WIDTH ? zonePixelWidth / BASE_WIDTH : 1;
       setZoom(newZoom);
     };
 
@@ -44,7 +46,9 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
   const style = {
     position: "absolute",
     ...zone?.style,
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+    transform: transform
+      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+      : undefined,
     background: isDragging ? "#91e3ff" : "#000",
     opacity: isDragging ? 0.6 : 1,
     display: "flex",
@@ -58,10 +62,12 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
   };
 
   const iframeSrc =
-    channel.platform === "chzzk" ? `https://chzzk.naver.com/live/${channelId}`
-  : channel.platform === "soop" ? `https://play.sooplive.co.kr/${channelId}/embed`
-  : "";
-  
+    channel.platform === "chzzk"
+      ? `https://chzzk.naver.com/live/${channelId}`
+      : channel.platform === "soop"
+      ? `https://play.sooplive.co.kr/${channelId}/embed`
+      : "";
+
   return (
     <Box ref={setNodeRef} {...listeners} {...attributes} sx={style}>
       <Box

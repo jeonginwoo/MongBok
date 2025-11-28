@@ -5,10 +5,10 @@ import SearchChannel from "@/components/Controller/SearchChannel";
 import ChannelList from "@/components/Controller/ChannelList";
 import ControlButtonGroup from "@/components/Controller/ControlButtonGroup";
 
-import { useAtomValue } from 'jotai';
-import { viewCountAtom } from '@/atoms/setting'; 
+import { useAtomValue } from "jotai";
+import { viewCountAtom } from "@/atoms/setting";
 
-export default function ControllerArea({ fullscreen}) {
+export default function ControllerArea({ fullscreen }) {
   const viewCount = useAtomValue(viewCountAtom);
 
   return (
@@ -30,7 +30,7 @@ export default function ControllerArea({ fullscreen}) {
 
       {/* 🔹 검색 컴포넌트 추가 */}
       <Box sx={{ mb: 2, pr: 1.5 }}>
-        <SearchChannel/>
+        <SearchChannel />
       </Box>
 
       {/* 🔹 채널 리스트 (남은 공간 전부 차지) */}

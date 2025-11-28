@@ -49,7 +49,7 @@ export default function ChannelInfo({ searchChannel, sx = {} }) {
           {searchChannel.name}
         </Typography>
       </Box>
-        
+
       <Box sx={{ ...inactiveStyle }}>
         <UserCount channel={searchChannel} />
       </Box>

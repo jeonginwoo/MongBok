@@ -1,12 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Box, TextField, Paper, CircularProgress, Typography } from "@mui/material";
+import {
+  Box,
+  TextField,
+  Paper,
+  CircularProgress,
+  Typography,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SearchChannelInfo from "@/components/Info/ChannelInfo/SearchChannelInfo";
 import ChannelSnackbar from "@/components/Info/ChannelSnackbar";
 import { searchChannels } from "@/api/search";
 
-import { useSetAtom } from 'jotai';
-import { channelsAtom } from '@/atoms/setting';
+import { useSetAtom } from "jotai";
+import { channelsAtom } from "@/atoms/setting";
 
 export default function SearchChannel() {
   const setChannels = useSetAtom(channelsAtom);
@@ -68,7 +74,11 @@ export default function SearchChannel() {
 
       const updated = {
         ...prev,
-        [selectChannel.id]: { ...selectChannel, isVisible: false, zoneId: null },
+        [selectChannel.id]: {
+          ...selectChannel,
+          isVisible: false,
+          zoneId: null,
+        },
       };
 
       window.localStorage.setItem(
@@ -161,7 +171,10 @@ export default function SearchChannel() {
                     }}
                     onClick={() => addChannel(ch)}
                   >
-                    <Box className="content" sx={{ transition: "opacity 0.2s" }}>
+                    <Box
+                      className="content"
+                      sx={{ transition: "opacity 0.2s" }}
+                    >
                       <SearchChannelInfo searchChannel={ch} />
                     </Box>
                     <Box

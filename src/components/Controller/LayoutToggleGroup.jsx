@@ -2,8 +2,8 @@ import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { layouts } from "@/data/layouts";
 
-import { useAtom, useAtomValue } from 'jotai';
-import { layoutTypeAtom, viewCountAtom } from '@/atoms/setting';
+import { useAtom, useAtomValue } from "jotai";
+import { layoutTypeAtom, viewCountAtom } from "@/atoms/setting";
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   display: "flex",

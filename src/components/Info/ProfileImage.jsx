@@ -2,8 +2,8 @@ import { Box } from "@mui/material";
 import { COLORS } from "@/data/color";
 
 export default function ProfileImage({ channel, isBoardered = false }) {
-
-  const default_profile_img = "https://ssl.pstatic.net/static/nng/glive/image/default_profile_dark.png?type=f120_120_na";
+  const default_profile_img =
+    "https://ssl.pstatic.net/static/nng/glive/image/default_profile_dark.png?type=f120_120_na";
 
   return (
     <Box
@@ -12,9 +12,10 @@ export default function ProfileImage({ channel, isBoardered = false }) {
         height: 54,
         borderRadius: "50%",
         flexShrink: 0,
-        background: isBoardered || channel.isLive
-          ? COLORS[channel.platform].gradient
-          : "transparent",
+        background:
+          isBoardered || channel.isLive
+            ? COLORS[channel.platform].gradient
+            : "transparent",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

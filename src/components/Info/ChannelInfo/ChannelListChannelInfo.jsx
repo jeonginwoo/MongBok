@@ -1,5 +1,5 @@
 import React from "react";
-import moment from 'moment';
+import moment from "moment";
 import { Box, Typography, Tooltip } from "@mui/material";
 import { COLORS } from "@/data/color";
 
@@ -16,7 +16,7 @@ export default function ChannelInfo({ channel, sx = {} }) {
     : {};
 
   const parentBoxStyle = {
-    position: 'relative',
+    position: "relative",
     display: "flex",
     alignItems: "center",
     gap: 1.5,
@@ -31,18 +31,20 @@ export default function ChannelInfo({ channel, sx = {} }) {
 
   const tooltipTitle = (
     <span>
-      <span style={{ color: `${COLORS[channel.platform].main}`, fontWeight: 600 }}>
+      <span
+        style={{ color: `${COLORS[channel.platform].main}`, fontWeight: 600 }}
+      >
         {channel.name || "채널명 없음"}
       </span>
       {" : "}
       {channel.liveTitle || "제목 없음"}
     </span>
   );
-  
+
   const StatusBox = (
     <Box
       sx={{
-        position: 'absolute',
+        position: "absolute",
         bottom: "-3px",
         left: "77px",
         zIndex: 10,
@@ -50,11 +52,11 @@ export default function ChannelInfo({ channel, sx = {} }) {
         alignItems: "center",
         gap: 1,
         zoom: 0.8,
-        padding: '2px 6px',
-        borderRadius: '4px',
-        color: '#bbbbbbff',
-        fontWeight: 'bold',
-        whiteSpace: 'nowrap',
+        padding: "2px 6px",
+        borderRadius: "4px",
+        color: "#bbbbbbff",
+        fontWeight: "bold",
+        whiteSpace: "nowrap",
       }}
     >
       {channel.isLive ? (
@@ -62,12 +64,12 @@ export default function ChannelInfo({ channel, sx = {} }) {
           <LiveTime channel={channel} />
           <UserCount channel={channel} />
         </>
+      ) : channel.closeDate ? (
+        `close ${moment(channel.closeDate).format("MM/DD HH:mm")}`
+      ) : channel.openDate ? (
+        `open ${moment(channel.openDate).format("MM/DD HH:mm")}`
       ) : (
-        channel.closeDate
-          ? `close ${moment(channel.closeDate).format('MM/DD HH:mm')}`
-          : channel.openDate
-            ? `open ${moment(channel.openDate).format('MM/DD HH:mm')}`
-            : ''
+        ""
       )}
     </Box>
   );
@@ -87,7 +89,7 @@ export default function ChannelInfo({ channel, sx = {} }) {
       title={tooltipTitle}
     >
       <Box sx={parentBoxStyle}>
-        {StatusBox} 
+        {StatusBox}
         <ProfileImage channel={channel} />
         <Box
           sx={{
