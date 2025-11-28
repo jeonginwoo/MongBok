@@ -35,7 +35,7 @@ function LiveTime({ channel }) {
     return () => clearInterval(interval);
   }, [channel.openDate, channel.isLive]);
 
-  return <Box sx={{ color: "white" }}>{time}</Box>;
+  return <Box sx={{ color: "#888888ff" }}>{time}</Box>;
 }
 
 export default LiveTime;

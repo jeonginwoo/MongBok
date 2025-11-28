@@ -17,6 +17,7 @@ const getChzzkLiveStatus = async (channelId) => {
       imageUrl: data?.channel?.channelImageUrl ?? "",
       liveTitle: data?.liveTitle ?? "",
       openDate: data?.openDate ?? null,
+      closeDate: data?.closeDate ?? null,
       isLive: data?.status === "OPEN",
       userCount: (data?.status === "CLOSE") ? 0 : (data?.concurrentUserCount ?? 0),
     };
@@ -36,6 +37,7 @@ const getChzzkLiveStatus2 = async (channelId) => {
       imageUrl: data?.channelImageUrl ?? "",
       liveTitle: "",
       openDate: null,
+      closeDate: null,
       isLive: data?.openLive,
       userCount: 0,
     };
@@ -55,6 +57,7 @@ const getSoopLiveStatus = async (channelId) => {
       imageUrl: data?.profile_image ?? "",
       liveTitle: data?.broad?.broad_title ?? "",
       openDate: data?.station?.broad_start ?? null,
+      closeDate: null,
       isLive: data?.broad != null,
       userCount: (data?.broad == null) ? 0 : (data?.broad?.current_sum_viewer ?? 0),
     };
@@ -95,6 +98,7 @@ export const getAllChannelsData = async (localStorageData) => {
           imageUrl: live.imageUrl,
           liveTitle: live.liveTitle,
           openDate: live.openDate,
+          closeDate: live.closeDate,
           isLive: live.isLive,
           userCount: live.userCount,
           isVisible: item.zoneId != null,
