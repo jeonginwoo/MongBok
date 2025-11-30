@@ -37,9 +37,9 @@ export default function ChannelList() {
   const sortedHidden = React.useMemo(() => {
     return [...hidden].sort((a, b) => {
       if ((b.userCount ?? 0) !== (a.userCount ?? 0)) {
-        return (b.userCount ?? 0) - (a.userCount ?? 0); // userCount 기준 내림차순
+        return (b.userCount ?? 0) - (a.userCount ?? 0);
       }
-      return (a.name || "").localeCompare(b.name || ""); // 이름 기준 오름차순
+      return (a.name || "").localeCompare(b.name || "");
     });
   }, [hidden]);
 
@@ -68,7 +68,6 @@ export default function ChannelList() {
         updated[c.id].zoneId = null;
       });
 
-      // 📌 localStorage 업데이트 (Channels Atom setter 내에서 처리)
       window.localStorage.setItem(
         "channels",
         JSON.stringify(
@@ -91,30 +90,31 @@ export default function ChannelList() {
   const handleToggle = (id) => {
     setChannels((prev) => {
       const updated = structuredClone(prev);
-      const target = { ...updated[id] };
-      const visibleList = Object.values(updated).filter((c) => c.isVisible);
+      const target = updated[id];
+      
+      const currentVisibleCount = Object.values(updated).filter(
+        (c) => c.isVisible && c.id !== id
+      ).length;
 
       if (!target.isVisible) {
-        if (visibleList.length >= 4) {
+        if (currentVisibleCount >= 4) {
           setSnackbarMessage("표시 가능한 채널은 최대 4개입니다.");
           setSnackbarOpen(true);
           return prev;
         }
         target.isVisible = true;
+        target.zoneId = Infinity; 
       } else {
         target.isVisible = false;
+        target.zoneId = null;
       }
 
-      updated[id] = target;
+      const visibleList = Object.values(updated)
+        .filter((c) => c.isVisible)
+        .sort((a, b) => (a.zoneId ?? Infinity) - (b.zoneId ?? Infinity));
 
-      let visibleCount = 0;
-      Object.values(updated).forEach((c) => {
-        if (c.isVisible) {
-          visibleCount += 1;
-          updated[c.id].zoneId = visibleCount;
-        } else {
-          updated[c.id].zoneId = null;
-        }
+      visibleList.forEach((c, index) => {
+        updated[c.id].zoneId = index + 1;
       });
 
       window.localStorage.setItem(
@@ -146,7 +146,6 @@ export default function ChannelList() {
       const updated = structuredClone(prev);
       delete updated[id];
 
-      // 📌 localStorage 업데이트
       const storeObj = Object.fromEntries(
         Object.entries(updated).map(([id, ch]) => [
           id,
@@ -172,7 +171,6 @@ export default function ChannelList() {
         onDragStart={(e) => setActiveId(e.active.id)}
         onDragEnd={handleDragEnd}
       >
-        {/* ✅ visible만 드래그 가능 */}
         <SortableContext
           items={visible.map((c) => c.id)}
           strategy={verticalListSortingStrategy}
@@ -188,7 +186,6 @@ export default function ChannelList() {
           </List>
         </SortableContext>
 
-        {/* ✅ 드래그 중 표시 */}
         <DragOverlay adjustScale={false}>
           {activeChannel ? (
             <ListItem
@@ -208,7 +205,6 @@ export default function ChannelList() {
         </DragOverlay>
       </DndContext>
 
-      {/* ✅ Divider + hidden 목록 */}
       {sortedHidden.length > 0 && (
         <>
           <Divider sx={{ borderColor: "#555", my: 2, mr: 1.5 }} />
@@ -288,7 +284,6 @@ function SortableItem({ channel, onToggle }) {
         />
       }
     >
-      {/* ✅ 핸들 영역 */}
       <Box
         className="drag-handle-area"
         sx={{
@@ -344,7 +339,6 @@ function HiddenItem({ channel, onToggle, onDelete }) {
         />
       }
     >
-      {/* 🔥 삭제 버튼 */}
       <DeleteOutlineIcon
         onClick={() => onDelete(channel.id)}
         sx={{
@@ -359,7 +353,6 @@ function HiddenItem({ channel, onToggle, onDelete }) {
           "&:hover": { color: "#ff5555" },
         }}
       />
-
       <ChannelInfo channel={channel} />
     </ListItem>
   );
