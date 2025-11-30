@@ -14,7 +14,7 @@ export default function ProfileImage({ channel, isBoardered = false }) {
         flexShrink: 0,
         background:
           isBoardered || channel.isLive
-            ? COLORS[channel.platform].gradient
+            ? COLORS[channel.platform].profile
             : "transparent",
         display: "flex",
         alignItems: "center",
