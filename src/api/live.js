@@ -20,6 +20,7 @@ const getChzzkLiveStatus = async (channelId) => {
       closeDate: data?.closeDate ?? null,
       isLive: data?.status === "OPEN",
       userCount: (data?.status === "CLOSE") ? 0 : (data?.concurrentUserCount ?? 0),
+      profileText: "",
     };
   } catch (error) {
     console.error("❌ [Chzzk] 라이브 상태 가져오기 실패:", error);
@@ -40,6 +41,7 @@ const getChzzkLiveStatus2 = async (channelId) => {
       closeDate: null,
       isLive: data?.openLive,
       userCount: 0,
+      profileText: "",
     };
   } catch (error) {
     console.error("❌ [Chzzk] 라이브 상태 가져오기 실패:", error);
@@ -55,7 +57,7 @@ const getSoopLiveStatus = async (channelId) => {
     return {
       name: data?.station?.user_nick ?? "",
       imageUrl: data?.profile_image ?? "",
-      liveTitle: data?.broad?.broad_title ?? "",
+      liveTitle: data?.broad?.broad_title || data?.station?.display?.profile_text,
       openDate: data?.station?.broad_start ?? null,
       closeDate: null,
       isLive: data?.broad != null,
@@ -101,6 +103,7 @@ export const getAllChannelsData = async (localStorageData) => {
           closeDate: live.closeDate,
           isLive: live.isLive,
           userCount: live.userCount,
+          profileText: live.profileText,
           isVisible: item.zoneId != null,
           zoneId: item.zoneId ?? null,
           platform: item.platform,
