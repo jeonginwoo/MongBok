@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// useCallback을 추가로 import 해야 합니다.
+import React, { useState, useEffect, useCallback } from "react";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import MouseIcon from "@mui/icons-material/Mouse";
 import PanToolIcon from "@mui/icons-material/PanTool";
@@ -14,7 +15,6 @@ import {
   channelsAtom,
 } from "@/atoms/setting";
 
-// 🚨 강조할 단축키 스타일
 const shortcutStyle = { color: "#4fc3f7", fontWeight: "bold" };
 
 export default function ControlButtonGroup({ fullscreen }) {
@@ -44,7 +44,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     });
   };
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     if (refreshing) return;
     setRefreshing(true);
 
@@ -68,20 +68,22 @@ export default function ControlButtonGroup({ fullscreen }) {
     } finally {
       setTimeout(() => setRefreshing(false), 1000);
     }
-  };
+  }, [channels, refreshing, setChannels]);
+
+  useEffect(() => {
+    if (Object.keys(channels).length === 0) return;
+
+    const interval = setInterval(() => {
+      handleRefresh();
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [handleRefresh, channels]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (
-        event.target.tagName === "INPUT" ||
-        event.target.tagName === "TEXTAREA"
-      ) {
-        return;
-      }
-
-      if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) {
-        return;
-      }
+      if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;
+      if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) return;
 
       switch (event.key.toUpperCase()) {
         case "T":
@@ -106,16 +108,14 @@ export default function ControlButtonGroup({ fullscreen }) {
     };
 
     window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
     handleToggleCurrentTime,
     handleTogglePointerEvents,
     handleRefresh,
     fullscreen,
   ]);
+
   const rotate360 = {
     "0%": { transform: "rotate(0deg)" },
     "100%": { transform: "rotate(360deg)" },
@@ -123,10 +123,8 @@ export default function ControlButtonGroup({ fullscreen }) {
 
   return (
     <Box sx={{ display: "flex", gap: 1, justifyContent: "end", mt: 2 }}>
-      {/* 🔹 CurrentTime 토글 버튼 (T) */}
       <Tooltip
         title={
-          // 🚨 JSX를 title로 전달
           <>
             {showCurrentTime ? "현재 시간 on " : "현재 시간 off "}(
             <span style={shortcutStyle}>T</span>)
@@ -144,10 +142,8 @@ export default function ControlButtonGroup({ fullscreen }) {
         </IconButton>
       </Tooltip>
 
-      {/* 🔹 포인터 이벤트 토글 (V) */}
       <Tooltip
         title={
-          // 🚨 JSX를 title로 전달
           <>
             {pointerEventsEnabled ? "화면 조작 모드 " : "화면 이동 모드 "}(
             <span style={shortcutStyle}>V</span>)
@@ -163,10 +159,9 @@ export default function ControlButtonGroup({ fullscreen }) {
         </IconButton>
       </Tooltip>
 
-      {/* 🔹 채널 정보 갱신 (R) */}
+      {/* 🔹 채널 정보 갱신 (R) - 자동/수동 모두 여기서 처리 */}
       <Tooltip
         title={
-          // 🚨 JSX를 title로 전달
           <>
             채널 정보 갱신 (<span style={shortcutStyle}>R</span>)
           </>
@@ -177,26 +172,21 @@ export default function ControlButtonGroup({ fullscreen }) {
           onClick={handleRefresh}
           disabled={refreshing}
           sx={{
-            // 회전 애니메이션
             "& .MuiSvgIcon-root": refreshing
               ? {
                   animation: "rotate360 1s linear",
                   "@keyframes rotate360": rotate360,
                 }
-              : {}, // disabled 상태일 때 밝은 색
-            "&.Mui-disabled .MuiSvgIcon-root": {
-              color: "#aaa", // 밝은 회색
-            },
+              : {},
+            "&.Mui-disabled .MuiSvgIcon-root": { color: "#aaa" },
           }}
         >
           <RefreshIcon />
         </IconButton>
       </Tooltip>
 
-      {/* 🔹 전체화면 (F) */}
       <Tooltip
         title={
-          // 🚨 JSX를 title로 전달
           <>
             전체화면 (<span style={shortcutStyle}>F</span>)
           </>
