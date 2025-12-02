@@ -12,15 +12,16 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { COLORS } from "@/data/color";
 import DragHandleIcon from "@mui/icons-material/DragIndicator";
 import ChannelInfo from "@/components/Info/ChannelInfo/ChannelListChannelInfo";
-import ChannelSnackbar from "@/components/Info/ChannelSnackbar";
 
 import { useAtom, useSetAtom } from "jotai";
 import { channelsAtom, layoutTypeAtom } from "@/atoms/setting";
+import { snackbarAtom } from "@/atoms/snackbar";
 
 export default function ChannelList() {
   const [activeId, setActiveId] = useState(null);
   const [channels, setChannels] = useAtom(channelsAtom);
   const setLayoutType = useSetAtom(layoutTypeAtom);
+  const setSnackbar = useSetAtom(snackbarAtom);
 
   const channelArray = React.useMemo(
     () =>
@@ -84,9 +85,6 @@ export default function ChannelList() {
     });
   };
 
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-
   const handleToggle = (id) => {
     setChannels((prev) => {
       const updated = structuredClone(prev);
@@ -98,8 +96,11 @@ export default function ChannelList() {
 
       if (!target.isVisible) {
         if (currentVisibleCount >= 4) {
-          setSnackbarMessage("표시 가능한 채널은 최대 4개입니다.");
-          setSnackbarOpen(true);
+          setSnackbar({
+            open: true,
+            message: "표시 가능한 채널은 최대 4개입니다.",
+            severity: "warning",
+          });
           return prev;
         }
         target.isVisible = true;
@@ -234,12 +235,6 @@ export default function ChannelList() {
           </Box>
         </>
       )}
-
-      <ChannelSnackbar
-        open={snackbarOpen}
-        onClose={handleCloseSnackbar}
-        message={snackbarMessage}
-      />
     </Box>
   );
 }

@@ -6,16 +6,18 @@ import {
   CircularProgress,
   Typography,
 } from "@mui/material";
+
 import AddIcon from "@mui/icons-material/Add";
 import SearchChannelInfo from "@/components/Info/ChannelInfo/SearchChannelInfo";
-import ChannelSnackbar from "@/components/Info/ChannelSnackbar";
 import { searchChannels } from "@/api/search";
 
 import { useSetAtom } from "jotai";
 import { channelsAtom } from "@/atoms/setting";
+import { snackbarAtom } from "@/atoms/snackbar";
 
 export default function SearchChannel() {
   const setChannels = useSetAtom(channelsAtom);
+  const setSnackbar = useSetAtom(snackbarAtom);
 
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -52,6 +54,11 @@ export default function SearchChannel() {
         setShowList(true);
       } catch (e) {
         console.error("검색 실패:", e);
+        setSnackbar({
+          open: true,
+          message: "채널 검색 중 오류가 발생했습니다.",
+          severity: "error",
+        });
       } finally {
         setLoading(false);
       }
@@ -60,15 +67,24 @@ export default function SearchChannel() {
     return () => clearTimeout(handler);
   }, [keyword]);
 
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-
   const addChannel = (selectChannel) => {
     setChannels((prev) => {
+      if (prev[selectChannel.id]) {
+        setSnackbar({
+          open: true,
+          message: "이미 추가된 채널입니다.",
+          severity: "warning",
+        });
+        return prev;  // 추가하지 않음
+      }
+      
       const limit = 30;
       if (Object.keys(prev).length >= limit) {
-        setSnackbarMessage(`채널은 최대 ${limit}개까지 추가 가능합니다.`);
-        setSnackbarOpen(true);
+        setSnackbar({
+          open: true,
+          message: `채널은 최대 ${limit}개까지 추가 가능합니다.`,
+          severity: "warning",
+        });
         return prev;
       }
 
@@ -203,12 +219,6 @@ export default function SearchChannel() {
           ))}
         </Paper>
       )}
-
-      <ChannelSnackbar
-        open={snackbarOpen}
-        onClose={() => setSnackbarOpen(false)}
-        message={snackbarMessage}
-      />
     </Box>
   );
 }
