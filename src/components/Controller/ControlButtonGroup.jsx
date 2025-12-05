@@ -159,7 +159,6 @@ export default function ControlButtonGroup({ fullscreen }) {
         </IconButton>
       </Tooltip>
 
-      {/* 🔹 채널 정보 갱신 (R) - 자동/수동 모두 여기서 처리 */}
       <Tooltip
         title={
           <>

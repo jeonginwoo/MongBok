@@ -12,7 +12,6 @@ import ProfileImage from "@/components/Info/ProfileImage";
 export default function ChannelInfo({ channel, sx = {} }) {
   if (!channel) return null;
 
-  // 🔹 라이브 중이 아닐 때 흑백 & 밝기 낮춤
   const inactiveStyle = !channel.isLive
     ? { filter: "grayscale(100%) brightness(0.7)" }
     : {};

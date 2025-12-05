@@ -34,7 +34,6 @@ export default function ChannelList() {
   const visible = channelArray.filter((c) => c.isVisible);
   const hidden = channelArray.filter((c) => !c.isVisible);
 
-  // ✅ hidden 목록 정렬: userCount (내림차순), name (오름차순)
   const sortedHidden = React.useMemo(() => {
     return [...hidden].sort((a, b) => {
       if ((b.userCount ?? 0) !== (a.userCount ?? 0)) {
@@ -315,7 +314,6 @@ function SortableItem({ channel, onToggle }) {
   );
 }
 
-/** ❌ 드래그 불가한 숨김 아이템 */
 function HiddenItem({ channel, onToggle, onDelete }) {
   return (
     <ListItem

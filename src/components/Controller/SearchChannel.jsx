@@ -11,12 +11,14 @@ import AddIcon from "@mui/icons-material/Add";
 import SearchChannelInfo from "@/components/Info/ChannelInfo/SearchChannelInfo";
 import { searchChannels } from "@/api/search";
 
-import { useSetAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { channelsAtom } from "@/atoms/setting";
 import { snackbarAtom } from "@/atoms/snackbar";
 
 export default function SearchChannel() {
-  const setChannels = useSetAtom(channelsAtom);
+  const maxChannels = 30;
+
+  const [channels, setChannels] = useAtom(channelsAtom);
   const setSnackbar = useSetAtom(snackbarAtom);
 
   const [keyword, setKeyword] = useState("");
@@ -75,14 +77,13 @@ export default function SearchChannel() {
           message: "이미 추가된 채널입니다.",
           severity: "warning",
         });
-        return prev;  // 추가하지 않음
+        return prev;
       }
       
-      const limit = 30;
-      if (Object.keys(prev).length >= limit) {
+      if (Object.keys(prev).length >= maxChannels) {
         setSnackbar({
           open: true,
-          message: `채널은 최대 ${limit}개까지 추가 가능합니다.`,
+          message: `채널은 최대 ${maxChannels}개까지 추가 가능합니다.`,
           severity: "warning",
         });
         return prev;
@@ -119,7 +120,6 @@ export default function SearchChannel() {
 
   return (
     <Box ref={containerRef} sx={{ mb: 2, position: "relative" }}>
-      {/* 검색 입력창 */}
       <TextField
         fullWidth
         placeholder="채널 검색..."
@@ -130,18 +130,29 @@ export default function SearchChannel() {
           "& .MuiOutlinedInput-root": {
             "& fieldset": { borderColor: "#555" },
             "&:hover fieldset": { borderColor: "#888" },
+            "& .MuiInputAdornment-root": { marginRight: "4px" }
           },
+        }}
+        InputProps={{
+          endAdornment: loading ? (
+            <CircularProgress size={20} sx={{ color: "#aaa" }} />
+          ) : null,
         }}
       />
 
-      {/* 로딩 스피너 */}
-      {loading && (
-        <Box sx={{ position: "absolute", mt: 1, textAlign: "center" }}>
-          <CircularProgress size={24} />
-        </Box>
-      )}
+      <Typography
+        sx={{
+          fontSize: "12px",
+          color: "#888",
+          textAlign: "right",
+          mt: "4px",
+          mr: "2px",
+          userSelect: "none"
+        }}
+      >
+        {Object.keys(channels).length} / {maxChannels}
+      </Typography>
 
-      {/* 검색 결과 */}
       {showList && (
         <Paper
           sx={{
