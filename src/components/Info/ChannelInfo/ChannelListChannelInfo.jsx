@@ -3,6 +3,8 @@ import dayjs from "dayjs";
 import { Box, Typography, Tooltip } from "@mui/material";
 import { COLORS } from "@/data/color";
 
+import LiveCategory from "@/components/Info/LiveCategory";
+import LiveTags from "@/components/Info/LiveTags";
 import LiveTime from "@/components/Info/LiveTime";
 import UserCount from "@/components/Info/UserCount";
 import ProfileImage from "@/components/Info/ProfileImage";
@@ -30,15 +32,34 @@ export default function ChannelInfo({ channel, sx = {} }) {
   };
 
   const tooltipTitle = (
-    <span>
-      <span
-        style={{ color: `${COLORS[channel.platform].main}`, fontWeight: 600 }}
-      >
-        {channel.name || "채널명 없음"}
-      </span>
-      {" : "}
-      {channel.liveTitle || "제목 없음"}
-    </span>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+      {/* 첫 줄: 채널 이름 + 제목 */}
+      <Box sx={{ fontSize: 13 }}>
+        <span
+          style={{ color: `${COLORS[channel.platform].main}`, fontWeight: 600 }}
+        >
+          {channel.name || "채널명 없음"}
+        </span>
+        {" : "}
+        {channel.liveTitle || "제목 없음"}
+      </Box>
+
+      {/* 두 번째 줄: 카테고리 + 태그 */}
+      {(channel.liveCategory || (channel.tags && channel.tags.length > 0)) && (
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: 0.5,
+            maxWidth: "260px",
+          }}
+        >
+          <LiveCategory channel={channel} />
+          <LiveTags channel={channel} />
+        </Box>
+      )}
+    </Box>
   );
 
   const StatusBox = (
@@ -76,7 +97,7 @@ export default function ChannelInfo({ channel, sx = {} }) {
 
   return (
     <Tooltip
-      placement="top"
+      placement="left"
       arrow
       componentsProps={{
         tooltip: {

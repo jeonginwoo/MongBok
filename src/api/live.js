@@ -1,6 +1,7 @@
 import {
   chzzk_client,
   soop_channel_client,
+  soop_live_client,
 } from "@/api/client";
 
 // ✅ 치지직 라이브 상태 조회
@@ -20,7 +21,8 @@ const getChzzkLiveStatus = async (channelId) => {
       closeDate: data?.closeDate ?? null,
       isLive: data?.status === "OPEN",
       userCount: (data?.status === "CLOSE") ? 0 : (data?.concurrentUserCount ?? 0),
-      profileText: "",
+      liveCategory: data?.liveCategoryValue || data?.liveCategory,
+      tags: data?.tags,
     };
   } catch (error) {
     console.error("❌ [Chzzk] 라이브 상태 가져오기 실패:", error);
@@ -41,10 +43,39 @@ const getChzzkLiveStatus2 = async (channelId) => {
       closeDate: null,
       isLive: data?.openLive,
       userCount: 0,
-      profileText: "",
+      liveCategory: null,
+      tags: [],
     };
   } catch (error) {
     console.error("❌ [Chzzk] 라이브 상태 가져오기 실패:", error);
+    throw error;
+  }
+};
+
+const getSoopLiveTags = async (channelId) => {
+  try {
+    const body = new URLSearchParams({
+      bid: channelId,
+    });
+
+    const response = await soop_live_client.post(
+      `/afreeca/player_live_api.php`,
+      body.toString(),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+    const data = response.data?.CHANNEL;
+
+    return {
+      liveCategory: data?.CATEGORY_TAGS?.[0] ?? null,
+      tags: data?.HASH_TAGS ?? [],
+    };
+
+  } catch (error) {
+    console.error("❌ [Soop] 라이브 태그 가져오기 실패:", error);
     throw error;
   }
 };
@@ -54,6 +85,8 @@ const getSoopLiveStatus = async (channelId) => {
   try {
     const response = await soop_channel_client.get(`/api/${channelId}/station`);
     const data = response.data;
+    const tag = await getSoopLiveTags(channelId);
+    
     return {
       name: data?.station?.user_nick ?? "",
       imageUrl: data?.profile_image ?? "",
@@ -62,6 +95,8 @@ const getSoopLiveStatus = async (channelId) => {
       closeDate: null,
       isLive: data?.broad != null,
       userCount: (data?.broad == null) ? 0 : (data?.broad?.current_sum_viewer ?? 0),
+      liveCategory: tag?.liveCategory,
+      tags: tag?.tags,
     };
   } catch (error) {
     console.error("❌ [Soop] 라이브 상태 가져오기 실패:", error);
@@ -103,7 +138,8 @@ export const getAllChannelsData = async (localStorageData) => {
           closeDate: live.closeDate,
           isLive: live.isLive,
           userCount: live.userCount,
-          profileText: live.profileText,
+          liveCategory: live.liveCategory,
+          tags: live.tags,
           isVisible: item.zoneId != null,
           zoneId: item.zoneId ?? null,
           platform: item.platform,

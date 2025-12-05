@@ -33,6 +33,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/soop\/search/, ""),
       },
+      "/api/soop/live": {
+        target: "https://live.sooplive.co.kr",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/soop\/live/, ""),
+      },
     },
   },
 })

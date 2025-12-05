@@ -20,3 +20,10 @@ export const soop_search_client = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+export const soop_live_client = axios.create({
+  baseURL: "/api/soop/live",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});

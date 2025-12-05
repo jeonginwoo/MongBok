@@ -1,6 +1,8 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 
+import LiveCategory from "@/components/Info/LiveCategory";
+import LiveTags from "@/components/Info/LiveTags";
 import UserCount from "@/components/Info/UserCount";
 import ProfileImage from "@/components/Info/ProfileImage";
 
@@ -51,7 +53,15 @@ export default function ChannelInfo({ channel, sx = {} }) {
           {channel.liveTitle}
         </Typography>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: 0.5,
+          }}
+        >
+          <LiveCategory channel={channel} />
           <UserCount channel={channel} />
         </Box>
       </Box>
