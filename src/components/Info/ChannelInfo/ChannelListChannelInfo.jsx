@@ -1,5 +1,5 @@
 import React from "react";
-import moment from "moment";
+import dayjs from "dayjs";
 import { Box, Typography, Tooltip } from "@mui/material";
 import { COLORS } from "@/data/color";
 
@@ -65,9 +65,9 @@ export default function ChannelInfo({ channel, sx = {} }) {
           <UserCount channel={channel} />
         </>
       ) : channel.closeDate ? (
-        `close ${moment(channel.closeDate).format("MM/DD HH:mm")}`
+        `close ${dayjs(channel.closeDate).format("MM/DD HH:mm")}`
       ) : channel.openDate ? (
-        `open ${moment(channel.openDate).format("MM/DD HH:mm")}`
+        `open ${dayjs(channel.openDate).format("MM/DD HH:mm")}`
       ) : (
         ""
       )}

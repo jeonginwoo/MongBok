@@ -1,32 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { Box } from "@mui/material";
+import dayjs from "dayjs";
 
 const CurrentTime = ({ onClick }) => {
-  const [time, setTime] = useState(() => new Date());
+  const [time, setTime] = useState(() => dayjs());
 
   useEffect(() => {
-    const updateTime = () => setTime(new Date());
+    const updateTime = () => setTime(dayjs());
 
-    updateTime(); // 초기 1회 실행
+    updateTime();
 
-    const now = new Date();
-    const delay = 60000 - (now.getSeconds() * 1000 + now.getMilliseconds()); // 다음 정각까지 남은 시간
+    const now = dayjs();
+    const delay = (60 - now.second()) * 1000 - now.millisecond();
 
     const timeout = setTimeout(() => {
       updateTime();
-      setInterval(updateTime, 60000); // 이후부터 1분마다
+      const interval = setInterval(updateTime, 60000);
+
+      return () => clearInterval(interval);
     }, delay);
 
-    return () => {
-      clearTimeout(timeout);
-    };
+    return () => clearTimeout(timeout);
   }, []);
 
-  const formattedTime = time.toLocaleTimeString("ko-KR", {
-    hour12: false,
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const formattedTime = time.format("HH:mm");
 
   return (
     <Box

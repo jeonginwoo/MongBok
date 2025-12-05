@@ -18,9 +18,7 @@ function LiveTime({ channel }) {
       const start = dayjs(channel.openDate);
       const diff = now.diff(start);
 
-      if (diff < 0) {
-        setTime(`방송 시작까지: ${dayjs(start).diff(now, "minute")}분`);
-      } else {
+      if (diff >= 0) {
         const hours = Math.floor(diff / 1000 / 60 / 60);
         const minutes = Math.floor((diff / 1000 / 60) % 60);
         const seconds = Math.floor((diff / 1000) % 60);
