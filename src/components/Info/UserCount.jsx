@@ -6,20 +6,20 @@ function UserCount({ channel }) {
     <Box
       sx={{
         display: "flex",
+        alignItems: "bottom",
         color: "rgba(255, 56, 56, 1)",
         fontWeight: 600,
         lineHeight: 1,
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "flex-end", mb: "2px" }}>
-        <PersonIcon
-          sx={{
-            fontSize: 18,
-            color: "rgba(255, 56, 56, 1)",
-            verticalAlign: "top",
-          }}
-        />
-      </Box>
+      <PersonIcon
+        sx={{
+          fontSize: 18,
+          color: "rgba(255, 56, 56, 1)",
+          verticalAlign: "",
+          lineHeight: 1,
+        }}
+      />
       {channel?.userCount}
     </Box>
   );

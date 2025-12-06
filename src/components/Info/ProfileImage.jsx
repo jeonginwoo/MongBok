@@ -1,15 +1,20 @@
 import { Box } from "@mui/material";
 import { COLORS } from "@/data/color";
 
-export default function ProfileImage({ channel, isBoardered = false }) {
+export default function ProfileImage({
+  channel,
+  isBoardered = false,
+  imgSize = 46,
+  borderSize = 8,
+}) {
   const default_profile_img =
     "https://ssl.pstatic.net/static/nng/glive/image/default_profile_dark.png?type=f120_120_na";
 
   return (
     <Box
       sx={{
-        width: 54, // border 두께만큼 크게
-        height: 54,
+        width: imgSize + borderSize,
+        height: imgSize + borderSize,
         borderRadius: "50%",
         flexShrink: 0,
         background:
@@ -23,8 +28,8 @@ export default function ProfileImage({ channel, isBoardered = false }) {
     >
       <Box
         sx={{
-          width: 46,
-          height: 46,
+          width: imgSize,
+          height: imgSize,
           borderRadius: "50%",
           overflow: "hidden",
           boxShadow: "0 0 6px rgba(0,0,0,0.4)",

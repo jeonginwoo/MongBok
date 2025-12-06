@@ -190,9 +190,9 @@ export default function ChannelList() {
           {activeChannel ? (
             <ListItem
               sx={{
-                pr: 1,
+                padding: "0 48px 0 0",
                 border: `1px solid ${COLORS[activeChannel.platform].main}`,
-                borderRadius: "8px",
+                borderRadius: "100px",
                 background: "#2c2c2c",
                 cursor: "grabbing",
                 boxShadow: `0 0 10px ${COLORS[activeChannel.platform].shadow}`,
@@ -261,7 +261,8 @@ function SortableItem({ channel, onToggle }) {
       style={style}
       sx={{
         position: "relative",
-        borderRadius: "8px",
+        padding: "0 48px 0 0",
+        borderRadius: "100px",
         mb: "8px",
         background: "#2f2f2f",
         border: "1px solid #444",
@@ -319,7 +320,8 @@ function HiddenItem({ channel, onToggle, onDelete }) {
     <ListItem
       sx={{
         position: "relative",
-        borderRadius: "8px",
+        padding: "0 48px 0 0",
+        borderRadius: "100px",
         mb: "8px",
         background: "#262626",
         border: "1px solid #333",

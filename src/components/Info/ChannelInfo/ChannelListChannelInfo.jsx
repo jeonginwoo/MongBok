@@ -16,20 +16,6 @@ export default function ChannelInfo({ channel, sx = {} }) {
     ? { filter: "grayscale(100%) brightness(0.7)" }
     : {};
 
-  const parentBoxStyle = {
-    position: "relative",
-    display: "flex",
-    alignItems: "center",
-    gap: 1.5,
-    width: "100%",
-    height: "100%",
-    boxSizing: "border-box",
-    border: "none",
-    transition: "filter 0.3s ease",
-    ...inactiveStyle,
-    ...sx,
-  };
-
   const tooltipTitle = (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
       {/* 첫 줄: 채널 이름 + 제목 */}
@@ -61,38 +47,6 @@ export default function ChannelInfo({ channel, sx = {} }) {
     </Box>
   );
 
-  const StatusBox = (
-    <Box
-      sx={{
-        position: "absolute",
-        bottom: "-3px",
-        left: "77px",
-        zIndex: 10,
-        display: "flex",
-        alignItems: "center",
-        gap: 1,
-        zoom: 0.8,
-        padding: "2px 6px",
-        borderRadius: "4px",
-        color: "#bbbbbbff",
-        fontWeight: "bold",
-        whiteSpace: "nowrap",
-      }}
-    >
-      {channel.isLive ? (
-        <>
-          <LiveTime channel={channel} />
-          <UserCount channel={channel} />
-        </>
-      ) : channel.closeDate ? (
-        `close ${dayjs(channel.closeDate).format("MM/DD HH:mm")}`
-      ) : channel.openDate ? (
-        `open ${dayjs(channel.openDate).format("MM/DD HH:mm")}`
-      ) : (
-        ""
-      )}
-    </Box>
-  );
 
   return (
     <Tooltip
@@ -108,18 +62,21 @@ export default function ChannelInfo({ channel, sx = {} }) {
       }}
       title={tooltipTitle}
     >
-      <Box sx={parentBoxStyle}>
-        {StatusBox}
+      <Box sx={{
+        position: "relative",
+        display: "flex",
+        alignItems: "center",
+        gap: 1.5,
+        width: "100%",
+        height: "100%",
+        boxSizing: "border-box",
+        border: "none",
+        transition: "filter 0.3s ease",
+        ...inactiveStyle,
+        ...sx,
+      }}>
         <ProfileImage channel={channel} />
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            overflow: "hidden",
-            minWidth: 0,
-          }}
-        >
+        <Box>
           <Typography
             variant="subtitle2"
             sx={{
@@ -132,6 +89,31 @@ export default function ChannelInfo({ channel, sx = {} }) {
           >
             {channel.name}
           </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              zoom: 0.8,
+              borderRadius: "4px",
+              color: "#bbbbbbff",
+              fontWeight: "bold",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {channel.isLive ? (
+              <>
+                <LiveTime channel={channel} />
+                <UserCount channel={channel} />
+              </>
+            ) : channel.closeDate ? (
+              `close ${dayjs(channel.closeDate).format("MM/DD HH:mm")}`
+            ) : channel.openDate ? (
+              `open ${dayjs(channel.openDate).format("MM/DD HH:mm")}`
+            ) : (
+              ""
+            )}
+          </Box>
         </Box>
       </Box>
     </Tooltip>
