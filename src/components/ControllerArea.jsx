@@ -26,11 +26,13 @@ export default function ControllerArea({ fullscreen }) {
       }}
     >
       {/* 🔹 LayoutType 선택 */}
-      {controllerExpanded && (
+      {controllerExpanded ? (
         <Box sx={{ mb: 2, pr: 1.5, pl: 1.5 }}>
           <LayoutToggleGroup viewCount={viewCount} />
         </Box>
-      )}
+      ) :
+        <LayoutToggleGroup viewCount={viewCount} />
+      }
 
       {/* 🔹 검색 컴포넌트 추가 */}
       {controllerExpanded && (
