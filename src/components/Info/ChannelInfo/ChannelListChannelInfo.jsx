@@ -9,8 +9,13 @@ import LiveTime from "@/components/Info/LiveTime";
 import UserCount from "@/components/Info/UserCount";
 import ProfileImage from "@/components/Info/ProfileImage";
 
+import { useAtomValue } from "jotai";
+import { controllerExpandedAtom } from "@/atoms/setting";
+
 export default function ChannelInfo({ channel, sx = {} }) {
   if (!channel) return null;
+
+  const controllerExpanded = useAtomValue(controllerExpandedAtom);
 
   const inactiveStyle = !channel.isLive
     ? { filter: "grayscale(100%) brightness(0.7)" }
@@ -42,6 +47,9 @@ export default function ChannelInfo({ channel, sx = {} }) {
         >
           <LiveCategory channel={channel} />
           <LiveTags channel={channel} />
+          {!controllerExpanded && channel.isLive && (
+            <UserCount channel={channel} />
+          )}
         </Box>
       )}
     </Box>
@@ -76,45 +84,48 @@ export default function ChannelInfo({ channel, sx = {} }) {
         ...sx,
       }}>
         <ProfileImage channel={channel} />
-        <Box>
-          <Typography
-            variant="subtitle2"
-            sx={{
-              color: "white",
-              fontWeight: 600,
-              whiteSpace: "nowrap",
-              textOverflow: "ellipsis",
-              overflow: "hidden",
-            }}
-          >
-            {channel.name}
-          </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              zoom: 0.8,
-              borderRadius: "4px",
-              color: "#bbbbbbff",
-              fontWeight: "bold",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {channel.isLive ? (
-              <>
-                <LiveTime channel={channel} />
-                <UserCount channel={channel} />
-              </>
-            ) : channel.closeDate ? (
-              `close ${dayjs(channel.closeDate).format("MM/DD HH:mm")}`
-            ) : channel.openDate ? (
-              `open ${dayjs(channel.openDate).format("MM/DD HH:mm")}`
-            ) : (
-              ""
-            )}
+        
+        {controllerExpanded && (
+          <Box>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                color: "white",
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+                overflow: "hidden",
+              }}
+            >
+              {channel.name}
+            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                zoom: 0.8,
+                borderRadius: "4px",
+                color: "#bbbbbbff",
+                fontWeight: "bold",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {channel.isLive ? (
+                <>
+                  <LiveTime channel={channel} />
+                  <UserCount channel={channel} />
+                </>
+              ) : channel.closeDate ? (
+                `close ${dayjs(channel.closeDate).format("MM/DD HH:mm")}`
+              ) : channel.openDate ? (
+                `open ${dayjs(channel.openDate).format("MM/DD HH:mm")}`
+              ) : (
+                ""
+              )}
+            </Box>
           </Box>
-        </Box>
+        )}
       </Box>
     </Tooltip>
   );

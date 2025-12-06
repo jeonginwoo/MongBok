@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { DndContext, closestCenter, DragOverlay } from "@dnd-kit/core";
+import {
+  DndContext,
+  closestCenter,
+  DragOverlay,
+  useSensor,
+  useSensors,
+  PointerSensor,
+} from "@dnd-kit/core";
 import {
   SortableContext,
   useSortable,
@@ -13,8 +20,8 @@ import { COLORS } from "@/data/color";
 import DragHandleIcon from "@mui/icons-material/DragIndicator";
 import ChannelInfo from "@/components/Info/ChannelInfo/ChannelListChannelInfo";
 
-import { useAtom, useSetAtom } from "jotai";
-import { channelsAtom, layoutTypeAtom } from "@/atoms/setting";
+import { useAtom, useSetAtom, useAtomValue } from "jotai";
+import { channelsAtom, layoutTypeAtom, controllerExpandedAtom } from "@/atoms/setting";
 import { snackbarAtom } from "@/atoms/snackbar";
 
 export default function ChannelList() {
@@ -22,6 +29,7 @@ export default function ChannelList() {
   const [channels, setChannels] = useAtom(channelsAtom);
   const setLayoutType = useSetAtom(layoutTypeAtom);
   const setSnackbar = useSetAtom(snackbarAtom);
+  const controllerExpanded = useAtomValue(controllerExpandedAtom);
 
   const channelArray = React.useMemo(
     () =>
@@ -58,7 +66,6 @@ export default function ChannelList() {
     setChannels((prev) => {
       const updated = structuredClone(prev);
 
-      // ✅ visible zoneId 재배열
       reordered.forEach((c, i) => {
         const zoneId = i + 1;
         updated[c.id].zoneId = zoneId;
@@ -136,11 +143,6 @@ export default function ChannelList() {
     window.localStorage.setItem("layout", "layout1");
   };
 
-  const handleCloseSnackbar = (_, reason) => {
-    if (reason === "clickaway") return;
-    setSnackbarOpen(false);
-  };
-
   const handleDelete = (id) => {
     setChannels((prev) => {
       const updated = structuredClone(prev);
@@ -158,6 +160,14 @@ export default function ChannelList() {
     });
   };
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+  
   return (
     <Box
       sx={{
@@ -167,6 +177,7 @@ export default function ChannelList() {
       }}
     >
       <DndContext
+        sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={(e) => setActiveId(e.active.id)}
         onDragEnd={handleDragEnd}
@@ -175,7 +186,7 @@ export default function ChannelList() {
           items={visible.map((c) => c.id)}
           strategy={verticalListSortingStrategy}
         >
-          <List sx={{ pr: 1.5 }}>
+          <List sx={{ pr: 1.5, pl: 1.5, pt: 0, pb: 0 }}>
             {visible.map((channel) => (
               <SortableItem
                 key={channel.id}
@@ -190,14 +201,13 @@ export default function ChannelList() {
           {activeChannel ? (
             <ListItem
               sx={{
-                padding: "0 48px 0 0",
+                padding: controllerExpanded ? "0 48px 0 0" : "0",
                 border: `1px solid ${COLORS[activeChannel.platform].main}`,
                 borderRadius: "100px",
                 background: "#2c2c2c",
                 cursor: "grabbing",
                 boxShadow: `0 0 10px ${COLORS[activeChannel.platform].shadow}`,
               }}
-              secondaryAction={<Switch checked={activeChannel.isVisible} />}
             >
               <ChannelInfo channel={activeChannel} />
             </ListItem>
@@ -207,12 +217,13 @@ export default function ChannelList() {
 
       {sortedHidden.length > 0 && (
         <>
-          <Divider sx={{ borderColor: "#555", my: 2, mr: 1.5 }} />
+          <Divider sx={{ borderColor: "#555", mt: 1, mr: 1.5, ml: 1.5, mb: 2 }} />
           <Box
             sx={{
               flexGrow: 1,
               overflowY: "scroll",
               pr: 1,
+              pl: 1.5,
               "&::-webkit-scrollbar": { width: "4px" },
               "&::-webkit-scrollbar-thumb": {
                 backgroundColor: "#555",
@@ -238,8 +249,8 @@ export default function ChannelList() {
   );
 }
 
-/** ✅ 드래그 가능한 아이템 */
 function SortableItem({ channel, onToggle }) {
+  const controllerExpanded = useAtomValue(controllerExpandedAtom);
   const {
     attributes,
     listeners,
@@ -259,95 +270,64 @@ function SortableItem({ channel, onToggle }) {
     <ListItem
       ref={setNodeRef}
       style={style}
+      {...listeners}
+      {...attributes}
+      onClick={() => onToggle(channel.id)}
       sx={{
         position: "relative",
-        padding: "0 48px 0 0",
+        mb: 1,
+        padding: controllerExpanded ? "0 48px 0 0" : "0",
         borderRadius: "100px",
-        mb: "8px",
         background: "#2f2f2f",
         border: "1px solid #444",
         transition: "all 0.2s ease",
+        cursor: "grab",
         "&:hover .drag-handle-area": {
           opacity: 1,
           transform: "translateX(0)",
         },
       }}
-      secondaryAction={
-        <Switch
-          checked={channel.isVisible}
-          onChange={() => onToggle(channel.id)}
-        />
-      }
     >
-      <Box
-        className="drag-handle-area"
-        sx={{
-          position: "absolute",
-          left: "-30px",
-          top: 0,
-          height: "100%",
-          width: "36px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          opacity: 0,
-          transition: "all 0.2s ease",
-          "&:active": { cursor: "grabbing" },
-          "&:hover": { color: "#00bfff" },
-        }}
-      >
-        <DragHandleIcon
-          {...listeners}
-          {...attributes}
-          sx={{
-            fontSize: 18,
-            color: "#aaa",
-            cursor: "grab",
-            outline: null,
-            border: null,
-            "&:focus": { outline: null, border: null },
-            "&:active": { cursor: "grabbing" },
-          }}
-        />
-      </Box>
       <ChannelInfo channel={channel} />
     </ListItem>
   );
 }
 
 function HiddenItem({ channel, onToggle, onDelete }) {
+  const controllerExpanded = useAtomValue(controllerExpandedAtom);
+
   return (
     <ListItem
+      onClick={() => onToggle(channel.id)}
       sx={{
         position: "relative",
-        padding: "0 48px 0 0",
+        padding: controllerExpanded ? "0 48px 0 0" : "0",
         borderRadius: "100px",
-        mb: "8px",
+        mb: 1,
         background: "#262626",
         border: "1px solid #333",
         opacity: 1,
+        cursor: "pointer",
+        "&:hover": {
+           borderColor: "#666"
+        }
       }}
-      secondaryAction={
-        <Switch
-          checked={channel.isVisible}
-          onChange={() => onToggle(channel.id)}
-        />
-      }
     >
-      <DeleteOutlineIcon
-        onClick={() => onDelete(channel.id)}
-        sx={{
-          zIndex: 10,
-          position: "absolute",
-          right: "5px",
-          bottom: "5px",
-          fontSize: 18,
-          cursor: "pointer",
-          color: "#aaa",
-          opacity: 0.5,
-          "&:hover": { color: "#ff5555" },
-        }}
-      />
+      {controllerExpanded && (
+        <DeleteOutlineIcon
+          onClick={() => onDelete(channel.id)}
+          sx={{
+            zIndex: 10,
+            position: "absolute",
+            right: "10px",
+            fontSize: 18,
+            cursor: "pointer",
+            color: "#aaa",
+            opacity: 0.5,
+            "&:hover": { color: "#ff5555" },
+          }}
+        />
+      )}
       <ChannelInfo channel={channel} />
     </ListItem>
   );

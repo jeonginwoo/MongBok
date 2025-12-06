@@ -119,7 +119,7 @@ export default function SearchChannel() {
   };
 
   return (
-    <Box ref={containerRef} sx={{ mb: 2, position: "relative" }}>
+    <Box ref={containerRef} sx={{ position: "relative" }}>
       <TextField
         fullWidth
         placeholder="채널 검색..."

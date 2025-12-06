@@ -6,7 +6,7 @@ function UserCount({ channel }) {
     <Box
       sx={{
         display: "flex",
-        alignItems: "bottom",
+        alignItems: "centerc",
         color: "rgba(255, 56, 56, 1)",
         fontWeight: 600,
         lineHeight: 1,

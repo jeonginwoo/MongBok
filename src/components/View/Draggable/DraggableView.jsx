@@ -2,8 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import Box from "@mui/material/Box";
 
+import { useAtomValue } from "jotai";
+import { controllerExpandedAtom } from "@/atoms/setting";
+
 export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
   if (!channel) return null;
+
+  const controllerExpanded = useAtomValue(controllerExpandedAtom);
 
   const draggableId = `${channel.id}-view`;
   const { attributes, listeners, setNodeRef, transform, isDragging } =
@@ -39,9 +44,15 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
     };
 
     updateZoom();
+    const timer = setTimeout(updateZoom, 300);
     window.addEventListener("resize", updateZoom);
-    return () => window.removeEventListener("resize", updateZoom);
-  }, [zone?.style.width]);
+    
+    return () => {
+      window.removeEventListener("resize", updateZoom);
+      clearTimeout(timer);
+    };
+    
+  }, [zone?.style.width, controllerExpanded]);
 
   const style = {
     position: "absolute",
@@ -81,7 +92,7 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
       >
         <Box
           component="iframe"
-          key={channel?.isLive ? "live" : "offline"} // 🔥 상태 바뀌면 iframe 리렌더링됨
+          key={channel?.isLive ? "live" : "offline"} 
           src={iframeSrc}
           sx={{
             width: "100%",

@@ -4,8 +4,13 @@ import Box from "@mui/material/Box";
 
 import ChannelInfo from "@/components/Info/ChannelInfo/ViewAreaChannelInfo";
 
+import { useAtomValue } from "jotai";
+import { controllerExpandedAtom } from "@/atoms/setting";
+
 export default function DraggableChat({ channel, zone }) {
   if (!channel) return null;
+
+  const controllerExpanded = useAtomValue(controllerExpandedAtom);
 
   const draggableId = `${channel.id}-chat`;
   const { attributes, listeners, setNodeRef, transform, isDragging } =
@@ -18,6 +23,7 @@ export default function DraggableChat({ channel, zone }) {
   const channelId = channel.id;
 
   const BASE_WIDTH = 360;
+  
   useEffect(() => {
     const updateZoom = () => {
       if (!containerRef.current) return;
@@ -41,9 +47,15 @@ export default function DraggableChat({ channel, zone }) {
     };
 
     updateZoom();
+    const timer = setTimeout(updateZoom, 300);
     window.addEventListener("resize", updateZoom);
-    return () => window.removeEventListener("resize", updateZoom);
-  }, [zone?.style.width]);
+    
+    return () => {
+      window.removeEventListener("resize", updateZoom);
+      clearTimeout(timer);
+    };
+    
+  }, [zone?.style.width, controllerExpanded]);
 
   const style = {
     position: "absolute",
@@ -64,7 +76,6 @@ export default function DraggableChat({ channel, zone }) {
     touchAction: "none",
   };
 
-  // platform별 iframeSrc와 스타일 분리
   let iframeSrc = "";
   let iframeStyle = {};
 

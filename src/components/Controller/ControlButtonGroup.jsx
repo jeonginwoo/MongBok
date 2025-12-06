@@ -1,11 +1,15 @@
 // useCallback을 추가로 import 해야 합니다.
 import React, { useState, useEffect, useCallback } from "react";
 import { Box, IconButton, Tooltip } from "@mui/material";
-import MouseIcon from "@mui/icons-material/Mouse";
-import PanToolIcon from "@mui/icons-material/PanTool";
-import FullscreenIcon from "@mui/icons-material/Fullscreen";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import {
+  Mouse as MouseIcon,
+  PanTool as PanToolIcon,
+  Fullscreen as FullscreenIcon,
+  Refresh as RefreshIcon,
+  AccessTime as AccessTimeIcon,
+  FormatIndentIncrease as FormatIndentIncreaseIcon,
+  FormatIndentDecrease as FormatIndentDecreaseIcon,
+} from "@mui/icons-material";
 import { getLiveStatus } from "@/api/live";
 
 import { useAtom } from "jotai";
@@ -13,17 +17,32 @@ import {
   pointerEventsEnabledAtom,
   showCurrentTimeAtom,
   channelsAtom,
+  controllerExpandedAtom,
 } from "@/atoms/setting";
 
 const shortcutStyle = { color: "#4fc3f7", fontWeight: "bold" };
 
-export default function ControlButtonGroup({ fullscreen }) {
+export default function ControlButtonGroup({ fullscreen, sx = {} }) {
+  const [controllerExpanded, setControllerExpanded] = useAtom(
+    controllerExpandedAtom
+  );
   const [refreshing, setRefreshing] = useState(false);
   const [pointerEventsEnabled, setPointerEventsEnabled] = useAtom(
     pointerEventsEnabledAtom
   );
   const [showCurrentTime, setShowCurrentTime] = useAtom(showCurrentTimeAtom);
   const [channels, setChannels] = useAtom(channelsAtom);
+
+  const handleToggleController = () => {
+    setControllerExpanded((prev) => {
+      const nextState = !prev;
+      window.localStorage.setItem(
+        "controllerExpanded",
+        JSON.stringify(nextState)
+      );
+      return nextState;
+    });
+  };
 
   const handleTogglePointerEvents = () => {
     setPointerEventsEnabled((prev) => {
@@ -82,8 +101,13 @@ export default function ControlButtonGroup({ fullscreen }) {
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;
-      if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) return;
+      if (
+        event.target.tagName === "INPUT" ||
+        event.target.tagName === "TEXTAREA"
+      )
+        return;
+      if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
+        return;
 
       switch (event.key.toUpperCase()) {
         case "T":
@@ -102,6 +126,10 @@ export default function ControlButtonGroup({ fullscreen }) {
           event.preventDefault();
           fullscreen();
           break;
+        case "C":
+          event.preventDefault();
+          handleToggleController();
+          break;
         default:
           break;
       }
@@ -110,6 +138,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
+    handleToggleController,
     handleToggleCurrentTime,
     handleTogglePointerEvents,
     handleRefresh,
@@ -122,79 +151,106 @@ export default function ControlButtonGroup({ fullscreen }) {
   };
 
   return (
-    <Box sx={{ display: "flex", gap: 1, justifyContent: "end", mt: 2 }}>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: controllerExpanded ? "space-between" : "center",
+        ...sx,
+      }}
+    >
       <Tooltip
         title={
           <>
-            {showCurrentTime ? "현재 시간 on " : "현재 시간 off "}(
-            <span style={shortcutStyle}>T</span>)
+            {controllerExpanded ? "컨트롤러 접기 " : "컨트롤러 펴기 "}(
+            <span style={shortcutStyle}>C</span>)
           </>
         }
       >
-        <IconButton
-          color="primary"
-          onClick={handleToggleCurrentTime}
-          sx={{
-            "& .MuiSvgIcon-root": !showCurrentTime ? { color: "#aaa" } : {},
-          }}
-        >
-          <AccessTimeIcon />
-        </IconButton>
-      </Tooltip>
-
-      <Tooltip
-        title={
-          <>
-            {pointerEventsEnabled ? "화면 조작 모드 " : "화면 이동 모드 "}(
-            <span style={shortcutStyle}>V</span>)
-          </>
-        }
-      >
-        <IconButton color="primary" onClick={handleTogglePointerEvents}>
-          {pointerEventsEnabled ? (
-            <MouseIcon fontSize="small" />
+        <IconButton color="primary" onClick={handleToggleController}>
+          {controllerExpanded ? (
+            <FormatIndentIncreaseIcon />
           ) : (
-            <PanToolIcon fontSize="small" />
+            <FormatIndentDecreaseIcon />
           )}
         </IconButton>
       </Tooltip>
 
-      <Tooltip
-        title={
-          <>
-            채널 정보 갱신 (<span style={shortcutStyle}>R</span>)
-          </>
-        }
-      >
-        <IconButton
-          color="primary"
-          onClick={handleRefresh}
-          disabled={refreshing}
-          sx={{
-            "& .MuiSvgIcon-root": refreshing
-              ? {
-                  animation: "rotate360 1s linear",
-                  "@keyframes rotate360": rotate360,
-                }
-              : {},
-            "&.Mui-disabled .MuiSvgIcon-root": { color: "#aaa" },
-          }}
-        >
-          <RefreshIcon />
-        </IconButton>
-      </Tooltip>
+      {controllerExpanded && (
+        <Box>
+          <Tooltip
+            title={
+              <>
+                {showCurrentTime ? "현재 시간 on " : "현재 시간 off "}(
+                <span style={shortcutStyle}>T</span>)
+              </>
+            }
+          >
+            <IconButton
+              color="primary"
+              onClick={handleToggleCurrentTime}
+              sx={{
+                "& .MuiSvgIcon-root": !showCurrentTime ? { color: "#aaa" } : {},
+              }}
+            >
+              <AccessTimeIcon />
+            </IconButton>
+          </Tooltip>
 
-      <Tooltip
-        title={
-          <>
-            전체화면 (<span style={shortcutStyle}>F</span>)
-          </>
-        }
-      >
-        <IconButton color="primary" onClick={fullscreen}>
-          <FullscreenIcon />
-        </IconButton>
-      </Tooltip>
+          <Tooltip
+            title={
+              <>
+                {pointerEventsEnabled ? "화면 조작 모드 " : "화면 이동 모드 "}(
+                <span style={shortcutStyle}>V</span>)
+              </>
+            }
+          >
+            <IconButton color="primary" onClick={handleTogglePointerEvents}>
+              {pointerEventsEnabled ? (
+                <MouseIcon fontSize="small" />
+              ) : (
+                <PanToolIcon fontSize="small" />
+              )}
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip
+            title={
+              <>
+                채널 정보 갱신 (<span style={shortcutStyle}>R</span>)
+              </>
+            }
+          >
+            <IconButton
+              color="primary"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              sx={{
+                "& .MuiSvgIcon-root": refreshing
+                  ? {
+                      animation: "rotate360 1s linear",
+                      "@keyframes rotate360": rotate360,
+                    }
+                  : {},
+                "&.Mui-disabled .MuiSvgIcon-root": { color: "#aaa" },
+              }}
+            >
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip
+            title={
+              <>
+                전체화면 (<span style={shortcutStyle}>F</span>)
+              </>
+            }
+          >
+            <IconButton color="primary" onClick={fullscreen}>
+              <FullscreenIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      )}
     </Box>
   );
 }
