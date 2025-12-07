@@ -8,6 +8,7 @@ import LiveTags from "@/components/Info/LiveTags";
 import LiveTime from "@/components/Info/LiveTime";
 import UserCount from "@/components/Info/UserCount";
 import ProfileImage from "@/components/Info/ProfileImage";
+import ChannelStatus from "@/components/Info/ChannelStatus";
 
 import { useAtomValue } from "jotai";
 import { controllerExpandedAtom } from "@/atoms/setting";
@@ -23,7 +24,6 @@ export default function ChannelInfo({ channel, isDragging = false }) {
 
   const tooltipTitle = (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-      {/* 첫 줄: 채널 이름 + 제목 */}
       <Box sx={{ fontSize: 13 }}>
         <span
           style={{ color: `${COLORS[channel.platform].main}`, fontWeight: 600 }}
@@ -33,25 +33,26 @@ export default function ChannelInfo({ channel, isDragging = false }) {
         {" : "}
         {channel.liveTitle || "제목 없음"}
       </Box>
-
-      {/* 두 번째 줄: 카테고리 + 태그 */}
-      {(channel.liveCategory || (channel.tags && channel.tags.length > 0)) && (
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            gap: 0.5,
-            maxWidth: "260px",
-          }}
-        >
-          <LiveCategory channel={channel} />
-          <LiveTags channel={channel} />
-          {channel.isLive && (
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: 0.5,
+          maxWidth: "260px",
+        }}
+      >
+        <LiveCategory channel={channel} />
+        <LiveTags channel={channel} />
+        {channel.isLive ? (
+          <>
+            <LiveTime channel={channel} isTag={true} />
             <UserCount channel={channel} isTag={true} />
-          )}
-        </Box>
-      )}
+          </>
+        ) : 
+          <ChannelStatus channel={channel} isTag={true} />
+        }
+      </Box>
     </Box>
   );
 
@@ -115,13 +116,9 @@ export default function ChannelInfo({ channel, isDragging = false }) {
                   <LiveTime channel={channel} />
                   <UserCount channel={channel} />
                 </>
-              ) : channel.closeDate ? (
-                `close ${dayjs(channel.closeDate).format("MM/DD HH:mm")}`
-              ) : channel.openDate ? (
-                `open ${dayjs(channel.openDate).format("MM/DD HH:mm")}`
-              ) : (
-                ""
-              )}
+              ) : 
+                <ChannelStatus channel={channel} />
+              }
             </Box>
           </Box>
         )}
