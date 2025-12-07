@@ -12,7 +12,7 @@ import ProfileImage from "@/components/Info/ProfileImage";
 import { useAtomValue } from "jotai";
 import { controllerExpandedAtom } from "@/atoms/setting";
 
-export default function ChannelInfo({ channel, sx = {} }) {
+export default function ChannelInfo({ channel, isDragging = false }) {
   if (!channel) return null;
 
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
@@ -60,6 +60,7 @@ export default function ChannelInfo({ channel, sx = {} }) {
     <Tooltip
       placement="left"
       arrow
+      title={isDragging ? null : tooltipTitle}
       componentsProps={{
         tooltip: {
           sx: {
@@ -68,7 +69,6 @@ export default function ChannelInfo({ channel, sx = {} }) {
           },
         },
       }}
-      title={tooltipTitle}
     >
       <Box sx={{
         position: "relative",
@@ -81,7 +81,6 @@ export default function ChannelInfo({ channel, sx = {} }) {
         border: "none",
         transition: "filter 0.3s ease",
         ...inactiveStyle,
-        ...sx,
       }}>
         <ProfileImage channel={channel} />
         

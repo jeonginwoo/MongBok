@@ -209,7 +209,7 @@ export default function ChannelList() {
                 boxShadow: `0 0 10px ${COLORS[activeChannel.platform].shadow}`,
               }}
             >
-              <ChannelInfo channel={activeChannel} />
+              <ChannelInfo channel={activeChannel} isDragging={true} />
             </ListItem>
           ) : null}
         </DragOverlay>

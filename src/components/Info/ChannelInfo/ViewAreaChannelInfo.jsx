@@ -6,7 +6,7 @@ import LiveTags from "@/components/Info/LiveTags";
 import UserCount from "@/components/Info/UserCount";
 import ProfileImage from "@/components/Info/ProfileImage";
 
-export default function ChannelInfo({ channel, sx = {} }) {
+export default function ChannelInfo({ channel }) {
   if (!channel) return null;
 
   const inactiveStyle = !channel.isLive
@@ -25,7 +25,6 @@ export default function ChannelInfo({ channel, sx = {} }) {
         border: "none",
         transition: "filter 0.3s ease",
         ...inactiveStyle,
-        ...sx,
       }}
     >
       <ProfileImage channel={channel} />

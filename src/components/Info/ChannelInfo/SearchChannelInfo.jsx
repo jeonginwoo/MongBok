@@ -4,7 +4,7 @@ import { Box, Typography } from "@mui/material";
 import UserCount from "@/components/Info/UserCount";
 import ProfileImage from "@/components/Info/ProfileImage";
 
-export default function ChannelInfo({ searchChannel, sx = {} }) {
+export default function ChannelInfo({ searchChannel }) {
   if (!searchChannel) return null;
 
   const inactiveStyle = !searchChannel.isLive
@@ -22,7 +22,6 @@ export default function ChannelInfo({ searchChannel, sx = {} }) {
         boxSizing: "border-box",
         border: "none",
         transition: "filter 0.3s ease",
-        ...sx,
       }}
     >
       <Box
