@@ -47,8 +47,8 @@ export default function ChannelInfo({ channel, sx = {} }) {
         >
           <LiveCategory channel={channel} />
           <LiveTags channel={channel} />
-          {!controllerExpanded && channel.isLive && (
-            <UserCount channel={channel} />
+          {channel.isLive && (
+            <UserCount channel={channel} isTag={true} />
           )}
         </Box>
       )}
@@ -104,7 +104,7 @@ export default function ChannelInfo({ channel, sx = {} }) {
                 display: "flex",
                 alignItems: "center",
                 gap: 1,
-                zoom: 0.8,
+                fontSize: "0.8rem",
                 borderRadius: "4px",
                 color: "#bbbbbbff",
                 fontWeight: "bold",

@@ -227,7 +227,7 @@ export default function ControlButtonGroup({ fullscreen, sx = {} }) {
               sx={{
                 "& .MuiSvgIcon-root": refreshing
                   ? {
-                      animation: "rotate360 1s linear",
+                      animation: "rotate360 1s ease-in-out",
                       "@keyframes rotate360": rotate360,
                     }
                   : {},
