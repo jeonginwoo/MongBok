@@ -83,8 +83,8 @@ export default function DraggableChat({ channel, zone }) {
     iframeSrc = `https://chzzk.naver.com/live/${channelId}/chat`;
     iframeStyle = {
       width: "100%",
-      height: "calc(100% + 250px)",
-      top: "-145px",
+      height: "calc(100% + 450px)",
+      top: "-345px",
     };
   } else if (channel.platform === "soop") {
     iframeSrc = `https://chazzy.vercel.app/--${channelId}-`;
