@@ -56,7 +56,7 @@ export default function ChannelInfo({ channel }) {
             display: "flex",
             flexWrap: "wrap",
             alignItems: "center",
-            gap: 0.5,
+            gap: 1,
           }}
         >
           <LiveCategory channel={channel} />
