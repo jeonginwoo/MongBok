@@ -46,8 +46,8 @@ export default function ChannelInfo({ channel, isDragging = false }) {
         <LiveTags channel={channel} />
         {channel.isLive ? (
           <>
-            <LiveTime channel={channel} isTag={true} />
             <UserCount channel={channel} isTag={true} />
+            <LiveTime channel={channel} isTag={true} />
           </>
         ) : 
           <ChannelStatus channel={channel} isTag={true} />
@@ -67,7 +67,11 @@ export default function ChannelInfo({ channel, isDragging = false }) {
           sx: {
             fontSize: 13,
             textAlign: "left",
+            pointerEvents: "auto",
           },
+          onClick: (e) => e.stopPropagation(),
+          onMouseDown: (e) => e.stopPropagation(),
+          onPointerDown: (e) => e.stopPropagation(),
         },
       }}
     >
