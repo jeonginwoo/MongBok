@@ -1,5 +1,4 @@
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import CircleIcon from "@mui/icons-material/Circle";
 import TagWrap from "@/components/Common/TagWrap";
 
@@ -13,6 +12,9 @@ function UserCount({ channel, isTag = false }) {
         alignItems: "center",
         color: userColor,
         gap: "3px",
+        fontSize: "0.75rem",
+        lineHeight: 1,
+        fontWeight: "bold",
       }}
     >
       <CircleIcon
@@ -21,16 +23,7 @@ function UserCount({ channel, isTag = false }) {
           color: "inherit",
         }}
       />
-      <Typography
-        component="span"
-        sx={{
-          fontWeight: 600,
-          fontSize: "0.75rem",
-          lineHeight: 1,
-        }}
-      >
-        {channel?.userCount}
-      </Typography>
+      {channel?.userCount}
     </Box>
   );
 
