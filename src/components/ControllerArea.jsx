@@ -17,7 +17,7 @@ export default function ControllerArea({ fullscreen }) {
     <Paper
       elevation={3}
       sx={{
-        width: controllerExpanded ? 250 : 80,
+        width: controllerExpanded ? 290 : 80,
         backgroundColor: "#1e1e1e",
         color: "#fff",
         display: "flex",

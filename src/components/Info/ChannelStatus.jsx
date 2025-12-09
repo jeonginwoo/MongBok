@@ -3,9 +3,17 @@ import dayjs from "dayjs";
 import TagWrap from "@/components/Common/TagWrap";
 
 function ChannelStatus({ channel, isTag = false }) {
-  const statusText = `${dayjs(channel.openDate).format("MM/DD HH:mm")}`;
+  // let statusText = "";
+  // if (channel.closeDate) {
+  //   statusText = `off ${dayjs(channel.closeDate).format("MM/DD HH:mm")}`;
+  // } else if (channel.openDate) {
+  //   statusText = `on ${dayjs(channel.openDate).format("MM/DD HH:mm")}`;
+  // }
+  
+  const startTime = `${dayjs(channel.openDate).format("MM/DD HH:mm")}`;
+  const endTime = channel.closeDate ? `${dayjs(channel.closeDate).format("MM/DD HH:mm")}` : "?";
 
-  if (!statusText) return null;
+  if (!startTime) return null;
 
   const themeColor = "#888888ff";
 
@@ -15,12 +23,12 @@ function ChannelStatus({ channel, isTag = false }) {
         color={themeColor} 
         sx={{ whiteSpace: "nowrap" }}
       >
-        {statusText}
+        {startTime} ~ {endTime}
       </TagWrap>
     );
   }
 
-  return <>{statusText}</>;
+  return <>{startTime} ~ {endTime}</>;
 }
 
 export default ChannelStatus;
