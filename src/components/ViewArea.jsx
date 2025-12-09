@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
 import {
   DndContext,
-  MouseSensor, // 추가
-  TouchSensor, // 추가
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   pointerWithin,
@@ -24,29 +24,46 @@ import {
 export default function ViewArea({ canvasRef, fullscreen }) {
   const [isDraggingAny, setIsDraggingAny] = useState(false);
   const [draggingType, setDraggingType] = useState(null);
+  const [fitStyle, setFitStyle] = useState({ width: "100%" });
   const [channels, setChannels] = useAtom(channelsAtom);
   const layout = useAtomValue(layoutAtom);
   const pointerEventsEnabled = useAtomValue(pointerEventsEnabledAtom);
   const showCurrentTime = useAtomValue(showCurrentTimeAtom);
 
-  // 🔹 센서 설정 변경 (핵심 수정 부분)
   const sensors = useSensors(
-    // 데스크탑: 10픽셀 움직이면 드래그 시작
     useSensor(MouseSensor, {
-      activationConstraint: {
-        distance: 10,
-      },
+      activationConstraint: { distance: 10 },
     }),
-    // 모바일: 250ms 동안 꾹 누르면 드래그 시작 (스크롤 오동작 방지)
     useSensor(TouchSensor, {
       activationConstraint: {
         delay: 250,
-        tolerance: 5, // 5px 정도의 떨림은 허용
+        tolerance: 5,
       },
     })
   );
 
-  /** 🔄 Drop handler */
+  useEffect(() => {
+    const element = canvasRef?.current;
+    if (!element) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const { width, height } = entry.contentRect;
+        
+        if (width === 0 || height === 0) return;
+        if (width * 9 >= height * 16) {
+          setFitStyle({ height: "100%" }); 
+        } else {
+          setFitStyle({ width: "100%" });
+        }
+      }
+    });
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [canvasRef]);
+
   const handleDrop = (baseId, targetZoneId) => {
     setChannels((prev) => {
       const updated = structuredClone(prev);
@@ -79,6 +96,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#1b1b1bff",
+        overflow: "hidden",
       }}
     >
       <DndContext
@@ -103,11 +121,9 @@ export default function ViewArea({ canvasRef, fullscreen }) {
           sx={{
             position: "relative",
             aspectRatio: "16/9",
-            width: "100%",
-            maxWidth: "100%",
-            maxHeight: "100%",
             backgroundColor: "#000",
             overflow: "hidden",
+            ...fitStyle,
           }}
         >
           {/* DropZone */}

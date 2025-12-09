@@ -215,9 +215,10 @@ export default function ChannelList() {
         </DragOverlay>
       </DndContext>
 
+      <Divider sx={{ borderColor: "#555", mt: 1, mr: 1.5, ml: 1.5, mb: 2 }} />
+
       {sortedHidden.length > 0 && (
         <>
-          <Divider sx={{ borderColor: "#555", mt: 1, mr: 1.5, ml: 1.5, mb: 2 }} />
           <Box
             sx={{
               flexGrow: 1,
