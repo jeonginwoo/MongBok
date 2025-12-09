@@ -1,21 +1,24 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import CircleIcon from "@mui/icons-material/Circle";
+import TagWrap from "@/components/cOMMON/TagWrap";
 
 function UserCount({ channel, isTag = false }) {
+  const userColor = "rgba(255, 56, 56, 1)";
+
   const innerContent = (
     <Box
       sx={{
         display: "flex",
         alignItems: "center",
-        color: "rgba(255, 56, 56, 1)",
+        color: userColor,
         gap: "3px",
       }}
     >
       <CircleIcon
         sx={{
           fontSize: "0.4rem",
-          color: "rgba(255, 56, 56, 1)",
+          color: "inherit",
         }}
       />
       <Typography
@@ -33,20 +36,9 @@ function UserCount({ channel, isTag = false }) {
 
   if (isTag) {
     return (
-      <Box
-        sx={{
-          padding: "3px 6px",
-          fontWeight: "bold",
-          borderRadius: "8px",
-          border: `2px solid rgba(255, 56, 56, 1)`,
-          backgroundColor: "rgba(0, 0, 0, 0.2)",
-          lineHeight: 1,
-          display: "inline-flex",
-          alignItems: "center",
-        }}
-      >
+      <TagWrap color={userColor}>
         {innerContent}
-      </Box>
+      </TagWrap>
     );
   }
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Box } from "@mui/material";
 import dayjs from "dayjs";
+import TagWrap from "@/components/Common/TagWrap";
 
 function LiveTime({ channel, isTag = false }) {
   const [time, setTime] = useState("00:00:00");
@@ -30,34 +31,16 @@ function LiveTime({ channel, isTag = false }) {
       }
     };
 
-    updateTimer(); // 초기 실행
+    updateTimer();
     const interval = setInterval(updateTimer, 1000);
 
     return () => clearInterval(interval);
   }, [channel.openDate, channel.isLive]);
 
-  // 공통 스타일 색상 정의
   const themeColor = "#888888ff";
 
   if (isTag) {
-    return (
-      <Box
-        sx={{
-          padding: "3px 6px",
-          fontWeight: "bold",
-          fontSize: "0.75rem",
-          borderRadius: "8px",
-          border: `2px solid ${themeColor}`,
-          backgroundColor: "rgba(0, 0, 0, 0.2)",
-          color: themeColor,
-          lineHeight: 1,
-          display: "inline-flex",
-          alignItems: "center",
-        }}
-      >
-        {time}
-      </Box>
-    );
+    return <TagWrap color={themeColor}>{time}</TagWrap>;
   }
 
   return <Box sx={{ color: themeColor }}>{time}</Box>;
