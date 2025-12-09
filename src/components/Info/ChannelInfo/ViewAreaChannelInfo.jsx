@@ -59,7 +59,7 @@ export default function ChannelInfo({ channel }) {
             gap: 1,
           }}
         >
-          <LiveCategory channel={channel} />
+          <LiveCategory channel={channel} isTag={true} />
           <UserCount channel={channel} />
         </Box>
       </Box>
