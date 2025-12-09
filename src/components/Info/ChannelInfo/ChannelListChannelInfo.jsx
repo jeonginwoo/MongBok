@@ -42,8 +42,8 @@ export default function ChannelInfo({ channel, isDragging = false }) {
           maxWidth: "260px",
         }}
       >
-        <LiveCategory channel={channel} />
-        <LiveTags channel={channel} />
+        <LiveCategory channel={channel} isTag={true} />
+        <LiveTags channel={channel} isTag={true} />
         {channel.isLive ? (
           <>
             <UserCount channel={channel} isTag={true} />
@@ -90,25 +90,43 @@ export default function ChannelInfo({ channel, isDragging = false }) {
         <ProfileImage channel={channel} />
         
         {controllerExpanded && (
-          <Box>
-            <Typography
-              variant="subtitle2"
+          <Box sx={{ width: "100%", marginRight: "11px"}}>
+            <Box
               sx={{
-                color: "white",
-                fontWeight: 600,
-                whiteSpace: "nowrap",
-                textOverflow: "ellipsis",
-                overflow: "hidden",
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 1,
               }}
             >
-              {channel.name}
-            </Typography>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  color: "white",
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                  textOverflow: "ellipsis",
+                  overflow: "hidden",
+                }}
+              >
+                {channel.name}
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                {channel.isLive && <UserCount channel={channel} />}
+                {channel.isLive && <LiveTime channel={channel} />}
+              </Box>
+            </Box>
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
                 gap: 1,
-                fontSize: "0.8rem",
+                fontSize: "0.75rem",
                 borderRadius: "4px",
                 color: "#bbbbbbff",
                 fontWeight: "bold",
@@ -117,8 +135,7 @@ export default function ChannelInfo({ channel, isDragging = false }) {
             >
               {channel.isLive ? (
                 <>
-                  <LiveTime channel={channel} />
-                  <UserCount channel={channel} />
+                  <LiveCategory channel={channel} />
                 </>
               ) : 
                 <ChannelStatus channel={channel} />

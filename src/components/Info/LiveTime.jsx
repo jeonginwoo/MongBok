@@ -43,7 +43,18 @@ function LiveTime({ channel, isTag = false }) {
     return <TagWrap color={themeColor}>{time}</TagWrap>;
   }
 
-  return <Box sx={{ color: themeColor }}>{time}</Box>;
+  return (
+    <Box
+      sx={{
+        color: themeColor,
+        fontSize: "0.75rem",
+        fontWeight: "bold",
+        lineHeight: 1,
+      }}
+    >
+      {time}
+    </Box>
+  );
 }
 
 export default LiveTime;
