@@ -1,7 +1,7 @@
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import CircleIcon from "@mui/icons-material/Circle";
-import TagWrap from "@/components/cOMMON/TagWrap";
+import TagWrap from "@/components/Common/TagWrap";
 
 function UserCount({ channel, isTag = false }) {
   const userColor = "rgba(255, 56, 56, 1)";
