@@ -90,8 +90,8 @@ export const layouts = {  // layouts[viewCount][layoutType][zoneType][zoneId]
     layout3: {
       view: {
         1: { id: 1, type: "view", style: { top: "0%", left: "0%", width: "50%", height: "50%" } },
-        2: { id: 2, type: "view", style: { top: "50%", left: "0%", width: "50%", height: "50%" } },
-        3: { id: 3, type: "view", style: { top: "50%", left: "50%", width: "50%", height: "50%" } },
+        2: { id: 2, type: "view", style: { top: "50%", left: "0%", width: "50%", height: "50%", zIndex: 1 } },
+        3: { id: 3, type: "view", style: { top: "50%", left: "50%", width: "50%", height: "50%", zIndex: 1 } },
       },
       chat: {
         1: { id: 1, type: "chat", style: { top: "0%", left: "50%", width: `${(50 / 3)}%`, height: "50%" } },
@@ -102,8 +102,8 @@ export const layouts = {  // layouts[viewCount][layoutType][zoneType][zoneId]
     layout4: {
       view: {
         1: { id: 1, type: "view", style: { top: "50%", left: "0%", width: "50%", height: "50%" } },
-        2: { id: 2, type: "view", style: { top: "0%", left: "0%", width: "50%", height: "50%" } },
-        3: { id: 3, type: "view", style: { top: "0%", left: "50%", width: "50%", height: "50%" } },
+        2: { id: 2, type: "view", style: { top: "0%", left: "0%", width: "50%", height: "50%", zIndex: 1 } },
+        3: { id: 3, type: "view", style: { top: "0%", left: "50%", width: "50%", height: "50%", zIndex: 1 } },
       },
       chat: {
         1: { id: 1, type: "chat", style: { top: "50%", left: "50%", width: `${(50 / 3)}%`, height: "50%" } },
