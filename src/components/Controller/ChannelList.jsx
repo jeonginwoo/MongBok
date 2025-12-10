@@ -5,7 +5,8 @@ import {
   DragOverlay,
   useSensor,
   useSensors,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -14,10 +15,9 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Switch, List, ListItem, Divider, Box } from "@mui/material";
+import { List, ListItem, Divider, Box } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { COLORS } from "@/data/color";
-import DragHandleIcon from "@mui/icons-material/DragIndicator";
 import ChannelInfo from "@/components/Info/ChannelInfo/ChannelListChannelInfo";
 
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
@@ -161,9 +161,15 @@ export default function ChannelList() {
   };
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 10,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
       },
     })
   );
