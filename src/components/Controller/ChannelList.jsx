@@ -313,13 +313,20 @@ function HiddenItem({ channel, onToggle, onDelete }) {
         opacity: 1,
         cursor: "pointer",
         "&:hover": {
-           borderColor: "#666"
-        }
+          borderColor: "#666",
+          "& .delete-icon": {
+            opacity: 0.5,
+          },
+        },
       }}
     >
       {controllerExpanded && (
         <DeleteOutlineIcon
-          onClick={() => onDelete(channel.id)}
+          className="delete-icon"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(channel.id);
+          }}
           sx={{
             zIndex: 10,
             position: "absolute",
@@ -327,8 +334,11 @@ function HiddenItem({ channel, onToggle, onDelete }) {
             fontSize: 18,
             cursor: "pointer",
             color: "#aaa",
-            opacity: 0.5,
-            "&:hover": { color: "#ff5555" },
+            opacity: 0, 
+            "&:hover": { 
+                color: "#ff5555",
+                opacity: 0.5 + " !important"
+            },
           }}
         />
       )}
