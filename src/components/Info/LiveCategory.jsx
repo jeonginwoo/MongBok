@@ -8,15 +8,11 @@ const LiveCategory = ({ channel, isTag = false }) => {
   const platformColor = COLORS[channel.platform]?.main || "#888888ff";
 
   if (isTag) {
-    return (
-      <TagWrap color={platformColor}>
-        {channel.liveCategory}
-      </TagWrap>
-    );
+    return <TagWrap color={platformColor}>{channel.liveCategory}</TagWrap>;
   }
 
   return (
-    <Box sx={{ color: platformColor }}>
+    <Box sx={{ color: platformColor, fontSize: "0.75rem", fontWeight: "bold" }}>
       {channel.liveCategory}
     </Box>
   );
