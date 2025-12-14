@@ -165,11 +165,12 @@ export default function ChannelList() {
       activationConstraint: {
         distance: 10,
       },
+      pointerType: "mouse",
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 250,
-        tolerance: 5,
+        delay: 150,
+        tolerance: 10,
       },
     })
   );
@@ -304,7 +305,7 @@ function SortableItem({ channel, onToggle }) {
 
 function HiddenItem({ channel, onToggle, onDelete }) {
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
-
+  
   return (
     <ListItem
       onClick={() => onToggle(channel.id)}
@@ -324,6 +325,7 @@ function HiddenItem({ channel, onToggle, onDelete }) {
             opacity: 0.5,
           },
         },
+        WebkitTapHighlightColor: "transparent",
       }}
     >
       {controllerExpanded && (

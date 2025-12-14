@@ -46,16 +46,15 @@ export default function ChannelInfo({ channel, isDragging = false }) {
         <LiveTags channel={channel} isTag={true} />
         {channel.isLive ? (
           <>
-            <UserCount channel={channel} isTag={true} />
+            <UserCount channel={channel} isTag={true}v />
             <LiveTime channel={channel} isTag={true} />
           </>
-        ) : 
+        ) : (
           <ChannelStatus channel={channel} isTag={true} />
-        }
+        )}
       </Box>
     </Box>
   );
-
 
   return (
     <Tooltip
@@ -75,22 +74,24 @@ export default function ChannelInfo({ channel, isDragging = false }) {
         },
       }}
     >
-      <Box sx={{
-        position: "relative",
-        display: "flex",
-        alignItems: "center",
-        gap: 1.5,
-        width: "100%",
-        height: "100%",
-        boxSizing: "border-box",
-        border: "none",
-        transition: "filter 0.3s ease",
-        ...inactiveStyle,
-      }}>
+      <Box
+        sx={{
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          width: "100%",
+          height: "100%",
+          boxSizing: "border-box",
+          border: "none",
+          transition: "filter 0.3s ease",
+          ...inactiveStyle,
+        }}
+      >
         <ProfileImage channel={channel} />
-        
+
         {controllerExpanded && (
-          <Box sx={{ width: "100%", marginRight: "11px"}}>
+          <Box sx={{ width: "100%", marginRight: "11px" }}>
             <Box
               sx={{
                 display: "flex",
@@ -134,12 +135,10 @@ export default function ChannelInfo({ channel, isDragging = false }) {
               }}
             >
               {channel.isLive ? (
-                <>
-                  <LiveCategory channel={channel} />
-                </>
-              ) : 
+                <LiveCategory channel={channel} />
+              ) : (
                 <ChannelStatus channel={channel} />
-              }
+              )}
             </Box>
           </Box>
         )}
