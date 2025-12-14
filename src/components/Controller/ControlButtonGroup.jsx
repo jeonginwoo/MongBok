@@ -204,7 +204,7 @@ export default function ControlButtonGroup({ fullscreen, sx = {} }) {
               </>
             }
           >
-            <IconButton color="primary" onClick={handleTogglePointerEvents}>
+            <IconButton color="primary" onClick={handleTogglePointerEvents} sx={{ padding: 1.25 }}>
               {pointerEventsEnabled ? (
                 <MouseIcon fontSize="small" />
               ) : (
