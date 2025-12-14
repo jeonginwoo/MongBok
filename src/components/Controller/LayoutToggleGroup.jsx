@@ -4,7 +4,7 @@ import { styled } from "@mui/material/styles";
 import { layouts } from "@/data/layouts";
 
 import { useAtom, useAtomValue } from "jotai";
-import { layoutTypeAtom, viewCountAtom, controllerExpandedAtom } from "@/atoms/setting";
+import { layoutTypeAtom, ratioAtom, viewCountAtom, controllerExpandedAtom } from "@/atoms/setting";
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   display: "flex",
@@ -32,6 +32,7 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
 
 export default function LayoutToggleGroup() {
   const [layoutType, setLayoutType] = useAtom(layoutTypeAtom);
+  const ratio = useAtomValue(ratioAtom);
   const viewCount = useAtomValue(viewCountAtom);
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
 
@@ -50,7 +51,7 @@ export default function LayoutToggleGroup() {
       if (isInput) return;
 
       // 현재 viewCount에 해당하는 레이아웃 키 목록 가져오기
-      const currentLayouts = layouts[viewCount];
+      const currentLayouts = layouts[ratio][viewCount];
       if (!currentLayouts) return;
       
       const layoutKeys = Object.keys(currentLayouts);
@@ -75,7 +76,7 @@ export default function LayoutToggleGroup() {
     };
   }, [viewCount, layoutType, setLayoutType]);
 
-  if (!layouts[viewCount]) {
+  if (!layouts[ratio][viewCount]) {
     return null;
   }
 
@@ -87,7 +88,7 @@ export default function LayoutToggleGroup() {
         onChange={handleChange}
         aria-label="layout selection"
       >
-        {Object.keys(layouts[viewCount]).map((key, index) => (
+        {Object.keys(layouts[ratio][viewCount]).map((key, index) => (
           <ToggleButton key={key} value={key} aria-label={`layout ${index + 1}`}>
             {index + 1}
           </ToggleButton>

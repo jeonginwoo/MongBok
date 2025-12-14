@@ -7,7 +7,9 @@ import {
 // ✅ 치지직 라이브 상태 조회
 const getChzzkLiveStatus = async (channelId) => {
   try {
-    const response = await chzzk_client.get(`/service/v3.2/channels/${channelId}/live-detail`);
+    const response = await chzzk_client.get(
+      `/service/v3.2/channels/${channelId}/live-detail`
+    );
     const data = response.data?.content;
     if (!data) {
       return await getChzzkLiveStatus2(channelId);
@@ -20,7 +22,7 @@ const getChzzkLiveStatus = async (channelId) => {
       openDate: data?.openDate ?? null,
       closeDate: data?.closeDate ?? null,
       isLive: data?.status === "OPEN",
-      userCount: (data?.status === "CLOSE") ? 0 : (data?.concurrentUserCount ?? 0),
+      userCount: data?.status === "CLOSE" ? 0 : data?.concurrentUserCount ?? 0,
       liveCategory: data?.liveCategoryValue || data?.liveCategory,
       tags: data?.tags,
     };
@@ -32,7 +34,9 @@ const getChzzkLiveStatus = async (channelId) => {
 
 const getChzzkLiveStatus2 = async (channelId) => {
   try {
-    const response = await chzzk_client.get(`/service/v1/channels/${channelId}`);
+    const response = await chzzk_client.get(
+      `/service/v1/channels/${channelId}`
+    );
     const data = response.data?.content;
 
     return {
@@ -73,7 +77,6 @@ const getSoopLiveTags = async (channelId) => {
       liveCategory: data?.CATEGORY_TAGS?.[0] ?? null,
       tags: data?.HASH_TAGS ?? [],
     };
-
   } catch (error) {
     console.error("❌ [Soop] 라이브 태그 가져오기 실패:", error);
     throw error;
@@ -86,15 +89,16 @@ const getSoopLiveStatus = async (channelId) => {
     const response = await soop_channel_client.get(`/api/${channelId}/station`);
     const data = response.data;
     const tag = await getSoopLiveTags(channelId);
-    
+
     return {
       name: data?.station?.user_nick ?? "",
       imageUrl: data?.profile_image ?? "",
-      liveTitle: data?.broad?.broad_title || data?.station?.display?.profile_text,
+      liveTitle:
+        data?.broad?.broad_title || data?.station?.display?.profile_text,
       openDate: data?.station?.broad_start ?? null,
       closeDate: null,
       isLive: data?.broad != null,
-      userCount: (data?.broad == null) ? 0 : (data?.broad?.current_sum_viewer ?? 0),
+      userCount: data?.broad == null ? 0 : data?.broad?.current_sum_viewer ?? 0,
       liveCategory: tag?.liveCategory,
       tags: tag?.tags,
     };

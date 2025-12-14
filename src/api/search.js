@@ -1,7 +1,4 @@
-import {
-  chzzk_client,
-  soop_search_client,
-} from "@/api/client";
+import { chzzk_client, soop_search_client } from "@/api/client";
 import { getLiveStatus } from "@/api/live";
 
 const getChzzkSearch = async (keyword) => {
@@ -16,9 +13,9 @@ const getChzzkSearch = async (keyword) => {
         const liveStatus = await getLiveStatus(item.channel.channelId, "chzzk");
         return {
           ...liveStatus,
-          "id": item.channel.channelId,
-          "platform": "chzzk",
-        }
+          id: item.channel.channelId,
+          platform: "chzzk",
+        };
       })
     );
 
@@ -45,9 +42,9 @@ const getSoopSearch = async (keyword) => {
         const liveStatus = await getLiveStatus(item.user_id, "soop");
         return {
           ...liveStatus,
-          "id": item.user_id,
-          "platform": "soop",
-        }
+          id: item.user_id,
+          platform: "soop",
+        };
       })
     );
 
@@ -95,4 +92,3 @@ export const searchAllPlatforms = async (keyword, limit = 6) => {
 
   return normalized.sort((a, b) => b._score - a._score).slice(0, limit);
 };
-

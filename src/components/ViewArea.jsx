@@ -17,6 +17,7 @@ import { useAtom, useAtomValue } from "jotai";
 import {
   channelsAtom,
   layoutAtom,
+  ratioAtom,
   pointerEventsEnabledAtom,
   showCurrentTimeAtom,
 } from "@/atoms/setting";
@@ -27,6 +28,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
   const [fitStyle, setFitStyle] = useState({ width: "100%" });
   const [channels, setChannels] = useAtom(channelsAtom);
   const layout = useAtomValue(layoutAtom);
+  const ratio = useAtomValue(ratioAtom);
   const pointerEventsEnabled = useAtomValue(pointerEventsEnabledAtom);
   const showCurrentTime = useAtomValue(showCurrentTimeAtom);
 
@@ -120,7 +122,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
           className="canvas"
           sx={{
             position: "relative",
-            aspectRatio: "16/9",
+            aspectRatio: `${ratio}`,
             backgroundColor: "#000",
             overflow: "hidden",
             ...fitStyle,
