@@ -47,7 +47,7 @@ function LiveTime({ channel, isTag = false }) {
     <Box
       sx={{
         color: themeColor,
-        fontSize: "0.75rem",
+        fontSize: "1.2rem",
         fontWeight: "bold",
         lineHeight: 1,
       }}

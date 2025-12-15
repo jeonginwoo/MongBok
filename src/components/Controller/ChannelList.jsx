@@ -208,13 +208,13 @@ export default function ChannelList() {
           {activeChannel ? (
             <ListItem
               sx={{
-                padding: controllerExpanded ? "0 23px 0 0" : "0",
+                padding: controllerExpanded ? "0 2.3rem 0 0" : "0",
                 overflow: "hidden",
-                border: `1px solid ${COLORS[activeChannel.platform].main}`,
-                borderRadius: "100px",
+                border: `0.1rem solid ${COLORS[activeChannel.platform].main}`,
+                borderRadius: "10rem",
                 background: "#2c2c2c",
                 cursor: "grabbing",
-                boxShadow: `0 0 10px ${COLORS[activeChannel.platform].shadow}`,
+                boxShadow: `0 0 1rem ${COLORS[activeChannel.platform].shadow}`,
               }}
             >
               <ChannelInfo channel={activeChannel} isDragging={true} />
@@ -233,10 +233,10 @@ export default function ChannelList() {
               overflowY: "scroll",
               pr: 1,
               pl: 1.5,
-              "&::-webkit-scrollbar": { width: "4px" },
+              "&::-webkit-scrollbar": { width: "0.4rem" },
               "&::-webkit-scrollbar-thumb": {
                 backgroundColor: "#555",
-                borderRadius: "4px",
+                borderRadius: "0.4rem",
               },
               "&::-webkit-scrollbar-thumb:hover": { backgroundColor: "#777" },
             }}
@@ -285,11 +285,11 @@ function SortableItem({ channel, onToggle }) {
       sx={{
         position: "relative",
         mb: 1,
-        padding: controllerExpanded ? "0 23px 0 0" : "0",
+        padding: controllerExpanded ? "0 2.3rem 0 0" : "0",
         overflow: "hidden",
-        borderRadius: "100px",
+        borderRadius: "10rem",
         background: "#2f2f2f",
-        border: "1px solid #444",
+        border: "0.1rem solid #444",
         transition: "all 0.2s ease",
         cursor: "grab",
         "&:hover .drag-handle-area": {
@@ -311,12 +311,12 @@ function HiddenItem({ channel, onToggle, onDelete }) {
       onClick={() => onToggle(channel.id)}
       sx={{
         position: "relative",
-        padding: controllerExpanded ? "0 23px 0 0" : "0",
+        padding: controllerExpanded ? "0 2.3rem 0 0" : "0",
         overflow: "hidden",
-        borderRadius: "100px",
+        borderRadius: "10rem",
         mb: 1,
         background: "#262626",
-        border: "1px solid #333",
+        border: "0.1rem solid #333",
         opacity: 1,
         cursor: "pointer",
         "&:hover": {
@@ -338,7 +338,7 @@ function HiddenItem({ channel, onToggle, onDelete }) {
           sx={{
             zIndex: 10,
             position: "absolute",
-            right: "10px",
+            right: "0.7rem",
             fontSize: 18,
             cursor: "pointer",
             color: "#aaa",

@@ -58,7 +58,7 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
     position: "absolute",
     ...zone?.style,
     transform: transform
-      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+      ? `translate3d(${transform.x/10}rem, ${transform.y/10}rem, 0)`
       : undefined,
     background: isDragging ? "#91e3ff" : "#000",
     opacity: isDragging ? 0.6 : 1,

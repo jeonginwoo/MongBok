@@ -61,7 +61,7 @@ export default function DraggableChat({ channel, zone }) {
     position: "absolute",
     ...zone?.style,
     transform: transform
-      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+      ? `translate3d(${transform.x/10}rem, ${transform.y/10}rem, 0)`
       : undefined,
     background: isDragging ? "#91e3ff" : "#000",
     opacity: isDragging ? 0.6 : 1,
@@ -83,15 +83,15 @@ export default function DraggableChat({ channel, zone }) {
     iframeSrc = `https://chzzk.naver.com/live/${channelId}/chat`;
     iframeStyle = {
       width: "100%",
-      height: "calc(100% + 450px)",
-      top: "-345px",
+      height: "calc(100% + 45.0rem)",
+      top: "-34.5rem",
     };
   } else if (channel.platform === "soop") {
     iframeSrc = `https://chazzy.vercel.app/--${channelId}-`;
     iframeStyle = {
-      width: "calc(100% + 110px)",
-      height: "calc(100% + 0px)",
-      left: "-60px",
+      width: "calc(100% + 11.0rem)",
+      height: "calc(100% + .0rem)",
+      left: "-6.0rem",
     };
   }
 
@@ -113,8 +113,8 @@ export default function DraggableChat({ channel, zone }) {
           src={iframeSrc}
           sx={{
             position: "absolute",
-            top: "0px",
-            left: "0px",
+            top: ".0rem",
+            left: ".0rem",
             border: "none",
             pointerEvents: "none",
             overflow: "hidden",
@@ -126,7 +126,7 @@ export default function DraggableChat({ channel, zone }) {
             position: "absolute",
             left: 0,
             width: "100%",
-            maxHeight: "100px",
+            maxHeight: "10rem",
             aspectRatio: "100/30",
             background: `
               linear-gradient(

@@ -42,7 +42,8 @@ export default function ChannelInfo({ channel }) {
           variant="subtitle2"
           sx={{
             color: "white",
-            fontWeight: 600,
+            fontSize: "1.4rem",
+            fontWeight: "bord",
             whiteSpace: "nowrap",
             textOverflow: "ellipsis",
             overflow: "hidden",

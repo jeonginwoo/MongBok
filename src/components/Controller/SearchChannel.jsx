@@ -126,11 +126,11 @@ export default function SearchChannel() {
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}
         sx={{
-          input: { color: "white" },
+          input: { color: "white", fontSize: "1.4rem" },
           "& .MuiOutlinedInput-root": {
             "& fieldset": { borderColor: "#555" },
             "&:hover fieldset": { borderColor: "#888" },
-            "& .MuiInputAdornment-root": { marginRight: "4px" }
+            "& .MuiInputAdornment-root": { marginRight: "0.4rem" }
           },
         }}
         InputProps={{
@@ -142,11 +142,11 @@ export default function SearchChannel() {
 
       <Typography
         sx={{
-          fontSize: "12px",
+          fontSize: "1.2rem",
           color: "#888",
           textAlign: "right",
-          mt: "4px",
-          mr: "2px",
+          mt: "0.4rem",
+          mr: "0.2rem",
           userSelect: "none"
         }}
       >
@@ -157,14 +157,14 @@ export default function SearchChannel() {
         <Paper
           sx={{
             position: "absolute",
-            top: "48px",
+            top: "4.8rem",
             right: 0,
             zIndex: 1000,
             overflowX: "auto",
             backgroundColor: "#2a2a2a",
-            padding: "10px",
-            borderRadius: "6px",
-            boxShadow: "0px 4px 10px rgba(0,0,0,0.4)",
+            padding: "1.0rem",
+            borderRadius: "0.6rem",
+            boxShadow: ".0rem 0.4rem 1.0rem rgba(0,0,0,0.4)",
             display: "flex",
             gap: 2,
           }}
@@ -173,13 +173,13 @@ export default function SearchChannel() {
             <Box
               key={platform}
               sx={{
-                width: "220px",
+                width: "22.0rem",
                 backgroundColor: "#1f1f1f",
-                borderRadius: "6px",
-                padding: "8px",
+                borderRadius: "0.6rem",
+                padding: "0.8rem",
               }}
             >
-              <Typography sx={{ color: "#bbb", fontSize: "14px", mb: 1 }}>
+              <Typography sx={{ color: "#bbb", fontSize: "1.3rem", mb: 1 }}>
                 {platform.toUpperCase()}
               </Typography>
 
@@ -189,9 +189,9 @@ export default function SearchChannel() {
                     key={`${ch.platform}-${ch.id}`}
                     sx={{
                       position: "relative",
-                      padding: "6px 4px",
+                      padding: "0.6rem 0.4rem",
                       cursor: "pointer",
-                      borderRadius: "4px",
+                      borderRadius: "0.4rem",
                       overflow: "hidden",
                       "&:hover .hoverOverlay": { opacity: 1 },
                       "&:hover .content": { opacity: 0.2 },
@@ -222,7 +222,7 @@ export default function SearchChannel() {
                   </Box>
                 ))
               ) : (
-                <Typography sx={{ color: "#777", fontSize: "13px" }}>
+                <Typography sx={{ color: "#777", fontSize: "1.3rem" }}>
                   결과 없음
                 </Typography>
               )}

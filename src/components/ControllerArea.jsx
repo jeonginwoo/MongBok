@@ -22,7 +22,7 @@ export default function ControllerArea({ fullscreen }) {
         color: "#fff",
         display: "flex",
         flexDirection: "column",
-        paddingTop: "12px",
+        paddingTop: "1.6rem",
       }}
     >
       {/* 🔹 LayoutType 선택 */}

@@ -4,23 +4,22 @@ import { Box } from "@mui/material";
 const TagWrap = ({ 
   children, 
   color = "#888888ff",
-  borderColor,
   backgroundColor = "rgba(0, 0, 0, 0.2)",
   sx = {}
 }) => {
   return (
     <Box
       sx={{
-        padding: "3px 6px",
+        padding: "0.4rem 0.6rem",
         fontWeight: "bold",
-        fontSize: "0.75rem",
-        borderRadius: "8px",
-        border: `2px solid ${borderColor || color}`,
+        fontSize: "1.2rem",
+        borderRadius: "0.8rem",
+        border: `0.23rem solid ${color}`,
         backgroundColor: backgroundColor,
         color: color,
-        lineHeight: 1,
         display: "inline-flex",
         alignItems: "center",
+        lineHeight: 1,
         ...sx,
       }}
     >

@@ -1,4 +1,3 @@
-// useCallback을 추가로 import 해야 합니다.
 import React, { useState, useEffect, useCallback } from "react";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import {
@@ -22,7 +21,18 @@ import {
 
 const shortcutStyle = { color: "#4fc3f7", fontWeight: "bold" };
 
-export default function ControlButtonGroup({ fullscreen, sx = {} }) {
+const iconStyle = { fontSize: "2.4rem" };
+const smallIconStyle = { fontSize: "2.0rem" };
+
+const tooltipSlotProps = {
+  tooltip: {
+    sx: {
+      fontSize: "1.2rem",
+    },
+  },
+};
+
+export default function ControlButtonGroup({ fullscreen }) {
   const [controllerExpanded, setControllerExpanded] = useAtom(
     controllerExpandedAtom
   );
@@ -155,10 +165,10 @@ export default function ControlButtonGroup({ fullscreen, sx = {} }) {
       sx={{
         display: "flex",
         justifyContent: controllerExpanded ? "space-between" : "center",
-        ...sx,
       }}
     >
       <Tooltip
+        slotProps={tooltipSlotProps}
         title={
           <>
             {controllerExpanded ? "컨트롤러 접기 " : "컨트롤러 펴기 "}(
@@ -168,9 +178,9 @@ export default function ControlButtonGroup({ fullscreen, sx = {} }) {
       >
         <IconButton color="primary" onClick={handleToggleController}>
           {controllerExpanded ? (
-            <FormatIndentIncreaseIcon />
+            <FormatIndentIncreaseIcon sx={iconStyle} />
           ) : (
-            <FormatIndentDecreaseIcon />
+            <FormatIndentDecreaseIcon sx={iconStyle} />
           )}
         </IconButton>
       </Tooltip>
@@ -178,6 +188,7 @@ export default function ControlButtonGroup({ fullscreen, sx = {} }) {
       {controllerExpanded && (
         <Box>
           <Tooltip
+            slotProps={tooltipSlotProps}
             title={
               <>
                 {showCurrentTime ? "현재 시간 on " : "현재 시간 off "}(
@@ -192,11 +203,12 @@ export default function ControlButtonGroup({ fullscreen, sx = {} }) {
                 "& .MuiSvgIcon-root": !showCurrentTime ? { color: "#aaa" } : {},
               }}
             >
-              <AccessTimeIcon />
+              <AccessTimeIcon sx={iconStyle} />
             </IconButton>
           </Tooltip>
 
           <Tooltip
+            slotProps={tooltipSlotProps}
             title={
               <>
                 {pointerEventsEnabled ? "화면 조작 모드 " : "화면 이동 모드 "}(
@@ -206,14 +218,15 @@ export default function ControlButtonGroup({ fullscreen, sx = {} }) {
           >
             <IconButton color="primary" onClick={handleTogglePointerEvents} sx={{ padding: 1.25 }}>
               {pointerEventsEnabled ? (
-                <MouseIcon fontSize="small" />
+                <MouseIcon sx={smallIconStyle} />
               ) : (
-                <PanToolIcon fontSize="small" />
+                <PanToolIcon sx={smallIconStyle} />
               )}
             </IconButton>
           </Tooltip>
 
           <Tooltip
+            slotProps={tooltipSlotProps}
             title={
               <>
                 채널 정보 갱신 (<span style={shortcutStyle}>R</span>)
@@ -234,11 +247,12 @@ export default function ControlButtonGroup({ fullscreen, sx = {} }) {
                 "&.Mui-disabled .MuiSvgIcon-root": { color: "#aaa" },
               }}
             >
-              <RefreshIcon />
+              <RefreshIcon sx={iconStyle} />
             </IconButton>
           </Tooltip>
 
           <Tooltip
+            slotProps={tooltipSlotProps}
             title={
               <>
                 전체화면 (<span style={shortcutStyle}>F</span>)
@@ -246,7 +260,7 @@ export default function ControlButtonGroup({ fullscreen, sx = {} }) {
             }
           >
             <IconButton color="primary" onClick={fullscreen}>
-              <FullscreenIcon />
+              <FullscreenIcon sx={iconStyle} />
             </IconButton>
           </Tooltip>
         </Box>

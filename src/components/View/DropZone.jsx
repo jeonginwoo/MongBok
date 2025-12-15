@@ -6,7 +6,7 @@ export default function DropZone({ zone, canvasRef }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `${zone.type}-${zone.id}`,
   });
-  const [fontSize, setFontSize] = useState(12);
+  const [fontSize, setFontSize] = useState(1.2);
   const zoneAlias = { 1: "①", 2: "②", 3: "③", 4: "④" };
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function DropZone({ zone, canvasRef }) {
 
       const ratio = 0.5;
 
-      setFontSize(minSize * ratio);
+      setFontSize(minSize * ratio / 10);
     };
 
     updateFontSize();
@@ -37,14 +37,14 @@ export default function DropZone({ zone, canvasRef }) {
       sx={{
         ...zone.style,
         position: "absolute",
-        border: "2px dashed rgb(76,192,101)",
-        borderRadius: "8px",
+        border: "0.2rem dashed rgb(76,192,101)",
+        borderRadius: "0.8rem",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         transition: "0.2s",
         pointerEvents: "none",
-        backdropFilter: "blur(4px)",
+        backdropFilter: "blur(0.4rem)",
         zIndex: 200,
         opacity: 1,
         bgcolor: isOver ? "rgba(100,255,134,0.8)" : "rgba(255,255,255,0.7)",
@@ -52,7 +52,7 @@ export default function DropZone({ zone, canvasRef }) {
     >
       <Box
         sx={{
-          fontSize: `${fontSize}px`,
+          fontSize: `${fontSize}rem`,
           fontWeight: "bold",
           color: "rgba(0,0,0,0.15)",
           transform: "translateY(-3.8%)",

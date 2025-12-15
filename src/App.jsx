@@ -20,8 +20,8 @@ export default function App() {
   // 📱 모바일 브라우저 100vh 높이 보정 로직
   useEffect(() => {
     const setScreenHeight = () => {
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty("--vh", `${vh}px`);
+      const vh = window.innerHeight * 0.001;
+      document.documentElement.style.setProperty("--vh", `${vh}rem`);
     };
     setScreenHeight();
     window.addEventListener("resize", setScreenHeight);

@@ -11,15 +11,15 @@ function UserCount({ channel, isTag = false }) {
         display: "flex",
         alignItems: "center",
         color: userColor,
-        gap: "3px",
-        fontSize: "0.75rem",
+        gap: "0.3rem",
+        fontSize: "1.2rem",
         lineHeight: 1,
         fontWeight: "bold",
       }}
     >
       <CircleIcon
         sx={{
-          fontSize: "0.4rem",
+          fontSize: "0.6rem",
           color: "inherit",
         }}
       />

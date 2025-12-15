@@ -4,21 +4,26 @@ import { styled } from "@mui/material/styles";
 import { layouts } from "@/data/layouts";
 
 import { useAtom, useAtomValue } from "jotai";
-import { layoutTypeAtom, ratioAtom, viewCountAtom, controllerExpandedAtom } from "@/atoms/setting";
+import {
+  layoutTypeAtom,
+  ratioAtom,
+  viewCountAtom,
+  controllerExpandedAtom,
+} from "@/atoms/setting";
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   display: "flex",
   flexWrap: "wrap",
-  gap: "10px",
-  
+  gap: "1rem",
+
   "& .MuiToggleButtonGroup-grouped": {
     padding: 0,
-    width: "40px",
-    height: "40px",
-    border: "1px solid #d3d3d3 !important",
-    borderRadius: "4px !important",
+    width: "4.0rem",
+    height: "4.0rem",
+    border: "0.1rem solid #d3d3d3 !important",
+    borderRadius: "0.4rem !important",
     color: "#d3d3d3",
-    
+
     "&.Mui-selected": {
       backgroundColor: "#d3d3d3",
       color: "#000",
@@ -47,18 +52,25 @@ export default function LayoutToggleGroup() {
     const handleKeyDown = (e) => {
       // 입력창(input, textarea)이나 편집 가능한 영역에서는 단축키 무시
       const tagName = document.activeElement?.tagName;
-      const isInput = tagName === "INPUT" || tagName === "TEXTAREA" || document.activeElement?.isContentEditable;
+      const isInput =
+        tagName === "INPUT" ||
+        tagName === "TEXTAREA" ||
+        document.activeElement?.isContentEditable;
       if (isInput) return;
 
       // 현재 viewCount에 해당하는 레이아웃 키 목록 가져오기
       const currentLayouts = layouts[ratio][viewCount];
       if (!currentLayouts) return;
-      
+
       const layoutKeys = Object.keys(currentLayouts);
       const keyNumber = parseInt(e.key, 10);
 
       // 숫자키 1 ~ N 범위인지 확인
-      if (!isNaN(keyNumber) && keyNumber > 0 && keyNumber <= layoutKeys.length) {
+      if (
+        !isNaN(keyNumber) &&
+        keyNumber > 0 &&
+        keyNumber <= layoutKeys.length
+      ) {
         const targetIndex = keyNumber - 1;
         const targetLayout = layoutKeys[targetIndex];
 
@@ -81,7 +93,8 @@ export default function LayoutToggleGroup() {
   }
 
   return (
-    controllerExpanded && viewCount !== 0 && (
+    controllerExpanded &&
+    viewCount !== 0 && (
       <StyledToggleButtonGroup
         value={viewCount === 0 ? null : layoutType}
         exclusive
@@ -89,7 +102,12 @@ export default function LayoutToggleGroup() {
         aria-label="layout selection"
       >
         {Object.keys(layouts[ratio][viewCount]).map((key, index) => (
-          <ToggleButton key={key} value={key} aria-label={`layout ${index + 1}`}>
+          <ToggleButton
+            key={key}
+            value={key}
+            aria-label={`layout ${index + 1}`}
+            sx={{ fontSize: "1.2rem" }}
+          >
             {index + 1}
           </ToggleButton>
         ))}

@@ -24,9 +24,9 @@ export default function ChannelInfo({ channel, isDragging = false }) {
 
   const tooltipTitle = (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-      <Box sx={{ fontSize: 13 }}>
+      <Box sx={{ fontSize: "1.4rem" }}>
         <span
-          style={{ color: `${COLORS[channel.platform].main}`, fontWeight: 600 }}
+          style={{ color: `${COLORS[channel.platform].main}`, fontWeight: "bord" }}
         >
           {channel.name || "채널명 없음"}
         </span>
@@ -39,7 +39,7 @@ export default function ChannelInfo({ channel, isDragging = false }) {
           flexWrap: "wrap",
           alignItems: "center",
           gap: 0.5,
-          maxWidth: "260px",
+          maxWidth: "26.0rem",
         }}
       >
         <LiveCategory channel={channel} isTag={true} />
@@ -64,7 +64,7 @@ export default function ChannelInfo({ channel, isDragging = false }) {
       componentsProps={{
         tooltip: {
           sx: {
-            fontSize: 13,
+            fontSize: "1.2rem",
             textAlign: "left",
             pointerEvents: "auto",
           },
@@ -91,26 +91,23 @@ export default function ChannelInfo({ channel, isDragging = false }) {
         <ProfileImage channel={channel} />
 
         {controllerExpanded && (
-          <Box sx={{ width: "100%", marginRight: "11px" }}>
+          <Box sx={{ width: "100%", marginRight: "0.5rem" }}>
             <Box
               sx={{
                 display: "flex",
                 justifyContent: "space-between",
+                alignContent: "center",
                 gap: 1,
               }}
             >
-              <Typography
-                variant="subtitle2"
+              <Box
                 sx={{
-                  color: "white",
-                  fontWeight: 600,
-                  whiteSpace: "nowrap",
-                  textOverflow: "ellipsis",
-                  overflow: "hidden",
+                  fontSize: "1.4rem",
+                  fontWeight: "bold",
                 }}
               >
                 {channel.name}
-              </Typography>
+              </Box>
               <Box
                 sx={{
                   display: "flex",
@@ -127,8 +124,8 @@ export default function ChannelInfo({ channel, isDragging = false }) {
                 display: "flex",
                 alignItems: "center",
                 gap: 1,
-                fontSize: "0.75rem",
-                borderRadius: "4px",
+                fontSize: "1.2rem",
+                borderRadius: "10rem",
                 color: "#bbbbbbff",
                 fontWeight: "bold",
                 whiteSpace: "nowrap",

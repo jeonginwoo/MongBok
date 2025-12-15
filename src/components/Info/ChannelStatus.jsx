@@ -9,9 +9,11 @@ function ChannelStatus({ channel, isTag = false }) {
   // } else if (channel.openDate) {
   //   statusText = `on ${dayjs(channel.openDate).format("MM/DD HH:mm")}`;
   // }
-  
+
   const startTime = `${dayjs(channel.openDate).format("MM/DD HH:mm")}`;
-  const endTime = channel.closeDate ? `${dayjs(channel.closeDate).format("MM/DD HH:mm")}` : "?";
+  const endTime = channel.closeDate
+    ? `${dayjs(channel.closeDate).format("MM/DD HH:mm")}`
+    : "?";
 
   if (!startTime) return null;
 
@@ -19,16 +21,17 @@ function ChannelStatus({ channel, isTag = false }) {
 
   if (isTag) {
     return (
-      <TagWrap 
-        color={themeColor} 
-        sx={{ whiteSpace: "nowrap" }}
-      >
+      <TagWrap color={themeColor} sx={{ whiteSpace: "nowrap" }}>
         {startTime} ~ {endTime}
       </TagWrap>
     );
   }
 
-  return <>{startTime} ~ {endTime}</>;
+  return (
+    <>
+      {startTime} ~ {endTime}
+    </>
+  );
 }
 
 export default ChannelStatus;

@@ -12,7 +12,7 @@ const LiveCategory = ({ channel, isTag = false }) => {
   }
 
   return (
-    <Box sx={{ color: platformColor, fontSize: "0.75rem", fontWeight: "bold" }}>
+    <Box sx={{ color: platformColor, fontSize: "1.2rem", fontWeight: "bold" }}>
       {channel.liveCategory}
     </Box>
   );

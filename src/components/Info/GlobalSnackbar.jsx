@@ -21,7 +21,21 @@ export default function GlobalSnackbar() {
       <Alert
         onClose={handleClose}
         severity={snackbar.severity}
-        sx={{ width: "100%" }}
+        sx={{ 
+          width: "100%",
+          fontSize: "1.4rem",
+          "& .MuiAlert-action": {
+            paddingTop: 0,
+            alignItems: "center", 
+            "& .MuiSvgIcon-root": {
+              fontSize: "1.4rem",
+            },
+          },
+          "& .MuiAlert-icon": {
+            fontSize: "1.8rem",
+            alignItems: "center"
+          }
+        }}
       >
         {snackbar.message}
       </Alert>

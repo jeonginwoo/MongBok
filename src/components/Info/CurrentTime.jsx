@@ -30,14 +30,14 @@ const CurrentTime = ({ onClick }) => {
       onClick={onClick}
       sx={{
         position: "absolute",
-        margin: "5px 8px",
-        padding: "2px 7px",
-        borderRadius: "3px",
+        margin: "0.5rem 0.8rem",
+        padding: "0.2rem 0.7rem",
+        borderRadius: "0.3rem",
         bottom: "0",
         right: "0",
         background: "rgba(0,0,0,0.6)",
         color: "#ffffffff",
-        fontSize: "15px",
+        fontSize: "1.5rem",
         zIndex: 1000,
         "&:hover": {
           cursor: "pointer",

@@ -32,7 +32,7 @@ export default function ProfileImage({
           height: imgSize,
           borderRadius: "50%",
           overflow: "hidden",
-          boxShadow: "0 0 6px rgba(0,0,0,0.4)",
+          boxShadow: "0 0 0.6rem rgba(0,0,0,0.4)",
           backgroundColor: "#141517",
         }}
       >
