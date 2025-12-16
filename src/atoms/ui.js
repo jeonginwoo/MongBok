@@ -5,3 +5,5 @@ export const snackbarAtom = atom({
   message: "",
   severity: "warning", // "error" | "success" | "info" | "warning"
 });
+
+export const fitStyleAtom = atom({ width: '100%' });

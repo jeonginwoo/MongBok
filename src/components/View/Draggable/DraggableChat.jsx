@@ -6,11 +6,13 @@ import ChannelInfo from "@/components/Info/ChannelInfo/ViewAreaChannelInfo";
 
 import { useAtomValue } from "jotai";
 import { controllerExpandedAtom } from "@/atoms/setting";
+import { fitStyleAtom } from "@/atoms/ui";
 
 export default function DraggableChat({ channel, zone }) {
   if (!channel) return null;
 
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
+  const fitStyle = useAtomValue(fitStyleAtom);
 
   const draggableId = `${channel.id}-chat`;
   const { attributes, listeners, setNodeRef, transform, isDragging } =
@@ -55,7 +57,7 @@ export default function DraggableChat({ channel, zone }) {
       clearTimeout(timer);
     };
     
-  }, [zone?.style.width, controllerExpanded]);
+  }, [zone?.style.width, controllerExpanded, fitStyle]);
 
   const style = {
     position: "absolute",

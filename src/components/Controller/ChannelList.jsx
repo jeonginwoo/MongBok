@@ -22,7 +22,7 @@ import ChannelInfo from "@/components/Info/ChannelInfo/ChannelListChannelInfo";
 
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 import { channelsAtom, layoutTypeAtom, controllerExpandedAtom } from "@/atoms/setting";
-import { snackbarAtom } from "@/atoms/snackbar";
+import { snackbarAtom } from "@/atoms/ui";
 
 export default function ChannelList() {
   const [activeId, setActiveId] = useState(null);

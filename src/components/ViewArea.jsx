@@ -21,11 +21,12 @@ import {
   pointerEventsEnabledAtom,
   showCurrentTimeAtom,
 } from "@/atoms/setting";
+import { fitStyleAtom } from "@/atoms/ui";
 
 export default function ViewArea({ canvasRef, fullscreen }) {
   const [isDraggingAny, setIsDraggingAny] = useState(false);
   const [draggingType, setDraggingType] = useState(null);
-  const [fitStyle, setFitStyle] = useState({ width: "100%" });
+  const [fitStyle, setFitStyle] = useAtom(fitStyleAtom);
   const [channels, setChannels] = useAtom(channelsAtom);
   const layout = useAtomValue(layoutAtom);
   const ratio = useAtomValue(ratioAtom);

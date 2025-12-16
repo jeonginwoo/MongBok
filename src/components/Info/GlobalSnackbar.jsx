@@ -1,7 +1,7 @@
 import React from "react";
 import { useAtom } from "jotai";
 import { Snackbar, Alert } from "@mui/material";
-import { snackbarAtom } from "@/atoms/snackbar";
+import { snackbarAtom } from "@/atoms/ui";
 
 export default function GlobalSnackbar() {
   const [snackbar, setSnackbar] = useAtom(snackbarAtom);

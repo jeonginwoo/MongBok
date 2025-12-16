@@ -4,11 +4,13 @@ import Box from "@mui/material/Box";
 
 import { useAtomValue } from "jotai";
 import { controllerExpandedAtom } from "@/atoms/setting";
+import { fitStyleAtom } from "@/atoms/ui";
 
 export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
   if (!channel) return null;
 
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
+  const fitStyle = useAtomValue(fitStyleAtom);
 
   const draggableId = `${channel.id}-view`;
   const { attributes, listeners, setNodeRef, transform, isDragging } =
@@ -52,7 +54,7 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
       clearTimeout(timer);
     };
     
-  }, [zone?.style.width, controllerExpanded]);
+  }, [zone?.style.width, controllerExpanded, fitStyle]);
 
   const style = {
     position: "absolute",

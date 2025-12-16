@@ -13,7 +13,7 @@ import { searchChannels } from "@/api/search";
 
 import { useAtom, useSetAtom } from "jotai";
 import { channelsAtom } from "@/atoms/setting";
-import { snackbarAtom } from "@/atoms/snackbar";
+import { snackbarAtom } from "@/atoms/ui";
 
 export default function SearchChannel() {
   const maxChannels = 30;
