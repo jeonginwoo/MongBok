@@ -98,7 +98,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#1b1b1bff",
+        backgroundColor: "rgba(27, 27, 27, 1)",
         overflow: "hidden",
       }}
     >
@@ -124,7 +124,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
           sx={{
             position: "relative",
             aspectRatio: `${ratio}`,
-            backgroundColor: "#000",
+            backgroundColor: "rgba(0, 0, 0, 1)",
             overflow: "hidden",
             ...fitStyle,
           }}

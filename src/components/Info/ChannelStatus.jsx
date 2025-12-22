@@ -17,7 +17,7 @@ function ChannelStatus({ channel, isTag = false }) {
 
   if (!startTime) return null;
 
-  const themeColor = "#888888ff";
+  const themeColor = "rgba(136, 136, 136, 1)";
 
   if (isTag) {
     return (

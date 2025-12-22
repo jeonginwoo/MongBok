@@ -126,7 +126,7 @@ export default function ChannelInfo({ channel, isDragging = false }) {
                 gap: 1,
                 fontSize: "1.2rem",
                 borderRadius: "10rem",
-                color: "#bbbbbbff",
+                color: "rgba(187, 187, 187, 1)",
                 fontWeight: "bold",
                 whiteSpace: "nowrap",
               }}

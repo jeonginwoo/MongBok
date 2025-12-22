@@ -65,7 +65,7 @@ export default function DraggableChat({ channel, zone }) {
     transform: transform
       ? `translate3d(${transform.x/10}rem, ${transform.y/10}rem, 0)`
       : undefined,
-    background: isDragging ? "#91e3ff" : "#000",
+    background: isDragging ? "rgba(145, 22hsla(0, 0%, 0%, 1.00)55, 1)" : "rgba(0, 0, 0, 1)",
     opacity: isDragging ? 0.6 : 1,
     display: "flex",
     alignItems: "center",

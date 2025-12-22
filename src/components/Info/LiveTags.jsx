@@ -8,7 +8,7 @@ const LiveTags = ({ channel, isTag = false }) => {
     return channel.tags.map((tag, index) => (
       <TagWrap
         key={index}
-        color="#dcdcdc"
+        color="rgba(220, 220, 220, 1)"
       >
         {tag}
       </TagWrap>
@@ -19,7 +19,7 @@ const LiveTags = ({ channel, isTag = false }) => {
     <Box
       key={index}
       sx={{
-        color: "#dcdcdc",
+        color: "rgba(220, 220, 220, 1)",
       }}
     >
       {tag}

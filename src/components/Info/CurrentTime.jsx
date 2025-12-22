@@ -36,12 +36,12 @@ const CurrentTime = ({ onClick }) => {
         bottom: "0",
         right: "0",
         background: "rgba(0,0,0,0.6)",
-        color: "#ffffffff",
+        color: "rgba(255, 255, 255, 1)",
         fontSize: "1.5rem",
         zIndex: 1000,
         "&:hover": {
           cursor: "pointer",
-          backgroundColor: "rgba(255,255,255,0.1)",
+          backgroundColor: "rgba(134, 134, 134, 0.1)",
         },
       }}
     >

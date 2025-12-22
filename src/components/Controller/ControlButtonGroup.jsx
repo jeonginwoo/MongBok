@@ -19,7 +19,7 @@ import {
   controllerExpandedAtom,
 } from "@/atoms/setting";
 
-const shortcutStyle = { color: "#4fc3f7", fontWeight: "bold" };
+const shortcutStyle = { color: "rgba(79, 195, 247, 1)", fontWeight: "bold" };
 
 const iconStyle = { fontSize: "2.4rem" };
 const smallIconStyle = { fontSize: "2.0rem" };
@@ -200,7 +200,7 @@ export default function ControlButtonGroup({ fullscreen }) {
               color="primary"
               onClick={handleToggleCurrentTime}
               sx={{
-                "& .MuiSvgIcon-root": !showCurrentTime ? { color: "#aaa" } : {},
+                "& .MuiSvgIcon-root": !showCurrentTime ? { color: "rgba(170, 170, 170, 1)" } : {},
               }}
             >
               <AccessTimeIcon sx={iconStyle} />
@@ -244,7 +244,7 @@ export default function ControlButtonGroup({ fullscreen }) {
                       "@keyframes rotate360": rotate360,
                     }
                   : {},
-                "&.Mui-disabled .MuiSvgIcon-root": { color: "#aaa" },
+                "&.Mui-disabled .MuiSvgIcon-root": { color: "rgba(170, 170, 170, 1)" },
               }}
             >
               <RefreshIcon sx={iconStyle} />

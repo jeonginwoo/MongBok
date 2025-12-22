@@ -3,7 +3,7 @@ import { Box } from "@mui/material";
 
 const TagWrap = ({ 
   children, 
-  color = "#888888ff",
+  color = "rgba(136, 136, 136, 1)",
   backgroundColor = "rgba(0, 0, 0, 0.2)",
   sx = {}
 }) => {

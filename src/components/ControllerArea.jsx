@@ -18,8 +18,8 @@ export default function ControllerArea({ fullscreen }) {
       elevation={3}
       sx={{
         width: controllerExpanded ? 290 : 80,
-        backgroundColor: "#1e1e1e",
-        color: "#fff",
+        backgroundColor: "rgba(30, 30, 30, 1)",
+        color: "rgba(255, 255, 255, 1)",
         display: "flex",
         flexDirection: "column",
         paddingTop: "1.6rem",

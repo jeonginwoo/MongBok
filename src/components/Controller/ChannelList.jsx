@@ -179,10 +179,10 @@ export default function ChannelList() {
     overflowY: "scroll",
     "&::-webkit-scrollbar": { width: "0.4rem" },
     "&::-webkit-scrollbar-thumb": {
-      backgroundColor: "#555",
+      backgroundColor: "rgba(85, 85, 85, 1)",
       borderRadius: "0.4rem",
     },
-    "&::-webkit-scrollbar-thumb:hover": { backgroundColor: "#777" },
+    "&::-webkit-scrollbar-thumb:hover": { backgroundColor: "rgba(119, 119, 119, 1)" },
   };
   
   return (
@@ -222,7 +222,7 @@ export default function ChannelList() {
                 overflow: "hidden",
                 border: `0.1rem solid ${COLORS[activeChannel.platform].main}`,
                 borderRadius: "10rem",
-                background: "#2c2c2c",
+                background: "rgba(44, 44, 44, 1)",
                 cursor: "grabbing",
                 boxShadow: `0 0 1rem ${COLORS[activeChannel.platform].shadow}`,
               }}
@@ -233,7 +233,7 @@ export default function ChannelList() {
         </DragOverlay>
       </DndContext>
 
-      <Divider sx={{ borderColor: "#555", mt: 1, mr: 1.5, ml: 1.5, mb: 2 }} />
+      <Divider sx={{ borderColor: "rgba(85, 85, 85, 1)", mt: 1, mr: 1.5, ml: 1.5, mb: 2 }} />
 
       {sortedHidden.length > 0 && (
         <>
@@ -292,8 +292,8 @@ function SortableItem({ channel, onToggle }) {
         padding: controllerExpanded ? "0 2.3rem 0 0" : "0",
         overflow: "hidden",
         borderRadius: "10rem",
-        background: "#2f2f2f",
-        border: "0.1rem solid #444",
+        background: "rgba(47, 47, 47, 1)",
+        border: "0.1rem solid rgba(68, 68, 68, 1)",
         transition: "all 0.2s ease",
         cursor: "grab",
         "&:hover .drag-handle-area": {
@@ -319,12 +319,12 @@ function HiddenItem({ channel, onToggle, onDelete }) {
         overflow: "hidden",
         borderRadius: "10rem",
         mb: 1,
-        background: "#262626",
-        border: "0.1rem solid #333",
+        background: "rgba(38, 38, 38, 1)",
+        border: "0.1rem solid rgba(51, 51, 51, 1)",
         opacity: 1,
         cursor: "pointer",
         "&:hover": {
-          borderColor: "#666",
+          borderColor: "rgba(102, 102, 102, 1)",
           "& .delete-icon": {
             opacity: 0.5,
           },
@@ -345,10 +345,10 @@ function HiddenItem({ channel, onToggle, onDelete }) {
             right: "0.7rem",
             fontSize: 18,
             cursor: "pointer",
-            color: "#aaa",
+            color: "rgba(170, 170, 170, 1)",
             opacity: 0, 
             "&:hover": { 
-                color: "#ff5555",
+                color: "rgba(255, 85, 85, 1)",
                 opacity: 0.5 + " !important"
             },
           }}

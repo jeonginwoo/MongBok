@@ -37,7 +37,7 @@ function LiveTime({ channel, isTag = false }) {
     return () => clearInterval(interval);
   }, [channel.openDate, channel.isLive]);
 
-  const themeColor = "#888888ff";
+  const themeColor = "rgba(136, 136, 136, 1)";
 
   if (isTag) {
     return <TagWrap color={themeColor}>{time}</TagWrap>;

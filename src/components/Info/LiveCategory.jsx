@@ -5,7 +5,7 @@ import TagWrap from "@/components/Common/TagWrap";
 const LiveCategory = ({ channel, isTag = false }) => {
   if (!channel.liveCategory) return null;
 
-  const platformColor = COLORS[channel.platform]?.main || "#888888ff";
+  const platformColor = COLORS[channel.platform]?.main || "rgba(136, 136, 136, 1)";
 
   if (isTag) {
     return <TagWrap color={platformColor}>{channel.liveCategory}</TagWrap>;

@@ -8,7 +8,7 @@ export default function ManualArea() {
       backgroundColor: "rgba(85, 85, 85, 1)",
       borderRadius: "0.4rem",
     },
-    "&::-webkit-scrollbar-thumb:hover": { backgroundColor: "#777" },
+    "&::-webkit-scrollbar-thumb:hover": { backgroundColor: "rgba(119, 119, 119, 1)" },
   };
 
   return (
@@ -18,7 +18,7 @@ export default function ManualArea() {
         display: "flex",
         justifyContent: "center",
         backgroundColor: "rgba(27, 27, 27, 1)",
-        color: "white",
+        color: "rgba(255, 255, 255, 1)",
         ...scrollStyle,
       }}
     >
