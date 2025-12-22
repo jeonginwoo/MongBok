@@ -174,6 +174,16 @@ export default function ChannelList() {
       },
     })
   );
+
+  const scrollStyle = {
+    overflowY: "scroll",
+    "&::-webkit-scrollbar": { width: "0.4rem" },
+    "&::-webkit-scrollbar-thumb": {
+      backgroundColor: "#555",
+      borderRadius: "0.4rem",
+    },
+    "&::-webkit-scrollbar-thumb:hover": { backgroundColor: "#777" },
+  };
   
   return (
     <Box
@@ -230,15 +240,9 @@ export default function ChannelList() {
           <Box
             sx={{
               flexGrow: 1,
-              overflowY: "scroll",
               pr: 1,
               pl: 1.5,
-              "&::-webkit-scrollbar": { width: "0.4rem" },
-              "&::-webkit-scrollbar-thumb": {
-                backgroundColor: "#555",
-                borderRadius: "0.4rem",
-              },
-              "&::-webkit-scrollbar-thumb:hover": { backgroundColor: "#777" },
+              ...scrollStyle,
             }}
           >
             <List disablePadding>

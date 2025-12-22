@@ -1,13 +1,18 @@
 import React, { useEffect, useRef } from "react";
 import { CssBaseline, Box } from "@mui/material";
 
+import ManualArea from "@/components/ManualArea";
 import ViewArea from "@/components/ViewArea";
 import ControllerArea from "@/components/ControllerArea";
 
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 
+import { useAtomValue } from "jotai";
+import { viewCountAtom } from "@/atoms/setting";
+
 export default function App() {
+  const viewCount = useAtomValue(viewCountAtom);
   const canvasRef = useRef(null);
 
   /** 🧭 전체화면 */
@@ -40,7 +45,9 @@ export default function App() {
           overflow: "hidden",
         }}
       >
-        <ViewArea canvasRef={canvasRef} fullscreen={fullscreen} />
+        {(viewCount > 0)
+        ? <ViewArea canvasRef={canvasRef} fullscreen={fullscreen} />
+        : <ManualArea />}
         <ControllerArea fullscreen={fullscreen} />
       </Box>
     </>
