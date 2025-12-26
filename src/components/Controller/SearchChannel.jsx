@@ -126,16 +126,16 @@ export default function SearchChannel() {
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}
         sx={{
-          input: { color: "rgba(255, 255, 255, 1)", fontSize: "1.4rem" },
+          input: { color: "text.primary", fontSize: "1.4rem" },
           "& .MuiOutlinedInput-root": {
-            "& fieldset": { borderColor: "rgba(85, 85, 85, 1)" },
-            "&:hover fieldset": { borderColor: "rgba(136, 136, 136, 1)" },
+            "& fieldset": { borderColor: "border.primary" },
+            "&:hover fieldset": { borderColor: "border.secondary" },
             "& .MuiInputAdornment-root": { marginRight: "0.4rem" }
           },
         }}
         InputProps={{
           endAdornment: loading ? (
-            <CircularProgress size={20} sx={{ color: "rgba(170, 170, 170, 1)" }} />
+            <CircularProgress size={20} sx={{ color: "text.quaternary" }} />
           ) : null,
         }}
       />
@@ -143,7 +143,7 @@ export default function SearchChannel() {
       <Typography
         sx={{
           fontSize: "1.2rem",
-          color: "rgba(136, 136, 136, 1)",
+          color: "text.disabled",
           textAlign: "right",
           mt: "0.4rem",
           mr: "0.2rem",
@@ -155,31 +155,31 @@ export default function SearchChannel() {
 
       {showList && (
         <Paper
-          sx={{
+          sx={(theme) => ({
             position: "absolute",
             top: "4.8rem",
             right: 0,
             zIndex: 1000,
             overflowX: "auto",
-            backgroundColor: "rgba(42, 42, 42, 1)",
+            backgroundColor: "background.level1",
             padding: "1.0rem",
             borderRadius: "0.6rem",
-            boxShadow: ".0rem 0.4rem 1.0rem rgba(0,0,0,0.4)",
+            boxShadow: `.0rem 0.4rem 1.0rem ${theme.palette.background.overlay}`,
             display: "flex",
             gap: 2,
-          }}
+          })}
         >
           {["chzzk", "soop"].map((platform) => (
             <Box
               key={platform}
               sx={{
                 width: "22.0rem",
-                backgroundColor: "rgba(31, 31, 31, 1)",
+                backgroundColor: "background.level2",
                 borderRadius: "0.6rem",
                 padding: "0.8rem",
               }}
             >
-              <Typography sx={{ color: "rgba(187, 187, 187, 1)", fontSize: "1.3rem", mb: 1 }}>
+              <Typography sx={{ color: "text.secondary", fontSize: "1.3rem", mb: 1 }}>
                 {platform.toUpperCase()}
               </Typography>
 
@@ -212,17 +212,17 @@ export default function SearchChannel() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        backgroundColor: "rgba(0, 0, 0, 0.4)",
+                        backgroundColor: "background.overlay",
                         opacity: 0,
                         pointerEvents: "none",
                       }}
                     >
-                      <AddIcon sx={{ fontSize: 36, color: "rgba(255, 255, 255, 1)" }} />
+                      <AddIcon sx={{ fontSize: 36, color: "text.primary" }} />
                     </Box>
                   </Box>
                 ))
               ) : (
-                <Typography sx={{ color: "rgba(119, 119, 119, 1)", fontSize: "1.3rem" }}>
+                <Typography sx={{ color: "text.placeholder", fontSize: "1.3rem" }}>
                   결과 없음
                 </Typography>
               )}

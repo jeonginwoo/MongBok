@@ -37,7 +37,7 @@ export default function DropZone({ zone, canvasRef }) {
       sx={{
         ...zone.style,
         position: "absolute",
-        border: "0.2rem dashed rgb(76,192,101)",
+        border: (theme) => `0.2rem dashed ${theme.palette.dropZone.border}`,
         borderRadius: "0.8rem",
         display: "flex",
         justifyContent: "center",
@@ -47,14 +47,14 @@ export default function DropZone({ zone, canvasRef }) {
         backdropFilter: "blur(0.4rem)",
         zIndex: 200,
         opacity: 1,
-        bgcolor: isOver ? "rgba(100,255,134,0.8)" : "rgba(255,255,255,0.7)",
+        bgcolor: (theme) => isOver ? theme.palette.dropZone.backgroundOver : theme.palette.dropZone.background,
       }}
     >
       <Box
         sx={{
           fontSize: `${fontSize}rem`,
           fontWeight: "bold",
-          color: "rgba(0,0,0,0.15)",
+          color: "dropZone.text",
           transform: "translateY(-3.8%)",
         }}
       >

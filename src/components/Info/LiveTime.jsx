@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { Box } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 import dayjs from "dayjs";
 import TagWrap from "@/components/Common/TagWrap";
 
 function LiveTime({ channel, isTag = false }) {
   const [time, setTime] = useState("00:00:00");
+  const theme = useTheme();
+  const color = theme.palette.text.disabled;
 
   useEffect(() => {
     if (!channel.openDate) return;
@@ -37,16 +39,14 @@ function LiveTime({ channel, isTag = false }) {
     return () => clearInterval(interval);
   }, [channel.openDate, channel.isLive]);
 
-  const themeColor = "rgba(136, 136, 136, 1)";
-
   if (isTag) {
-    return <TagWrap color={themeColor}>{time}</TagWrap>;
+    return <TagWrap color={color}>{time}</TagWrap>;
   }
 
   return (
     <Box
       sx={{
-        color: themeColor,
+        color: color,
         fontSize: "1.2rem",
         fontWeight: "bold",
         lineHeight: 1,

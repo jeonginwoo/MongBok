@@ -56,13 +56,13 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
     
   }, [zone?.style.width, controllerExpanded, fitStyle]);
 
-  const style = {
+  const style = (theme) => ({
     position: "absolute",
     ...zone?.style,
     transform: transform
       ? `translate3d(${transform.x/10}rem, ${transform.y/10}rem, 0)`
       : undefined,
-    background: isDragging ? "rgba(145, 227, 255, 1)" : "rgba(0, 0, 0, 1)",
+    background: isDragging ? theme.palette.common.lightSkyBlue : theme.palette.background.canvas,
     opacity: isDragging ? 0.6 : 1,
     display: "flex",
     alignItems: "center",
@@ -72,7 +72,7 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
     boxSizing: "border-box",
     zIndex: isDragging ? 310 : 110 + baseZIndex,
     touchAction: "none",
-  };
+  });
 
   const iframeSrc =
     channel.platform === "chzzk"

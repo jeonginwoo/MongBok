@@ -3,25 +3,25 @@ import { Box } from "@mui/material";
 
 const TagWrap = ({ 
   children, 
-  color = "rgba(136, 136, 136, 1)",
-  backgroundColor = "rgba(0, 0, 0, 0.2)",
+  color,
+  backgroundColor,
   sx = {}
 }) => {
   return (
     <Box
-      sx={{
+      sx={(theme) => ({
         padding: "0.4rem 0.6rem",
         fontWeight: "bold",
         fontSize: "1.2rem",
         borderRadius: "0.8rem",
-        border: `0.23rem solid ${color}`,
-        backgroundColor: backgroundColor,
-        color: color,
+        border: `0.23rem solid ${color || theme.palette.tag.color}`,
+        backgroundColor: backgroundColor || theme.palette.tag.background,
+        color: color || theme.palette.tag.color,
         display: "inline-flex",
         alignItems: "center",
         lineHeight: 1,
         ...sx,
-      }}
+      })}
     >
       {children}
     </Box>

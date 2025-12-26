@@ -20,16 +20,16 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
     padding: 0,
     width: "4.0rem",
     height: "4.0rem",
-    border: "0.1rem solid rgba(211, 211, 211, 1) !important",
+    border: `0.1rem solid ${theme.palette.primary.main} !important`,
     borderRadius: "0.4rem !important",
-    color: "rgba(211, 211, 211, 1)",
+    color: theme.palette.primary.main,
 
     "&.Mui-selected": {
-      backgroundColor: "rgba(211, 211, 211, 1)",
-      color: "rgba(0, 0, 0, 1)",
-      borderColor: "rgba(211, 211, 211, 1)",
+      backgroundColor: theme.palette.primary.main,
+      color: theme.palette.primary.contrastText,
+      borderColor: `${theme.palette.primary.main} !important`,
       "&:hover": {
-        backgroundColor: "rgba(192, 192, 192, 1)",
+        backgroundColor: theme.palette.primary.dark,
       },
     },
   },

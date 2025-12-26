@@ -17,11 +17,15 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { List, ListItem, Divider, Box } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import { COLORS } from "@/data/color";
+import { PLATFORM_COLORS } from "@/data/color";
 import ChannelInfo from "@/components/Info/ChannelInfo/ChannelListChannelInfo";
 
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
-import { channelsAtom, layoutTypeAtom, controllerExpandedAtom } from "@/atoms/setting";
+import {
+  channelsAtom,
+  layoutTypeAtom,
+  controllerExpandedAtom,
+} from "@/atoms/setting";
 import { snackbarAtom } from "@/atoms/ui";
 
 export default function ChannelList() {
@@ -95,7 +99,7 @@ export default function ChannelList() {
     setChannels((prev) => {
       const updated = structuredClone(prev);
       const target = updated[id];
-      
+
       const currentVisibleCount = Object.values(updated).filter(
         (c) => c.isVisible && c.id !== id
       ).length;
@@ -110,7 +114,7 @@ export default function ChannelList() {
           return prev;
         }
         target.isVisible = true;
-        target.zoneId = Infinity; 
+        target.zoneId = Infinity;
       } else {
         target.isVisible = false;
         target.zoneId = null;
@@ -175,16 +179,6 @@ export default function ChannelList() {
     })
   );
 
-  const scrollStyle = {
-    overflowY: "scroll",
-    "&::-webkit-scrollbar": { width: "0.4rem" },
-    "&::-webkit-scrollbar-thumb": {
-      backgroundColor: "rgba(85, 85, 85, 1)",
-      borderRadius: "0.4rem",
-    },
-    "&::-webkit-scrollbar-thumb:hover": { backgroundColor: "rgba(119, 119, 119, 1)" },
-  };
-  
   return (
     <Box
       sx={{
@@ -220,11 +214,17 @@ export default function ChannelList() {
               sx={{
                 padding: controllerExpanded ? "0 2.3rem 0 0" : "0",
                 overflow: "hidden",
-                border: `0.1rem solid ${COLORS[activeChannel.platform].main}`,
+                border: (theme) =>
+                  `0.1rem solid ${
+                    theme.palette.platform[activeChannel.platform].main
+                  }`,
                 borderRadius: "10rem",
-                background: "rgba(44, 44, 44, 1)",
+                background: (theme) => theme.palette.background.level5,
                 cursor: "grabbing",
-                boxShadow: `0 0 1rem ${COLORS[activeChannel.platform].shadow}`,
+                boxShadow: (theme) =>
+                  `0 0 1rem ${
+                    theme.palette.platform[activeChannel.platform].shadow
+                  }`,
               }}
             >
               <ChannelInfo channel={activeChannel} isDragging={true} />
@@ -233,7 +233,9 @@ export default function ChannelList() {
         </DragOverlay>
       </DndContext>
 
-      <Divider sx={{ borderColor: "rgba(85, 85, 85, 1)", mt: 1, mr: 1.5, ml: 1.5, mb: 2 }} />
+      <Divider
+        sx={{ borderColor: "border.primary", mt: 1, mr: 1.5, ml: 1.5, mb: 2 }}
+      />
 
       {sortedHidden.length > 0 && (
         <>
@@ -242,7 +244,7 @@ export default function ChannelList() {
               flexGrow: 1,
               pr: 1,
               pl: 1.5,
-              ...scrollStyle,
+              overflowY: "scroll",
             }}
           >
             <List disablePadding>
@@ -292,8 +294,9 @@ function SortableItem({ channel, onToggle }) {
         padding: controllerExpanded ? "0 2.3rem 0 0" : "0",
         overflow: "hidden",
         borderRadius: "10rem",
-        background: "rgba(47, 47, 47, 1)",
-        border: "0.1rem solid rgba(68, 68, 68, 1)",
+        backgroundColor: "background.level4",
+        border: "0.1rem solid",
+        borderColor: "border.tertiary",
         transition: "all 0.2s ease",
         cursor: "grab",
         "&:hover .drag-handle-area": {
@@ -309,7 +312,7 @@ function SortableItem({ channel, onToggle }) {
 
 function HiddenItem({ channel, onToggle, onDelete }) {
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
-  
+
   return (
     <ListItem
       onClick={() => onToggle(channel.id)}
@@ -319,12 +322,13 @@ function HiddenItem({ channel, onToggle, onDelete }) {
         overflow: "hidden",
         borderRadius: "10rem",
         mb: 1,
-        background: "rgba(38, 38, 38, 1)",
-        border: "0.1rem solid rgba(51, 51, 51, 1)",
+        backgroundColor: "background.level3",
+        border: "0.1rem solid",
+        borderColor: "border.quaternary",
         opacity: 1,
         cursor: "pointer",
         "&:hover": {
-          borderColor: "rgba(102, 102, 102, 1)",
+          borderColor: "border.hover",
           "& .delete-icon": {
             opacity: 0.5,
           },
@@ -345,11 +349,11 @@ function HiddenItem({ channel, onToggle, onDelete }) {
             right: "0.7rem",
             fontSize: 18,
             cursor: "pointer",
-            color: "rgba(170, 170, 170, 1)",
-            opacity: 0, 
-            "&:hover": { 
-                color: "rgba(255, 85, 85, 1)",
-                opacity: 0.5 + " !important"
+            color: "text.quaternary",
+            opacity: 0,
+            "&:hover": {
+              color: "common.redHover",
+              opacity: 0.5 + " !important",
             },
           }}
         />

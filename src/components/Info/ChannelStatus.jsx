@@ -1,6 +1,7 @@
 import React from "react";
 import dayjs from "dayjs";
 import TagWrap from "@/components/Common/TagWrap";
+import { Box } from "@mui/material";
 
 function ChannelStatus({ channel, isTag = false }) {
   // let statusText = "";
@@ -17,20 +18,18 @@ function ChannelStatus({ channel, isTag = false }) {
 
   if (!startTime) return null;
 
-  const themeColor = "rgba(136, 136, 136, 1)";
-
   if (isTag) {
     return (
-      <TagWrap color={themeColor} sx={{ whiteSpace: "nowrap" }}>
+      <TagWrap color={(theme) => theme.palette.text.disabled} sx={{ whiteSpace: "nowrap" }}>
         {startTime} ~ {endTime}
       </TagWrap>
     );
   }
 
   return (
-    <>
+    <Box component="span" sx={{ color: "text.disabled" }}>
       {startTime} ~ {endTime}
-    </>
+    </Box>
   );
 }
 

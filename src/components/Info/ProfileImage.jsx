@@ -1,5 +1,4 @@
 import { Box } from "@mui/material";
-import { COLORS } from "@/data/color";
 
 export default function ProfileImage({
   channel,
@@ -12,29 +11,29 @@ export default function ProfileImage({
 
   return (
     <Box
-      sx={{
+      sx={(theme) => ({
         width: imgSize + borderSize,
         height: imgSize + borderSize,
         borderRadius: "50%",
         flexShrink: 0,
         background:
           isBoardered || channel.isLive
-            ? COLORS[channel.platform].profile
+            ? theme.palette.platform[channel.platform].profile
             : "transparent",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-      }}
+      })}
     >
       <Box
-        sx={{
+        sx={(theme) => ({
           width: imgSize,
           height: imgSize,
           borderRadius: "50%",
           overflow: "hidden",
-          boxShadow: "0 0 0.6rem rgba(0,0,0,0.4)",
-          backgroundColor: "rgba(20, 21, 23, 1)",
-        }}
+          boxShadow: `0 0 0.6rem ${theme.palette.background.overlay}`,
+          backgroundColor: "background.profile",
+        })}
       >
         <img
           src={channel.imageUrl || default_profile_img}

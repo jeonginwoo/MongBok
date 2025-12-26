@@ -71,6 +71,13 @@ export const controllerExpandedAtom = atom(
     : true
 );
 
+// 테마 on/off
+export const themeModeAtom = atom(
+  window !== "undefined"
+    ? window.localStorage.getItem("themeMode") || "dark"
+    : "dark"
+);
+
 // ----------------------------------------------------
 
 // Viewer로 올라간 채널 수

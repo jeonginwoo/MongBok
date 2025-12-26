@@ -35,13 +35,13 @@ const CurrentTime = ({ onClick }) => {
         borderRadius: "0.3rem",
         bottom: "0",
         right: "0",
-        background: "rgba(0,0,0,0.6)",
-        color: "rgba(255, 255, 255, 1)",
+        backgroundColor: "background.currentTime",
+        color: "common.white",
         fontSize: "1.5rem",
         zIndex: 1000,
         "&:hover": {
           cursor: "pointer",
-          backgroundColor: "rgba(134, 134, 134, 0.1)",
+          backgroundColor: "background.hover",
         },
       }}
     >

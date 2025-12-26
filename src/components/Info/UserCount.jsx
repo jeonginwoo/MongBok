@@ -1,16 +1,18 @@
 import Box from "@mui/material/Box";
 import CircleIcon from "@mui/icons-material/Circle";
 import TagWrap from "@/components/Common/TagWrap";
+import { useTheme } from "@mui/material";
 
 function UserCount({ channel, isTag = false }) {
-  const userColor = "rgba(255, 56, 56, 1)";
+  const theme = useTheme();
+  const color = theme.palette.common.red;
 
   const innerContent = (
     <Box
       sx={{
         display: "flex",
         alignItems: "center",
-        color: userColor,
+        color: color,
         gap: "0.3rem",
         fontSize: "1.2rem",
         lineHeight: 1,
@@ -29,7 +31,7 @@ function UserCount({ channel, isTag = false }) {
 
   if (isTag) {
     return (
-      <TagWrap color={userColor}>
+      <TagWrap color={color}>
         {innerContent}
       </TagWrap>
     );

@@ -8,6 +8,8 @@ import {
   AccessTime as AccessTimeIcon,
   FormatIndentIncrease as FormatIndentIncreaseIcon,
   FormatIndentDecrease as FormatIndentDecreaseIcon,
+  Brightness4 as Brightness4Icon,
+  Brightness7 as Brightness7Icon,
 } from "@mui/icons-material";
 import { getLiveStatus } from "@/api/live";
 
@@ -17,9 +19,8 @@ import {
   showCurrentTimeAtom,
   channelsAtom,
   controllerExpandedAtom,
+  themeModeAtom,
 } from "@/atoms/setting";
-
-const shortcutStyle = { color: "rgba(79, 195, 247, 1)", fontWeight: "bold" };
 
 const iconStyle = { fontSize: "2.4rem" };
 const smallIconStyle = { fontSize: "2.0rem" };
@@ -42,6 +43,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   );
   const [showCurrentTime, setShowCurrentTime] = useAtom(showCurrentTimeAtom);
   const [channels, setChannels] = useAtom(channelsAtom);
+  const [themeMode, setThemeMode] = useAtom(themeModeAtom);
 
   const handleToggleController = () => {
     setControllerExpanded((prev) => {
@@ -50,6 +52,14 @@ export default function ControlButtonGroup({ fullscreen }) {
         "controllerExpanded",
         JSON.stringify(nextState)
       );
+      return nextState;
+    });
+  };
+
+  const handleToggleTheme = () => {
+    setThemeMode((prev) => {
+      const nextState = prev === "light" ? "dark" : "light";
+      window.localStorage.setItem("themeMode", nextState);
       return nextState;
     });
   };
@@ -120,6 +130,14 @@ export default function ControlButtonGroup({ fullscreen }) {
         return;
 
       switch (event.key.toUpperCase()) {
+        case "S":
+          event.preventDefault();
+          handleToggleController();
+          break;
+        case "M":
+          event.preventDefault();
+          handleToggleTheme();
+          break;
         case "T":
           event.preventDefault();
           handleToggleCurrentTime();
@@ -135,10 +153,6 @@ export default function ControlButtonGroup({ fullscreen }) {
         case "F":
           event.preventDefault();
           fullscreen();
-          break;
-        case "C":
-          event.preventDefault();
-          handleToggleController();
           break;
         default:
           break;
@@ -171,12 +185,12 @@ export default function ControlButtonGroup({ fullscreen }) {
         slotProps={tooltipSlotProps}
         title={
           <>
-            {controllerExpanded ? "컨트롤러 접기 " : "컨트롤러 펴기 "}(
-            <span style={shortcutStyle}>C</span>)
+            {controllerExpanded ? "사이드 접기 " : "사이드 펴기 "}(
+            <Box component="span" sx={{ color: "common.skyBlue", fontWeight: "bold" }}>S</Box>)
           </>
         }
       >
-        <IconButton color="primary" onClick={handleToggleController}>
+        <IconButton  onClick={handleToggleController}>
           {controllerExpanded ? (
             <FormatIndentIncreaseIcon sx={iconStyle} />
           ) : (
@@ -191,16 +205,33 @@ export default function ControlButtonGroup({ fullscreen }) {
             slotProps={tooltipSlotProps}
             title={
               <>
-                {showCurrentTime ? "현재 시간 on " : "현재 시간 off "}(
-                <span style={shortcutStyle}>T</span>)
+                {themeMode === "light" ? "다크 모드 " : "화이트 모드 "}(
+                <Box component="span" sx={{ color: "common.skyBlue", fontWeight: "bold" }}>M</Box>)
               </>
             }
           >
             <IconButton
-              color="primary"
+              
+              onClick={handleToggleTheme}
+            >
+              {themeMode === 'light' ? <Brightness4Icon sx={iconStyle}/> : <Brightness7Icon sx={iconStyle}/>}
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip
+            slotProps={tooltipSlotProps}
+            title={
+              <>
+                {showCurrentTime ? "현재 시간 on " : "현재 시간 off "}(
+                <Box component="span" sx={{ color: "common.skyBlue", fontWeight: "bold" }}>T</Box>)
+              </>
+            }
+          >
+            <IconButton
+              
               onClick={handleToggleCurrentTime}
               sx={{
-                "& .MuiSvgIcon-root": !showCurrentTime ? { color: "rgba(170, 170, 170, 1)" } : {},
+                "& .MuiSvgIcon-root": !showCurrentTime ? { color: "text.quaternary" } : {},
               }}
             >
               <AccessTimeIcon sx={iconStyle} />
@@ -212,11 +243,11 @@ export default function ControlButtonGroup({ fullscreen }) {
             title={
               <>
                 {pointerEventsEnabled ? "화면 조작 모드 " : "화면 이동 모드 "}(
-                <span style={shortcutStyle}>V</span>)
+                <Box component="span" sx={{ color: "common.skyBlue", fontWeight: "bold" }}>V</Box>)
               </>
             }
           >
-            <IconButton color="primary" onClick={handleTogglePointerEvents} sx={{ padding: 1.25 }}>
+            <IconButton  onClick={handleTogglePointerEvents} sx={{ padding: 1.25 }}>
               {pointerEventsEnabled ? (
                 <MouseIcon sx={smallIconStyle} />
               ) : (
@@ -229,12 +260,12 @@ export default function ControlButtonGroup({ fullscreen }) {
             slotProps={tooltipSlotProps}
             title={
               <>
-                채널 정보 갱신 (<span style={shortcutStyle}>R</span>)
+                채널 정보 갱신 (<Box component="span" sx={{ color: "common.skyBlue", fontWeight: "bold" }}>R</Box>)
               </>
             }
           >
             <IconButton
-              color="primary"
+              
               onClick={handleRefresh}
               disabled={refreshing}
               sx={{
@@ -244,7 +275,7 @@ export default function ControlButtonGroup({ fullscreen }) {
                       "@keyframes rotate360": rotate360,
                     }
                   : {},
-                "&.Mui-disabled .MuiSvgIcon-root": { color: "rgba(170, 170, 170, 1)" },
+                "&.Mui-disabled .MuiSvgIcon-root": { color: "text.quaternary" },
               }}
             >
               <RefreshIcon sx={iconStyle} />
@@ -255,11 +286,11 @@ export default function ControlButtonGroup({ fullscreen }) {
             slotProps={tooltipSlotProps}
             title={
               <>
-                전체화면 (<span style={shortcutStyle}>F</span>)
+                전체화면 (<Box component="span" sx={{ color: "common.skyBlue", fontWeight: "bold" }}>F</Box>)
               </>
             }
           >
-            <IconButton color="primary" onClick={fullscreen}>
+            <IconButton  onClick={fullscreen}>
               <FullscreenIcon sx={iconStyle} />
             </IconButton>
           </Tooltip>

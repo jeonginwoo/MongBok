@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
+import { ThemeProvider } from "@mui/material/styles";
+import { getTheme } from "@/theme";
 import {
   DndContext,
   MouseSensor,
@@ -52,10 +54,10 @@ export default function ViewArea({ canvasRef, fullscreen }) {
     const observer = new ResizeObserver((entries) => {
       for (let entry of entries) {
         const { width, height } = entry.contentRect;
-        
+
         if (width === 0 || height === 0) return;
         if (width * 9 >= height * 16) {
-          setFitStyle({ height: "100%" }); 
+          setFitStyle({ height: "100%" });
         } else {
           setFitStyle({ width: "100%" });
         }
@@ -98,7 +100,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "rgba(27, 27, 27, 1)",
+        backgroundColor: "background.default",
         overflow: "hidden",
       }}
     >
@@ -124,7 +126,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
           sx={{
             position: "relative",
             aspectRatio: `${ratio}`,
-            backgroundColor: "rgba(0, 0, 0, 1)",
+            backgroundColor: "background.canvas",
             overflow: "hidden",
             ...fitStyle,
           }}

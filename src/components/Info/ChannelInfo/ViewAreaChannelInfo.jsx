@@ -41,7 +41,7 @@ export default function ChannelInfo({ channel }) {
         <Typography
           variant="subtitle2"
           sx={{
-            color: "rgba(255, 255, 255, 1)",
+            color: "text.primary",
             fontSize: "1.4rem",
             fontWeight: "bord",
             whiteSpace: "nowrap",

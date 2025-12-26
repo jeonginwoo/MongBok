@@ -59,13 +59,13 @@ export default function DraggableChat({ channel, zone }) {
     
   }, [zone?.style.width, controllerExpanded, fitStyle]);
 
-  const style = {
+  const style = (theme) => ({
     position: "absolute",
     ...zone?.style,
     transform: transform
       ? `translate3d(${transform.x/10}rem, ${transform.y/10}rem, 0)`
       : undefined,
-    background: isDragging ? "rgba(145, 22hsla(0, 0%, 0%, 1.00)55, 1)" : "rgba(0, 0, 0, 1)",
+    background: isDragging ? theme.palette.common.lightSkyBlue : theme.palette.background.canvas,
     opacity: isDragging ? 0.6 : 1,
     display: "flex",
     alignItems: "center",
@@ -76,7 +76,7 @@ export default function DraggableChat({ channel, zone }) {
     zIndex: isDragging ? 300 : 100,
     overflow: "hidden",
     touchAction: "none",
-  };
+  });
 
   let iframeSrc = "";
   let iframeStyle = {};
@@ -130,15 +130,7 @@ export default function DraggableChat({ channel, zone }) {
             width: "100%",
             maxHeight: "10rem",
             aspectRatio: "100/30",
-            background: `
-              linear-gradient(
-                to bottom,
-                rgba(0,0,0,0.9) 0%,
-                rgba(0,0,0,0.7) 40%,
-                rgba(0,0,0,0.3) 70%,
-                rgba(0,0,0,0) 100%
-              )
-            `,
+            background: (theme) => theme.palette.background.gradient,
             p: "3%",
           }}
         >

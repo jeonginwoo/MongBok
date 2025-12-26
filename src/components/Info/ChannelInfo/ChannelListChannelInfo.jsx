@@ -1,7 +1,7 @@
 import React from "react";
 import dayjs from "dayjs";
 import { Box, Typography, Tooltip } from "@mui/material";
-import { COLORS } from "@/data/color";
+import { PLATFORM_COLORS } from "@/data/color";
 
 import LiveCategory from "@/components/Info/LiveCategory";
 import LiveTags from "@/components/Info/LiveTags";
@@ -25,11 +25,11 @@ export default function ChannelInfo({ channel, isDragging = false }) {
   const tooltipTitle = (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
       <Box sx={{ fontSize: "1.4rem" }}>
-        <span
-          style={{ color: `${COLORS[channel.platform].main}`, fontWeight: "bord" }}
+        <Box component="span"
+          sx={{ color: (theme) => `${theme.palette.platform[channel.platform].main}`, fontWeight: "bord" }}
         >
           {channel.name || "채널명 없음"}
-        </span>
+        </Box>
         {" : "}
         {channel.liveTitle || "제목 없음"}
       </Box>
@@ -67,6 +67,10 @@ export default function ChannelInfo({ channel, isDragging = false }) {
             fontSize: "1.2rem",
             textAlign: "left",
             pointerEvents: "auto",
+            backgroundColor: "background.level1",
+            color: "text.primary",
+            border: "0.1rem solid",
+            borderColor: "border.primary",
           },
           onClick: (e) => e.stopPropagation(),
           onMouseDown: (e) => e.stopPropagation(),
@@ -126,7 +130,7 @@ export default function ChannelInfo({ channel, isDragging = false }) {
                 gap: 1,
                 fontSize: "1.2rem",
                 borderRadius: "10rem",
-                color: "rgba(187, 187, 187, 1)",
+                color: "text.secondary",
                 fontWeight: "bold",
                 whiteSpace: "nowrap",
               }}
