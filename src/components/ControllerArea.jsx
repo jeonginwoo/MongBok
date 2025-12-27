@@ -15,7 +15,7 @@ export default function ControllerArea({ fullscreen }) {
 
   return (
     <Paper
-      elevation={3}
+      elevation={0}
       sx={{
         width: controllerExpanded ? 290 : 80,
         backgroundColor: "background.paper",
@@ -23,6 +23,8 @@ export default function ControllerArea({ fullscreen }) {
         display: "flex",
         flexDirection: "column",
         paddingTop: "1.6rem",
+        borderLeft: "1px solid",
+        borderColor: "divider",
       }}
     >
       {/* 🔹 LayoutType 선택 */}
