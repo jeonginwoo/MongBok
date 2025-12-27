@@ -34,7 +34,7 @@ export const palettes = {
     },
     background: {
       default: "rgba(27, 27, 27, 1)",
-      paper: "rgba(10, 10, 10, 1)",
+      paper: "rgba(30, 30, 30, 1)",
       level1: "rgba(42, 42, 42, 1)",
       level2: "rgba(31, 31, 31, 1)",
       level3: "rgba(38, 38, 38, 1)",
