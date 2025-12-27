@@ -3,10 +3,14 @@ import { useDraggable } from "@dnd-kit/core";
 import Box from "@mui/material/Box";
 
 import ChannelInfo from "@/components/Info/ChannelInfo/ViewAreaChannelInfo";
+import ChatView from "@/components/View/Chat/ChatView";
 
 import { useAtomValue } from "jotai";
 import { controllerExpandedAtom } from "@/atoms/setting";
 import { fitStyleAtom } from "@/atoms/ui";
+
+import useChzzkChat from "@/hooks/useChzzkChat";
+import useSoopChat from "@/hooks/useSoopChat";
 
 export default function DraggableChat({ channel, zone }) {
   if (!channel) return null;
@@ -24,8 +28,22 @@ export default function DraggableChat({ channel, zone }) {
   const [zoom, setZoom] = useState(1);
   const channelId = channel.id;
 
+  const chzzkChatList = useChzzkChat(
+    channel.platform === "chzzk" ? channelId : null
+  );
+  const soopChatList = useSoopChat(
+    channel.platform === "soop" ? channelId : null
+  );
+
+  const chatList =
+    channel.platform === "chzzk"
+      ? chzzkChatList
+      : channel.platform === "soop"
+      ? soopChatList
+      : [];
+
   const BASE_WIDTH = 360;
-  
+
   useEffect(() => {
     const updateZoom = () => {
       if (!containerRef.current) return;
@@ -51,21 +69,22 @@ export default function DraggableChat({ channel, zone }) {
     updateZoom();
     const timer = setTimeout(updateZoom, 300);
     window.addEventListener("resize", updateZoom);
-    
+
     return () => {
       window.removeEventListener("resize", updateZoom);
       clearTimeout(timer);
     };
-    
   }, [zone?.style.width, controllerExpanded, fitStyle]);
 
   const style = (theme) => ({
     position: "absolute",
     ...zone?.style,
     transform: transform
-      ? `translate3d(${transform.x/10}rem, ${transform.y/10}rem, 0)`
+      ? `translate3d(${transform.x / 10}rem, ${transform.y / 10}rem, 0)`
       : undefined,
-    background: isDragging ? theme.palette.common.lightSkyBlue : theme.palette.background.canvas,
+    background: isDragging
+      ? theme.palette.common.lightSkyBlue
+      : theme.palette.background.canvas,
     opacity: isDragging ? 0.6 : 1,
     display: "flex",
     alignItems: "center",
@@ -77,25 +96,6 @@ export default function DraggableChat({ channel, zone }) {
     overflow: "hidden",
     touchAction: "none",
   });
-
-  let iframeSrc = "";
-  let iframeStyle = {};
-
-  if (channel.platform === "chzzk") {
-    iframeSrc = `https://chzzk.naver.com/live/${channelId}/chat`;
-    iframeStyle = {
-      width: "100%",
-      height: "calc(100% + 45.0rem)",
-      top: "-34.5rem",
-    };
-  } else if (channel.platform === "soop") {
-    iframeSrc = `https://chazzy.vercel.app/--${channelId}-`;
-    iframeStyle = {
-      width: "calc(100% + 11.0rem)",
-      height: "calc(100% + .0rem)",
-      left: "-6.0rem",
-    };
-  }
 
   return (
     <Box ref={setNodeRef} {...listeners} {...attributes} sx={style}>
@@ -111,19 +111,6 @@ export default function DraggableChat({ channel, zone }) {
         }}
       >
         <Box
-          component="iframe"
-          src={iframeSrc}
-          sx={{
-            position: "absolute",
-            top: ".0rem",
-            left: ".0rem",
-            border: "none",
-            pointerEvents: "none",
-            overflow: "hidden",
-            ...iframeStyle,
-          }}
-        />
-        <Box
           sx={{
             position: "absolute",
             left: 0,
@@ -138,6 +125,7 @@ export default function DraggableChat({ channel, zone }) {
             <ChannelInfo channel={channel} />
           </Box>
         </Box>
+        <ChatView chatList={chatList} />
       </Box>
     </Box>
   );

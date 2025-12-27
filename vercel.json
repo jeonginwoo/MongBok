@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/chzzk-game/(.*)",
+      "destination": "https://comm-api.game.naver.com/$1"
+    },
+    {
       "source": "/api/chzzk/(.*)",
       "destination": "https://api.chzzk.naver.com/$1"
     },
