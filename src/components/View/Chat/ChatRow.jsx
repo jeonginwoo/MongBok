@@ -26,10 +26,10 @@ export default function ChatRow({ chat }) {
           alt=""
           src={src}
           sx={{
-            height: "1.6rem",
+            height: "1.8rem",
             verticalAlign: "top",
             mt: "0.38rem",
-            pr: "0.6rem",
+            pr: "0.4rem",
           }}
         />
       ))}
