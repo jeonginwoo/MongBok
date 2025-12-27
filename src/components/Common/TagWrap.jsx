@@ -14,7 +14,7 @@ const TagWrap = ({
         fontWeight: "bold",
         fontSize: "1.2rem",
         borderRadius: "0.8rem",
-        border: `0.23rem solid ${color || theme.palette.tag.color}`,
+        border: `0.1rem solid ${color || theme.palette.tag.color}`,
         backgroundColor: backgroundColor || theme.palette.tag.background,
         color: color || theme.palette.tag.color,
         display: "inline-flex",
