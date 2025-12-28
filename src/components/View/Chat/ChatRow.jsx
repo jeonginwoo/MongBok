@@ -27,8 +27,7 @@ export default function ChatRow({ chat }) {
           src={src}
           sx={{
             height: "1.8rem",
-            verticalAlign: "top",
-            mt: "0.38rem",
+            verticalAlign: "middle",
             pr: "0.4rem",
           }}
         />
@@ -36,11 +35,11 @@ export default function ChatRow({ chat }) {
       <Box
         component="span"
         className="nickname"
-        sx={{ color, verticalAlign: "top", pr: "0.8rem" }}
+        sx={{ color, verticalAlign: "middle", pr: "0.8rem" }}
       >
         {nickname}
       </Box>
-      <Box component="span" className="message" sx={{ verticalAlign: "top" }}>
+      <Box component="span" className="message" sx={{ verticalAlign: "middle" }}>
         {message.map((part, i) => (
           <Fragment key={i}>
             {part.type === "text" ? (
