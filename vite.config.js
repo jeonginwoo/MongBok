@@ -18,15 +18,15 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/api/chzzk-game": {
+      "/api/chzzk/chat": {
         target: "https://comm-api.game.naver.com",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/chzzk-game/, ""),
+        rewrite: (path) => path.replace(/^\/api\/chzzk\/chat/, ""),
       },
-      "/api/chzzk": {
+      "/api/chzzk/live": {
         target: "https://api.chzzk.naver.com",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/chzzk/, ""),
+        rewrite: (path) => path.replace(/^\/api\/chzzk\/live/, ""),
       },
       "/api/soop/channel": {
         target: "https://chapi.sooplive.co.kr",
@@ -42,6 +42,11 @@ export default defineConfig({
         target: "https://live.sooplive.co.kr",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/soop\/live/, ""),
+      },
+      "/api/soop/station": {
+        target: "https://bjapi.afreecatv.com",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/soop\/station/, ""),
       },
     },
   },

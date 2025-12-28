@@ -1,11 +1,11 @@
 {
   "rewrites": [
     {
-      "source": "/api/chzzk-game/(.*)",
+      "source": "/api/chzzk/chat/(.*)",
       "destination": "https://comm-api.game.naver.com/$1"
     },
     {
-      "source": "/api/chzzk/(.*)",
+      "source": "/api/chzzk/live/(.*)",
       "destination": "https://api.chzzk.naver.com/$1"
     },
     {
@@ -19,6 +19,10 @@
     {
       "source": "/api/soop/live/(.*)",
       "destination": "https://live.sooplive.co.kr/$1"
+    },
+    {
+      "source": "/api/soop/station/(.*)",
+      "destination": "https://bjapi.afreecatv.com/$1"
     },
     {
       "source": "/(.*)",

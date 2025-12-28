@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import Box from "@mui/material/Box";
 import ChatRow from "./ChatRow";
+import CheeseChatRow from "./CheeseChatRow";
 import { useTheme } from "@mui/material/styles";
 
 export default function ChatView({ chatList }) {
@@ -49,9 +50,13 @@ export default function ChatView({ chatList }) {
         },
       }}
     >
-      {chatList.map((chat) => (
-        <ChatRow key={chat.uid} chat={chat} />
-      ))}
+      {chatList.map((chat) =>
+        chat.payAmount != null ? (
+          <CheeseChatRow key={chat.uid} chat={chat} />
+        ) : (
+          <ChatRow key={chat.uid} chat={chat} />
+        )
+      )}
     </Box>
   );
 }

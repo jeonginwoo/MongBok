@@ -45,7 +45,7 @@ function useChzzkLiveStatus(channelId) {
     const fetchStatus = async () => {
       try {
         const response = await fetch(
-          `/api/chzzk/polling/v2/channels/${channelId}/live-status`
+          `/api/chzzk/live/polling/v2/channels/${channelId}/live-status`
         );
         const data = await response.json();
         if (data.code === 200) {
@@ -78,7 +78,7 @@ function useAccessToken(chatChannelId) {
     (async () => {
       try {
         const response = await fetch(
-          `/api/chzzk-game/nng_main/v1/chats/access-token?channelId=${chatChannelId}&chatType=STREAMING`
+          `/api/chzzk/chat/nng_main/v1/chats/access-token?channelId=${chatChannelId}&chatType=STREAMING`
         );
         const data = await response.json();
         if (data.code === 200) {
@@ -128,7 +128,7 @@ export default function useChzzkChat(channelId) {
     const message = chzzkChat.msg || "";
     const match = message.match(emojiRegex);
 
-    return {
+    const chatObject = {
       uid: `${profile.userIdHash}-${chzzkChat.msgTime}`,
       time: chzzkChat.msgTime,
       userId: profile.userIdHash,
@@ -146,6 +146,12 @@ export default function useChzzkChat(channelId) {
             )
         : splitWithSpace(message),
     };
+
+    if (extras.payAmount != null) {
+      chatObject.payAmount = extras.payAmount;
+    }
+
+    return chatObject;
   }, []);
 
   useEffect(() => {

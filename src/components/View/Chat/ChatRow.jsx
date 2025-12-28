@@ -75,6 +75,18 @@ export default function ChatRow({ chat }) {
                   mr: "0.1rem",
                 }}
               />
+            ) : part.type === "sticker" ? (
+              <Box
+                component="img"
+                className="sticker"
+                alt="sticker"
+                src={part.url}
+                sx={{
+                  height: "4.8rem",
+                  verticalAlign: "top",
+                  my: "0.4rem",
+                }}
+              />
             ) : null}
           </Fragment>
         ))}

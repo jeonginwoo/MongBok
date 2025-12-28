@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const chzzk_client = axios.create({
-  baseURL: "/api/chzzk",
+  baseURL: "/api/chzzk/live",
   headers: {
     "Content-Type": "application/json",
   },
