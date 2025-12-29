@@ -11,6 +11,14 @@ export const PLATFORM_COLORS = {
   },
 };
 
+export const CHEESE_COLORS = {
+  tier0: "rgb(131, 131, 131)",
+  tier1: "rgb(87, 79, 168)",
+  tier2: "rgb(35, 129, 90)",
+  tier3: "rgb(209, 142, 60)",
+  tier4: "rgb(197, 73, 82)",
+};
+
 const common = {
   white: "#FFFFFF",
   black: "#000000",
