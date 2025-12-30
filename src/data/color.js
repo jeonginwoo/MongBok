@@ -14,9 +14,10 @@ export const PLATFORM_COLORS = {
 export const CHEESE_COLORS = {
   tier0: "rgb(131, 131, 131)",
   tier1: "rgb(87, 79, 168)",
-  tier2: "rgb(35, 129, 90)",
-  tier3: "rgb(209, 142, 60)",
-  tier4: "rgb(197, 73, 82)",
+  tier2: "rgb(45, 123, 139)",
+  tier3: "rgb(35, 129, 90)",
+  tier4: "rgb(209, 142, 60)",
+  tier5: "rgb(197, 73, 82)",
 };
 
 const common = {
@@ -51,6 +52,7 @@ export const palettes = {
       overlay: "rgba(0, 0, 0, 0.4)",
       gradient: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 40%, transparent 100%)",
       canvas: "rgba(0, 0, 0, 1)",
+      chat: "#141517",
       currentTime: "rgba(0,0,0,0.6)",
       profile: "rgba(20, 21, 23, 1)",
       hover: "rgba(134, 134, 134, 0.5)",
@@ -104,8 +106,9 @@ export const palettes = {
       level4: "#e8e8e8",
       level5: "#ebebeb",
       overlay: "rgba(0, 0, 0, 0.2)",
-      gradient: "linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 40%, transparent 100%)",
+      gradient: "linear-gradient(to bottom, rgba(245,245,245,1) 0%, rgba(245,245,245,0.8) 40%, transparent 100%)",
       canvas: "#fafafa",
+      chat: "#ffffff",
       currentTime: "rgba(0,0,0,0.6)",
       profile: "#f9f9f9",
       hover: "rgba(134, 134, 134, 0.5)",

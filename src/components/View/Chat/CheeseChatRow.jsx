@@ -11,10 +11,12 @@ function CheeseChatRow({ chat }) {
     if (payAmount === 0) {
       return "tier0";
     } else if (payAmount >= 1000000) {
-      return "tier4";
+      return "tier5";
     } else if (payAmount >= 500000) {
-      return "tier3";
+      return "tier4";
     } else if (payAmount >= 100000) {
+      return "tier3";
+    } else if (payAmount >= 10000) {
       return "tier2";
     } else {
       return "tier1";
@@ -43,7 +45,7 @@ function CheeseChatRow({ chat }) {
         <Box
           sx={{
             flex: 1,
-            fontWeight: 700,
+            fontWeight: 1000,
             "& .badge": {
               height: "2rem",
               paddingTop: "0.2rem",
