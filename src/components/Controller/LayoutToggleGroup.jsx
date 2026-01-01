@@ -101,6 +101,7 @@ export default function LayoutToggleGroup() {
   return (
     controllerExpanded && (
       <Box sx={{ display: "flex", gap: "1rem" }}>
+        <RatioSelector />
         {canvas[ratio]?.layouts?.[viewCount] && (
           <StyledToggleButtonGroup
             value={viewCount === 0 ? null : layoutType}
