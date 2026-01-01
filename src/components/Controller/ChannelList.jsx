@@ -17,14 +17,15 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { List, ListItem, Divider, Box } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import { PLATFORM_COLORS } from "@/data/color";
 import ChannelInfo from "@/components/Info/ChannelInfo/ChannelListChannelInfo";
 
+import { canvas } from "@/data/layouts";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 import {
   channelsAtom,
   layoutTypeAtom,
   controllerExpandedAtom,
+  ratioAtom,
 } from "@/atoms/setting";
 import { snackbarAtom } from "@/atoms/ui";
 
@@ -34,6 +35,8 @@ export default function ChannelList() {
   const setLayoutType = useSetAtom(layoutTypeAtom);
   const setSnackbar = useSetAtom(snackbarAtom);
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
+  const ratio = useAtomValue(ratioAtom);
+  const maxViewCount = canvas[ratio]?.maxViewCount ?? 1;
 
   const channelArray = React.useMemo(
     () =>
@@ -105,10 +108,10 @@ export default function ChannelList() {
       ).length;
 
       if (!target.isVisible) {
-        if (currentVisibleCount >= 4) {
+        if (currentVisibleCount >= maxViewCount) {
           setSnackbar({
             open: true,
-            message: "표시 가능한 채널은 최대 4개입니다.",
+            message: `표시 가능한 채널은 최대 ${maxViewCount}개입니다.`,
             severity: "warning",
           });
           return prev;

@@ -19,7 +19,7 @@ const TagWrap = ({
         color: color || theme.palette.tag.color,
         display: "inline-flex",
         alignItems: "center",
-        lineHeight: 0,
+        lineHeight: 1,
         ...sx,
       })}
     >

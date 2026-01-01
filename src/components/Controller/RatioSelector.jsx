@@ -1,10 +1,15 @@
 import React, { useState } from "react";
 import { Box, Button, Menu, MenuItem } from "@mui/material";
-import { useAtom } from "jotai";
-import { ratioAtom } from "@/atoms/setting";
+import { useAtom, useSetAtom, useAtomValue } from "jotai";
+import {
+  ratioAtom,
+  channelsAtom,
+  layoutTypeAtom,
+  viewCountAtom,
+} from "@/atoms/setting";
 import { canvas } from "@/data/layouts";
 
-const RatioDisplay = ({ ratioKey }) => {
+const RatioDisplay = ({ ratioKey, sx }) => {
   const ratioValue = canvas[ratioKey]?.style?.aspectRatio;
   if (!ratioValue) return null;
 
@@ -22,7 +27,7 @@ const RatioDisplay = ({ ratioKey }) => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        borderRadius: "0.4rem",
+        ...sx,
       }}
     />
   );
@@ -30,6 +35,9 @@ const RatioDisplay = ({ ratioKey }) => {
 
 export default function RatioSelector() {
   const [ratio, setRatio] = useAtom(ratioAtom);
+  const [layoutType, setLayoutType] = useAtom(layoutTypeAtom);
+  const viewCount = useAtomValue(viewCountAtom);
+  const setChannels = useSetAtom(channelsAtom);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
@@ -42,8 +50,63 @@ export default function RatioSelector() {
   };
 
   const handleSelectRatio = (newRatio) => {
+    if (newRatio === ratio) {
+      handleClose();
+      return;
+    }
+
+    // Case 1: Same viewCount and layoutType exist in the new ratio
+    if (canvas[newRatio]?.layouts?.[viewCount]?.[layoutType]) {
+      setRatio(newRatio);
+      window.localStorage.setItem("ratio", newRatio);
+      handleClose();
+      return;
+    }
+
+    // Case 2: Only the same viewCount exists
+    if (canvas[newRatio]?.layouts?.[viewCount]) {
+      setRatio(newRatio);
+      window.localStorage.setItem("ratio", newRatio);
+      setLayoutType("layout1");
+      window.localStorage.setItem("layout", "layout1");
+      handleClose();
+      return;
+    }
+
+    // Case 3: viewCount doesn't exist for the new ratio
     setRatio(newRatio);
     window.localStorage.setItem("ratio", newRatio);
+    setLayoutType("layout1");
+    window.localStorage.setItem("layout", "layout1");
+
+    setChannels((prevChannels) => {
+      const newChannels = structuredClone(prevChannels);
+      const channelToKeep =
+        Object.values(newChannels).find((c) => c.zoneId === 1 && c.isVisible) ||
+        Object.values(newChannels).find((c) => c.isVisible);
+
+      let isFirstVisibleFound = false;
+      if (channelToKeep) {
+        Object.values(newChannels).forEach((channel) => {
+          if (channel.id === channelToKeep.id) {
+            channel.isVisible = true;
+            channel.zoneId = 1;
+            isFirstVisibleFound = true;
+          } else {
+            channel.isVisible = false;
+          }
+        });
+      }
+
+      if (!isFirstVisibleFound && Object.keys(newChannels).length > 0) {
+        const firstChannelId = Object.keys(newChannels)[0];
+        newChannels[firstChannelId].isVisible = true;
+        newChannels[firstChannelId].zoneId = 1;
+      }
+
+      return newChannels;
+    });
+
     handleClose();
   };
 
@@ -70,7 +133,7 @@ export default function RatioSelector() {
             fontSize: "1rem",
             color: "primary.main",
             width: "100%",
-            lineHeight: 0,
+            lineHeight: 1,
           }}
         >
           {canvas[ratio]?.style?.aspectRatio.replace(" / ", " : ")}
@@ -109,7 +172,7 @@ export default function RatioSelector() {
                 alignItems: "center",
               }}
             >
-              <RatioDisplay ratioKey={ratioKey} />
+              <RatioDisplay ratioKey={ratioKey} sx={{ borderRadius: "0.2rem" }} />
             </Box>
             <Box sx={{ width: "3.5rem", textAlign: "left", fontSize: "1.2rem" }}>
               {canvas[ratioKey]?.style?.aspectRatio.replace(" / ", " : ")}
