@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import { getTheme } from "@/theme";
+import { canvas } from "@/data/layouts";
 import {
   DndContext,
   MouseSensor,
@@ -51,12 +52,17 @@ export default function ViewArea({ canvasRef, fullscreen }) {
     const element = canvasRef?.current;
     if (!element) return;
 
+    const currentRatio = canvas[ratio]?.style?.aspectRatio;
+    if (!currentRatio) return;
+
+    const [ratioW, ratioH] = currentRatio.split("/").map(Number);
+
     const observer = new ResizeObserver((entries) => {
       for (let entry of entries) {
         const { width, height } = entry.contentRect;
 
         if (width === 0 || height === 0) return;
-        if (width * 9 >= height * 16) {
+        if (width * ratioH >= height * ratioW) {
           setFitStyle({ height: "100%" });
         } else {
           setFitStyle({ width: "100%" });
@@ -67,7 +73,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
     observer.observe(element);
 
     return () => observer.disconnect();
-  }, [canvasRef]);
+  }, [canvasRef, ratio]);
 
   const handleDrop = (baseId, targetZoneId) => {
     setChannels((prev) => {
@@ -125,10 +131,10 @@ export default function ViewArea({ canvasRef, fullscreen }) {
           className="canvas"
           sx={{
             position: "relative",
-            aspectRatio: `${ratio}`,
             backgroundColor: "background.canvas",
             overflow: "hidden",
             ...fitStyle,
+            ...canvas[ratio]?.style,
           }}
         >
           {/* DropZone */}

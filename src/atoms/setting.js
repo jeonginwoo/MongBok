@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { layouts } from "@/data/layouts";
+import { canvas } from "@/data/layouts";
 import { getAllChannelsData } from "@/api/live";
 
 // ----------------------------------------------------
@@ -42,8 +42,8 @@ export const layoutTypeAtom = atom(
 // ratio
 export const ratioAtom = atom(
   window !== "undefined"
-    ? window.localStorage.getItem("ratio") || "16/9"
-    : "16/9"
+    ? window.localStorage.getItem("ratio") || "ratio2"
+    : "ratio2"
 );
 
 // 화면 조작/이동
@@ -92,8 +92,8 @@ export const layoutAtom = atom((get) => {
   const type = get(layoutTypeAtom);
   const ratio = get(ratioAtom);
 
-  if (layouts[ratio][count] && layouts[ratio][count][type]) {
-    return layouts[ratio][count][type];
+  if (canvas[ratio]?.layouts?.[count] && canvas[ratio]?.layouts?.[count]?.[type]) {
+    return canvas[ratio].layouts[count][type];
   }
 
   return {};

@@ -134,7 +134,7 @@ function CheeseChatRow({ chat }) {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            lineHeight: 1,
+            lineHeight: 0,
           }}
         >
           <CheeseIcon />

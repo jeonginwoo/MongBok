@@ -11,7 +11,7 @@ export default function ChatRow({ chat }) {
     <Box
       className="chat-row"
       sx={{
-        lineHeight: 1.5,
+        lineHeight: 1.4,
         wordWrap: "break-word",
         color: theme.palette.text.primary,
         fontSize: "1.6rem",

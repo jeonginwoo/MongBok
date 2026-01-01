@@ -49,7 +49,7 @@ function LiveTime({ channel, isTag = false }) {
         color: color,
         fontSize: "1.2rem",
         fontWeight: "bold",
-        lineHeight: 1,
+        lineHeight: 0,
       }}
     >
       {time}

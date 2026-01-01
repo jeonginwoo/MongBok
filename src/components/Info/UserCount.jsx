@@ -15,7 +15,7 @@ function UserCount({ channel, isTag = false }) {
         color: color,
         gap: "0.3rem",
         fontSize: "1.2rem",
-        lineHeight: 1,
+        lineHeight: 0,
         fontWeight: "bold",
       }}
     >
