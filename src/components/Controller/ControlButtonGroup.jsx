@@ -210,10 +210,7 @@ export default function ControlButtonGroup({ fullscreen }) {
               </>
             }
           >
-            <IconButton
-              
-              onClick={handleToggleTheme}
-            >
+            <IconButton onClick={handleToggleTheme}>
               {themeMode === 'light' ? <Brightness4Icon sx={iconStyle}/> : <Brightness7Icon sx={iconStyle}/>}
             </IconButton>
           </Tooltip>

@@ -15,12 +15,12 @@ import {
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   display: "flex",
   flexWrap: "wrap",
-  gap: "1rem",
+  gap: "0.6rem",
 
   "& .MuiToggleButtonGroup-grouped": {
     padding: 0,
-    width: "4.0rem",
-    height: "4.0rem",
+    width: "3.2rem",
+    height: "3.2rem",
     border: `0.1rem solid ${theme.palette.primary.main} !important`,
     borderRadius: "0.4rem !important",
     color: theme.palette.primary.main,
@@ -68,13 +68,16 @@ export default function LayoutToggleGroup() {
       const layoutKeys = Object.keys(currentLayouts);
       const keyNumber = parseInt(e.key, 10);
 
-      // 숫자키 1 ~ N 범위인지 확인
-      if (
-        !isNaN(keyNumber) &&
-        keyNumber > 0 &&
-        keyNumber <= layoutKeys.length
-      ) {
-        const targetIndex = keyNumber - 1;
+      if (!isNaN(keyNumber)) {
+        let targetIndex;
+        if (keyNumber === 0 && layoutKeys.length > 0) {
+          targetIndex = layoutKeys.length - 1;
+        } else if (keyNumber > 0 && keyNumber <= layoutKeys.length) {
+          targetIndex = keyNumber - 1;
+        } else {
+          return;
+        }
+
         const targetLayout = layoutKeys[targetIndex];
 
         // 현재 레이아웃과 다를 경우에만 변경
@@ -106,7 +109,7 @@ export default function LayoutToggleGroup() {
 
   return (
     controllerExpanded && (
-      <Box sx={{ display: "flex", gap: "1rem" }}>
+      <Box sx={{ display: "flex", gap: "0.6rem" }}>
         <RatioSelector />
         {availableLayouts && (
           <StyledToggleButtonGroup
