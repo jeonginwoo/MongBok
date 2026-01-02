@@ -117,30 +117,32 @@ function CheeseChatRow({ chat }) {
         </Box>
       </Box>
       
-      <Box
-        sx={{
-          mt: "0.3rem",
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
+      {payAmount > 0 && (
         <Box
           sx={{
-            backgroundColor: "rgba(0, 0, 0, 0.15)",
-            borderRadius: "1.3rem",
-            padding: "0.2rem 0.8rem 0.4rem 0.6rem",
-            fontWeight: 800,
-            fontSize: "1.4rem",
+            mt: "0.3rem",
             display: "flex",
-            justifyContent: "center",
             alignItems: "center",
-            lineHeight: 1,
           }}
         >
-          <CheeseIcon />
-          {payAmount.toLocaleString("ko-KR")}
+          <Box
+            sx={{
+              backgroundColor: "rgba(0, 0, 0, 0.15)",
+              borderRadius: "1.3rem",
+              padding: "0.2rem 0.8rem 0.4rem 0.6rem",
+              fontWeight: 800,
+              fontSize: "1.4rem",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              lineHeight: 1,
+            }}
+          >
+            <CheeseIcon />
+            {payAmount.toLocaleString("ko-KR")}
+          </Box>
         </Box>
-      </Box>
+      )}
     </Box>
   );
 }
