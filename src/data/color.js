@@ -21,6 +21,24 @@ export const CHEESE_COLORS = {
 };
 
 const common = {
+  pointColors: {
+    pointColor1: "#88d3f2", // Light blue
+    pointColor2: "#6b92f2", // Darker blue
+    pointColor3: "#4ECDC4", // Teal/Greenish blue
+    pointColor4: "#f2c86b", // Mellow yellow
+    pointColor5: "#ff6a88", // Vibrant pink
+    pointColor6: "#ff7e5f", // Sunset orange
+    pointColor7: "#feb47b", // Light apricot
+    pointColor8: "#9b59b6", // Deep purple
+    pointColor9: "#76d7c4", // Mint green
+    pointColor10: "#ef5350", // Soft red
+    pointColor11: "#ffa726", // Vibrant orange
+    pointColor12: "#424242", // Dark grey
+    pointColor13: "#ffee58", // Vibrant yellow
+    pointColor14: "#ab47bc", // Medium purple
+    pointColor15: "#26a69a", // Dark teal
+    pointColor16: "#66bb6a", // Light green
+  },
   white: "rgba(255, 255, 255, 1)",
   black: "rgba(0, 0, 0, 1)",
   red: "rgba(255, 56, 56, 1)",
