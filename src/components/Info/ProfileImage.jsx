@@ -3,8 +3,8 @@ import { Box } from "@mui/material";
 export default function ProfileImage({
   channel,
   isBoardered = false,
-  imgSize = 46,
-  borderSize = 8,
+  imgSize = 48,
+  borderSize = 6,
 }) {
   const default_profile_img =
     "https://ssl.pstatic.net/static/nng/glive/image/default_profile_dark.png?type=f120_120_na";
