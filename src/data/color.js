@@ -29,6 +29,12 @@ const common = {
   greenHover: "rgba(100,255,134,0.8)",
   skyBlue: "rgba(79, 195, 247, 1)",
   lightSkyBlue: "rgba(145, 227, 255, 1)",
+  dropZone: {
+    border: "rgb(76,192,101)",
+    background: "rgba(255,255,255,0.7)",
+    backgroundOver: "rgba(100,255,134,0.8)",
+    text: "rgba(0,0,0,0.15)",
+  }
 };
 
 export const palettes = {
@@ -82,12 +88,6 @@ export const palettes = {
       color: "rgba(136, 136, 136, 1)",
       background: "rgba(0, 0, 0, 0.2)",
     },
-    dropZone: {
-      border: "rgb(76,192,101)",
-      background: "rgba(255,255,255,0.7)",
-      backgroundOver: "rgba(100,255,134,0.8)",
-      text: "rgba(0,0,0,0.15)",
-    }
   },
   light: {
     mode: 'light',
@@ -139,11 +139,5 @@ export const palettes = {
       color: "rgba(0, 0, 0, 0.6)",
       background: "rgba(0, 0, 0, 0.08)",
     },
-    dropZone: {
-      border: "rgb(76,192,101)",
-      background: "rgba(0,0,0,0.05)",
-      backgroundOver: "rgba(100,255,134,0.3)",
-      text: "rgba(0,0,0,0.4)",
-    }
   }
 };
