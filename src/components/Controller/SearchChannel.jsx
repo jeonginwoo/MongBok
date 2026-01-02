@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Box,
   TextField,
@@ -38,36 +38,56 @@ export default function SearchChannel() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
+  const debounceTimeout = useRef(null);
+
+  const handleSearch = useCallback(async () => {
     if (!keyword.trim()) {
       setResults({ chzzk: [], soop: [] });
       setShowList(false);
       return;
     }
+    setLoading(true);
+    try {
+      const platforms = ["chzzk", "soop"];
+      const promises = platforms.map((p) => searchChannels(keyword, p));
+      const [chzzkRes, soopRes] = await Promise.all(promises);
 
-    const handler = setTimeout(async () => {
-      setLoading(true);
-      try {
-        const platforms = ["chzzk", "soop"];
-        const promises = platforms.map((p) => searchChannels(keyword, p));
-        const [chzzkRes, soopRes] = await Promise.all(promises);
+      setResults({ chzzk: chzzkRes, soop: soopRes });
+      setShowList(true);
+    } catch (e) {
+      console.error("검색 실패:", e);
+      setSnackbar({
+        open: true,
+        message: "채널 검색 중 오류가 발생했습니다.",
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [keyword, setSnackbar]);
 
-        setResults({ chzzk: chzzkRes, soop: soopRes });
-        setShowList(true);
-      } catch (e) {
-        console.error("검색 실패:", e);
-        setSnackbar({
-          open: true,
-          message: "채널 검색 중 오류가 발생했습니다.",
-          severity: "error",
-        });
-      } finally {
-        setLoading(false);
-      }
-    }, 500);
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      clearTimeout(debounceTimeout.current);
+      handleSearch();
+    } else if (e.key === "Escape") {
+      setShowList(false);
+    }
+  };
 
-    return () => clearTimeout(handler);
-  }, [keyword]);
+  useEffect(() => {
+    clearTimeout(debounceTimeout.current);
+
+    if (keyword.trim()) {
+      debounceTimeout.current = setTimeout(handleSearch, 500);
+    } else {
+      setResults({ chzzk: [], soop: [] });
+      setShowList(false);
+    }
+
+    return () => clearTimeout(debounceTimeout.current);
+  }, [keyword, handleSearch]);
 
   const addChannel = (selectChannel) => {
     setChannels((prev) => {
@@ -125,6 +145,7 @@ export default function SearchChannel() {
         placeholder="채널 검색..."
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}
+        onKeyDown={handleKeyDown}
         sx={{
           input: { color: "text.primary", fontSize: "1.4rem" },
           "& .MuiOutlinedInput-root": {
