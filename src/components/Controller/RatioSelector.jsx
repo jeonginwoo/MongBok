@@ -91,42 +91,48 @@ export default function RatioSelector() {
     setLayoutType("layout1");
     window.localStorage.setItem("layout", "layout1");
 
-    setChannels((prevChannels) => {
-      const newChannels = structuredClone(prevChannels);
-      const channelToKeep =
-        Object.values(newChannels).find((c) => c.zoneId === 1 && c.isVisible) ||
-        Object.values(newChannels).find((c) => c.isVisible);
+    if (viewCount > 0) {
+      setChannels((prevChannels) => {
+        const newChannels = structuredClone(prevChannels);
+        const channelToKeep =
+          Object.values(newChannels).find(
+            (c) => c.zoneId === 1 && c.isVisible
+          ) || Object.values(newChannels).find((c) => c.isVisible);
 
-      let isFirstVisibleFound = false;
-      if (channelToKeep) {
-        Object.values(newChannels).forEach((channel) => {
-          if (channel.id === channelToKeep.id) {
-            channel.isVisible = true;
-            channel.zoneId = 1;
-            isFirstVisibleFound = true;
-          } else {
-            channel.isVisible = false;
-            channel.zoneId = null;
-          }
-        });
-      }
+        let isFirstVisibleFound = false;
+        if (channelToKeep) {
+          Object.values(newChannels).forEach((channel) => {
+            if (channel.id === channelToKeep.id) {
+              channel.isVisible = true;
+              channel.zoneId = 1;
+              isFirstVisibleFound = true;
+            } else {
+              channel.isVisible = false;
+              channel.zoneId = null;
+            }
+          });
+        }
 
-      if (!isFirstVisibleFound && Object.keys(newChannels).length > 0) {
-        const firstChannelId = Object.keys(newChannels)[0];
-        newChannels[firstChannelId].isVisible = true;
-        newChannels[firstChannelId].zoneId = 1;
-      }
+        if (!isFirstVisibleFound && Object.keys(newChannels).length > 0) {
+          const firstChannelId = Object.keys(newChannels)[0];
+          newChannels[firstChannelId].isVisible = true;
+          newChannels[firstChannelId].zoneId = 1;
+        }
 
-      const channelsToSave = Object.fromEntries(
-        Object.entries(newChannels).map(([id, channel]) => [
-          id,
-          { platform: channel.platform, zoneId: channel.zoneId },
-        ])
-      );
+        const channelsToSave = Object.fromEntries(
+          Object.entries(newChannels).map(([id, channel]) => [
+            id,
+            { platform: channel.platform, zoneId: channel.zoneId },
+          ])
+        );
 
-      window.localStorage.setItem("channels", JSON.stringify(channelsToSave));
-      return newChannels;
-    });
+        window.localStorage.setItem(
+          "channels",
+          JSON.stringify(channelsToSave)
+        );
+        return newChannels;
+      });
+    }
 
     handleClose();
   };
