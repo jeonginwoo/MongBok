@@ -101,13 +101,17 @@ export default function ChannelInfo({ channel, isDragging = false }) {
                 display: "flex",
                 justifyContent: "space-between",
                 alignContent: "center",
-                gap: 1,
+                gap: 0.5,
               }}
             >
               <Box
                 sx={{
                   fontSize: "1.4rem",
                   fontWeight: "bold",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  maxWidth: "8.8rem",
                 }}
               >
                 {channel.name}
