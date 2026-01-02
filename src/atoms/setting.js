@@ -42,8 +42,8 @@ export const layoutTypeAtom = atom(
 // ratio
 export const ratioAtom = atom(
   window !== "undefined"
-    ? window.localStorage.getItem("ratio") || "ratio2"
-    : "ratio2"
+    ? window.localStorage.getItem("ratio") || "16:9-landscape"
+    : "16:9-landscape"
 );
 
 // 화면 조작/이동
@@ -90,10 +90,18 @@ export const viewCountAtom = atom((get) => {
 export const layoutAtom = atom((get) => {
   const count = get(viewCountAtom);
   const type = get(layoutTypeAtom);
-  const ratio = get(ratioAtom);
+  const ratioKey = get(ratioAtom);
 
-  if (canvas[ratio]?.layouts?.[count] && canvas[ratio]?.layouts?.[count]?.[type]) {
-    return canvas[ratio].layouts[count][type];
+  const [group, orientation] = ratioKey.split("-");
+  if (!group || !orientation) return {};
+
+  const ratioConfig = canvas[group]?.[orientation];
+
+  if (
+    ratioConfig?.layouts?.[count] &&
+    ratioConfig?.layouts?.[count]?.[type]
+  ) {
+    return ratioConfig.layouts[count][type];
   }
 
   return {};

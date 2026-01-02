@@ -31,10 +31,14 @@ export default function ViewArea({ canvasRef, fullscreen }) {
   const [draggingType, setDraggingType] = useState(null);
   const [fitStyle, setFitStyle] = useAtom(fitStyleAtom);
   const [channels, setChannels] = useAtom(channelsAtom);
+  const [ratioKey, setRatio] = useAtom(ratioAtom);
   const layout = useAtomValue(layoutAtom);
-  const ratio = useAtomValue(ratioAtom);
   const pointerEventsEnabled = useAtomValue(pointerEventsEnabledAtom);
   const showCurrentTime = useAtomValue(showCurrentTimeAtom);
+
+  const [group, orientation] = ratioKey.split("-");
+  const ratioConfig =
+    group && orientation ? canvas[group]?.[orientation] : null;
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -49,10 +53,42 @@ export default function ViewArea({ canvasRef, fullscreen }) {
   );
 
   useEffect(() => {
+    const handleOrientationChange = () => {
+      const currentOrientation = window.screen.orientation.type;
+      const [group] = ratioKey.split("-");
+
+      if (!group || !canvas[group]) return;
+
+      let newOrientation;
+      if (currentOrientation.includes("landscape")) {
+        newOrientation = "landscape";
+      } else if (currentOrientation.includes("portrait")) {
+        newOrientation = "portrait";
+      } else {
+        return;
+      }
+
+      if (canvas[group][newOrientation]) {
+        const newRatioKey = `${group}-${newOrientation}`;
+        if (newRatioKey !== ratioKey) {
+          setRatio(newRatioKey);
+          window.localStorage.setItem("ratio", newRatioKey);
+        }
+      }
+    };
+
+    window.addEventListener("orientationchange", handleOrientationChange);
+
+    return () => {
+      window.removeEventListener("orientationchange", handleOrientationChange);
+    };
+  }, [ratioKey, setRatio]);
+
+  useEffect(() => {
     const element = canvasRef?.current;
     if (!element) return;
 
-    const currentRatio = canvas[ratio]?.style?.aspectRatio;
+    const currentRatio = ratioConfig?.style?.aspectRatio;
     if (!currentRatio) return;
 
     const [ratioW, ratioH] = currentRatio.split("/").map(Number);
@@ -73,7 +109,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
     observer.observe(element);
 
     return () => observer.disconnect();
-  }, [canvasRef, ratio]);
+  }, [canvasRef, ratioKey, ratioConfig, setFitStyle]);
 
   const handleDrop = (baseId, targetZoneId) => {
     setChannels((prev) => {
@@ -134,7 +170,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
             backgroundColor: "background.canvas",
             overflow: "hidden",
             ...fitStyle,
-            ...canvas[ratio]?.style,
+            ...ratioConfig?.style,
           }}
         >
           {/* DropZone */}

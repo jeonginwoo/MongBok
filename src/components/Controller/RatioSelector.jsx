@@ -9,8 +9,15 @@ import {
 } from "@/atoms/setting";
 import { canvas } from "@/data/layouts";
 
-const RatioDisplay = ({ ratioKey, sx }) => {
-  const ratioValue = canvas[ratioKey]?.style?.aspectRatio;
+const getRatioConfig = (ratioKey) => {
+  if (!ratioKey) return null;
+  const [group, orientation] = ratioKey.split("-");
+  if (!group || !orientation) return null;
+  return canvas[group]?.[orientation] || null;
+};
+
+const RatioDisplay = ({ ratioConfig, sx }) => {
+  const ratioValue = ratioConfig?.style?.aspectRatio;
   if (!ratioValue) return null;
 
   const [w, h] = ratioValue.split("/").map(Number);
@@ -41,6 +48,8 @@ export default function RatioSelector() {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
+  const currentRatioConfig = getRatioConfig(ratio);
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -49,33 +58,36 @@ export default function RatioSelector() {
     setAnchorEl(null);
   };
 
-  const handleSelectRatio = (newRatio) => {
-    if (newRatio === ratio) {
+  const handleSelectRatio = (newRatioKey) => {
+    if (newRatioKey === ratio) {
       handleClose();
       return;
     }
 
-    // Case 1: Same viewCount and layoutType exist in the new ratio
-    if (canvas[newRatio]?.layouts?.[viewCount]?.[layoutType]) {
-      setRatio(newRatio);
-      window.localStorage.setItem("ratio", newRatio);
+    const newRatioConfig = getRatioConfig(newRatioKey);
+    if (!newRatioConfig) return;
+
+    // Case 1: Same viewCount and layoutType exist
+    if (newRatioConfig.layouts?.[viewCount]?.[layoutType]) {
+      setRatio(newRatioKey);
+      window.localStorage.setItem("ratio", newRatioKey);
       handleClose();
       return;
     }
 
-    // Case 2: Only the same viewCount exists
-    if (canvas[newRatio]?.layouts?.[viewCount]) {
-      setRatio(newRatio);
-      window.localStorage.setItem("ratio", newRatio);
+    // Case 2: Only same viewCount exists
+    if (newRatioConfig.layouts?.[viewCount]) {
+      setRatio(newRatioKey);
+      window.localStorage.setItem("ratio", newRatioKey);
       setLayoutType("layout1");
       window.localStorage.setItem("layout", "layout1");
       handleClose();
       return;
     }
 
-    // Case 3: viewCount doesn't exist for the new ratio
-    setRatio(newRatio);
-    window.localStorage.setItem("ratio", newRatio);
+    // Case 3: viewCount doesn't exist
+    setRatio(newRatioKey);
+    window.localStorage.setItem("ratio", newRatioKey);
     setLayoutType("layout1");
     window.localStorage.setItem("layout", "layout1");
 
@@ -134,7 +146,8 @@ export default function RatioSelector() {
           borderColor: "primary.opacity",
         }}
       >
-        <Box sx={{
+        <Box
+          sx={{
             position: "absolute",
             top: "50%",
             left: "50%",
@@ -145,9 +158,9 @@ export default function RatioSelector() {
             lineHeight: 1,
           }}
         >
-          {canvas[ratio]?.style?.aspectRatio.replace(" / ", " : ")}
+          {currentRatioConfig?.style?.aspectRatio.replace(" / ", " : ")}
         </Box>
-        <RatioDisplay ratioKey={ratio} />
+        <RatioDisplay ratioConfig={currentRatioConfig} />
       </Button>
       <Menu
         anchorEl={anchorEl}
@@ -155,38 +168,60 @@ export default function RatioSelector() {
         onClose={handleClose}
         MenuListProps={{
           "aria-labelledby": "ratio-button",
-          sx: { display: "flex", flexDirection: "column", gap: "0.5rem", padding: "0.5rem" },
+          sx: {
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.5rem",
+            padding: "0.5rem",
+          },
         }}
       >
-        {Object.keys(canvas).map((ratioKey) => (
-          <MenuItem
-            key={ratioKey}
-            onClick={() => handleSelectRatio(ratioKey)}
-            selected={ratioKey === ratio}
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              gap: "1rem",
-              padding: "0.5rem 1rem",
-              borderRadius: "0.4rem",
-            }}
-          >
-            <Box
-              sx={{
-                width: "4.0rem",
-                height: "4.0rem",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <RatioDisplay ratioKey={ratioKey} sx={{ borderRadius: "0.2rem" }} />
-            </Box>
-            <Box sx={{ width: "3.5rem", textAlign: "left", fontSize: "1.2rem" }}>
-              {canvas[ratioKey]?.style?.aspectRatio.replace(" / ", " : ")}
-            </Box>
-          </MenuItem>
+        {Object.entries(canvas).map(([group, orientations]) => (
+          <Box key={group} sx={{ display: "flex", gap: "0.5rem" }}>
+            {Object.entries(orientations).map(([orientation, config]) => {
+              const ratioKey = `${group}-${orientation}`;
+              return (
+                <MenuItem
+                  key={ratioKey}
+                  onClick={() => handleSelectRatio(ratioKey)}
+                  selected={ratioKey === ratio}
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    padding: "0.5rem",
+                    borderRadius: "0.4rem",
+                    width: "7rem",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: "4.0rem",
+                      height: "4.0rem",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <RatioDisplay
+                      ratioConfig={config}
+                      sx={{ borderRadius: "0.2rem" }}
+                    />
+                  </Box>
+                  <Box
+                    sx={{
+                      width: "100%",
+                      textAlign: "center",
+                      fontSize: "1.2rem",
+                    }}
+                  >
+                    {config.style.aspectRatio.replace(" / ", " : ")}
+                  </Box>
+                </MenuItem>
+              );
+            })}
+          </Box>
         ))}
       </Menu>
     </>
