@@ -94,6 +94,7 @@ export default function RatioSelector() {
             isFirstVisibleFound = true;
           } else {
             channel.isVisible = false;
+            channel.zoneId = null;
           }
         });
       }
@@ -104,6 +105,14 @@ export default function RatioSelector() {
         newChannels[firstChannelId].zoneId = 1;
       }
 
+      const channelsToSave = Object.fromEntries(
+        Object.entries(newChannels).map(([id, channel]) => [
+          id,
+          { platform: channel.platform, zoneId: channel.zoneId },
+        ])
+      );
+
+      window.localStorage.setItem("channels", JSON.stringify(channelsToSave));
       return newChannels;
     });
 
