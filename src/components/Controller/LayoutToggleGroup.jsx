@@ -38,9 +38,11 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
 
 export default function LayoutToggleGroup() {
   const [layoutType, setLayoutType] = useAtom(layoutTypeAtom);
-  const [ratio, setRatio] = useAtom(ratioAtom);
+  const [ratioKey, setRatio] = useAtom(ratioAtom);
   const viewCount = useAtomValue(viewCountAtom);
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
+
+  const [ratio, orientation] = ratioKey.split("-");
 
   const handleChange = (_, newType) => {
     if (newType !== null) {
@@ -59,8 +61,8 @@ export default function LayoutToggleGroup() {
         document.activeElement?.isContentEditable;
       if (isInput) return;
 
-      // 현재 viewCount에 해당하는 레이아웃 키layouts오기
-      const currentLayouts = canvas[ratio]?.layouts?.[viewCount];
+      // 현재 viewCount에 해당하는 레이아웃 키 가져오기
+      const currentLayouts = canvas[ratio]?.[orientation]?.layouts?.[viewCount];
       if (!currentLayouts) return;
 
       const layoutKeys = Object.keys(currentLayouts);
@@ -87,40 +89,42 @@ export default function LayoutToggleGroup() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [ratio, viewCount, layoutType, setLayoutType]);
+  }, [ratio, orientation, viewCount, layoutType, setLayoutType]);
 
   useEffect(() => {
-    if (canvas[ratio]?.layouts?.[viewCount]) {
-      const layoutKeys = Object.keys(canvas[ratio]?.layouts?.[viewCount]);
+    if (canvas[ratio]?.[orientation]?.layouts?.[viewCount]) {
+      const layoutKeys = Object.keys(
+        canvas[ratio]?.[orientation]?.layouts?.[viewCount]
+      );
       if (!layoutKeys.includes(layoutType)) {
         setLayoutType(layoutKeys[0]);
       }
     }
-  }, [ratio, viewCount, layoutType, setLayoutType]);
+  }, [ratio, orientation, viewCount, layoutType, setLayoutType]);
+
+  const availableLayouts = canvas[ratio]?.[orientation]?.layouts?.[viewCount];
 
   return (
     controllerExpanded && (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <RatioSelector />
-        {canvas[ratio]?.layouts?.[viewCount] && (
+        {availableLayouts && (
           <StyledToggleButtonGroup
             value={viewCount === 0 ? null : layoutType}
             exclusive
             onChange={handleChange}
             aria-label="layout selection"
           >
-            {Object.keys(canvas[ratio]?.layouts?.[viewCount] ?? {}).map(
-              (key, index) => (
-                <ToggleButton
-                  key={key}
-                  value={key}
-                  aria-label={`layout ${index + 1}`}
-                  sx={{ fontSize: "1.2rem" }}
-                >
-                  {index + 1}
-                </ToggleButton>
-              )
-            )}
+            {Object.keys(availableLayouts).map((key, index) => (
+              <ToggleButton
+                key={key}
+                value={key}
+                aria-label={`layout ${index + 1}`}
+                sx={{ fontSize: "1.2rem" }}
+              >
+                {index + 1}
+              </ToggleButton>
+            ))}
           </StyledToggleButtonGroup>
         )}
       </Box>
