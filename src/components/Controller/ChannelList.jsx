@@ -35,8 +35,10 @@ export default function ChannelList() {
   const setLayoutType = useSetAtom(layoutTypeAtom);
   const setSnackbar = useSetAtom(snackbarAtom);
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
-  const ratio = useAtomValue(ratioAtom);
-  const maxViewCount = canvas[ratio]?.maxViewCount ?? 1;
+  const ratioKey = useAtomValue(ratioAtom);
+
+  const [ratio, orientation] = ratioKey.split("-");
+  const maxViewCount = canvas[ratio]?.[orientation]?.maxViewCount ?? 1;
 
   const channelArray = React.useMemo(
     () =>
