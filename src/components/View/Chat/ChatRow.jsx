@@ -4,7 +4,7 @@ import urlRegexSafe from "url-regex-safe";
 import { useTheme } from "@mui/material/styles";
 
 export default function ChatRow({ chat }) {
-  const { time, nickname, badges, color, emojis, message } = chat;
+  const { time, nickname, badges, color, emojis, message, messageColor } = chat;
   const theme = useTheme();
 
   return (
@@ -39,7 +39,7 @@ export default function ChatRow({ chat }) {
       >
         {nickname}
       </Box>
-      <Box component="span" className="message" sx={{ verticalAlign: "middle" }}>
+      <Box component="span" className="message" sx={{ verticalAlign: "middle", color: messageColor }}>
         {message.map((part, i) => (
           <Fragment key={i}>
             {part.type === "text" ? (

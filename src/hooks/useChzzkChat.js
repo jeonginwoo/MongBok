@@ -14,6 +14,9 @@ const nicknameColors = [
 
 const emojiRegex = /{:([a-zA-Z0-9_]+):}/;
 
+const OWNER_USER_ROLE_CODE = "streamer";
+const MANAGER_USER_ROLE_CODES = ["streaming_chat_manager", "streaming_channel_manager"];
+
 function splitWithSpace(message) {
   return message
     .split(/([^ ]+)/)
@@ -110,12 +113,21 @@ export default function useChzzkChat(channelId) {
     const profile = JSON.parse(chzzkChat.profile || "{}");
     const extras = JSON.parse(chzzkChat.extras || "{}");
     const nickname = profile.nickname || "익명의 후원자";
+
+    const isOwner = profile.userRoleCode === OWNER_USER_ROLE_CODE;
+    const isManager = MANAGER_USER_ROLE_CODES.includes(profile.userRoleCode);
+    
+    const roleBadge = profile.badge?.imageUrl;
     const subscriptionBadge =
       profile.streamingProperty?.subscription?.badge.imageUrl;
+    const otherBadges = profile.viewerBadges?.map(({ badge }) => badge.imageUrl) ?? [];
+
     const badges = [
+      roleBadge,
       subscriptionBadge,
-      ...(profile.viewerBadges?.map(({ badge }) => badge.imageUrl) ?? []),
+      ...otherBadges,
     ].filter((badge) => badge != null);
+
     const color =
       profile.title?.color ??
       nicknameColors[
@@ -127,6 +139,8 @@ export default function useChzzkChat(channelId) {
     const emojis = typeof extras.emojis !== "string" ? extras.emojis : {};
     const message = chzzkChat.msg || "";
     const match = message.match(emojiRegex);
+
+    const messageColor = (isOwner || isManager) ? color : undefined;
 
     const chatObject = {
       uid: `${profile.userIdHash}-${chzzkChat.msgTime}`,
@@ -145,6 +159,7 @@ export default function useChzzkChat(channelId) {
                 : [{ type: "emoji", emojiKey: part }]
             )
         : splitWithSpace(message),
+      messageColor,
     };
 
     if (extras.payAmount != null) {
