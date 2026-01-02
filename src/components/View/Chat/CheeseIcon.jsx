@@ -5,10 +5,10 @@ function CheeseIcon() {
   return (
     <Box
       component="img"
-      src="https://ssl.pstatic.net/static/nng/glive/icon/cheese01.png"
+      src="chzzk/cheese01.png"
       alt="Cheese"
       sx={{
-        height: "2.2rem",
+        height: "2rem",
         verticalAlign: "top",
         padding: "0.2rem 0.4rem 0 0",
       }}
