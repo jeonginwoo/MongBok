@@ -23,17 +23,18 @@ const RatioDisplay = ({ ratioConfig, sx }) => {
   const [w, h] = ratioValue.split("/").map(Number);
   const numericRatio = w / h;
 
-  const fitStyle = numericRatio >= 1 ? { width: "100%" } : { height: "100%" };
+  // This logic assumes the parent container is a square.
+  const style =
+    numericRatio >= 1
+      ? { width: "100%", height: `${(1 / numericRatio) * 100}%` }
+      : { width: `${numericRatio * 100}%`, height: "100%" };
 
   return (
     <Box
       sx={{
-        ...fitStyle,
-        aspectRatio: ratioValue,
+        ...style,
         backgroundColor: "primary.opacity",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+        transition: "width 0.25s ease-out, height 0.25s ease-out",
         ...sx,
       }}
     />
