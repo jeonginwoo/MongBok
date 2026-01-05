@@ -196,7 +196,7 @@ export default function ManualArea() {
             <ManualListItem
               icon={<AccessTimeIcon sx={{ fontSize: '2rem' }} />}
               primary="현재 시간 표시 (T)"
-              secondary="화면 좌측 상단에 표시되는 현재 시간의 ON/OFF 상태를 토글합니다."
+              secondary="화면 좌측 상단에 표시되는 현재 시간의 ON/OFF 상태를 토글합니다. 현재 시간은 전체 화면 버튼과 동일한 기능을 합니다."
             />
             <ManualListItem
               icon={<MouseIcon sx={{ fontSize: '2rem' }} />}
@@ -206,7 +206,7 @@ export default function ManualArea() {
             <ManualListItem
               icon={<RefreshIcon sx={{ fontSize: '2rem' }} />}
               primary="채널 정보 새로고침 (R)"
-              secondary="모든 채널의 라이브 상태, 시청자 수 등의 정보를 새로고침합니다."
+              secondary="모든 채널의 라이브 상태, 시청자 수 등의 정보를 새로고침합니다. (60초마다 자동 새로고침되며, 채널이 off 상태에서 live 상태로 변화 감지 시 플레이어를 새로고침 합니다.)"
             />
             <ManualListItem
               icon={<FullscreenIcon sx={{ fontSize: '2rem' }} />}
