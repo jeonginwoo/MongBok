@@ -240,8 +240,8 @@ export default function ManualArea() {
             />
             <ManualListItem
               icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
-              primary="리소스 사용량"
-              secondary="4개 채널을 동시에 시청할 경우, 약 1.3GB의 시스템 리소스가 사용될 수 있습니다."
+              primary="메모리 사용량"
+              secondary="4개 채널을 동시에 시청할 경우, 약 1.3GB의 메모리가 사용될 수 있습니다."
             />
           </List>
         </Section>
