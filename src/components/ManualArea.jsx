@@ -22,6 +22,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import InfoIcon from "@mui/icons-material/Info";
+import ImportExportIcon from "@mui/icons-material/ImportExport";
 import { PLATFORM_COLORS } from "@/data/color";
 
 const Section = ({ title, children }) => (
@@ -207,6 +208,11 @@ export default function ManualArea() {
               icon={<RefreshIcon sx={{ fontSize: '2rem' }} />}
               primary="채널 정보 새로고침 (R)"
               secondary="모든 채널의 라이브 상태, 시청자 수 등의 정보를 새로고침합니다. (60초마다 자동 새로고침되며, 채널이 off 상태에서 live 상태로 변화 감지 시 플레이어를 새로고침 합니다.)"
+            />
+            <ManualListItem
+              icon={<ImportExportIcon sx={{ fontSize: '2rem' }} />}
+              primary="데이터 동기화"
+              secondary="다른 브라우저나 기기에서 현재 채널 목록과 설정을 그대로 사용하고 싶을 때 사용합니다. 'Copy' 버튼으로 현재 데이터를 복사한 후, 다른 환경의 입력란에 붙여넣고 'Save' 버튼을 누르면 데이터가 동기화됩니다."
             />
             <ManualListItem
               icon={<FullscreenIcon sx={{ fontSize: '2rem' }} />}
