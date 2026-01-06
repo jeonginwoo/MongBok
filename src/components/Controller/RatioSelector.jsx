@@ -146,7 +146,6 @@ export default function RatioSelector() {
         sx={{
           position: "relative",
           padding: 0,
-          minWidth: 0,
           minWidth: "7rem",
           height: "7rem",
           border: "0.1rem dashed",
