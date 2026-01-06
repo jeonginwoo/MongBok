@@ -95,14 +95,32 @@ export default function ViewArea({ canvasRef, fullscreen }) {
 
     const observer = new ResizeObserver((entries) => {
       for (let entry of entries) {
-        const { width, height } = entry.contentRect;
+        const { width: containerWidth, height: containerHeight } =
+          entry.contentRect;
 
-        if (width === 0 || height === 0) return;
-        if (width * ratioH >= height * ratioW) {
-          setFitStyle({ height: "100%" });
-        } else {
-          setFitStyle({ width: "100%" });
+        if (containerWidth === 0 || containerHeight === 0) {
+          setFitStyle({ width: 0, height: 0 }); // Hide if container is zero
+          return;
         }
+
+        const [ratioW, ratioH] = currentRatio.split("/").map(Number);
+        const aspectRatio = ratioW / ratioH;
+
+        let newWidth;
+        let newHeight;
+
+        if (containerWidth / containerHeight > aspectRatio) {
+          newHeight = containerHeight;
+          newWidth = containerHeight * aspectRatio;
+        } else {
+          newWidth = containerWidth;
+          newHeight = containerWidth / aspectRatio;
+        }
+
+        setFitStyle({
+          width: `${newWidth}px`,
+          height: `${newHeight}px`,
+        });
       }
     });
 
@@ -169,6 +187,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
             position: "relative",
             backgroundColor: "background.canvas",
             overflow: "hidden",
+            transition: "width 0.25s ease-out, height 0.25s ease-out",
             ...fitStyle,
             ...ratioConfig?.style,
           }}
