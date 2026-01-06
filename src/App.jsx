@@ -1,9 +1,9 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, lazy, Suspense } from "react";
 import { CssBaseline, Box } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import { getTheme } from "@/theme";
 
-import ManualArea from "@/components/ManualArea";
+const ManualArea = lazy(() => import("@/components/ManualArea"));
 import ViewArea from "@/components/ViewArea";
 import ControllerArea from "@/components/ControllerArea";
 
@@ -51,7 +51,7 @@ export default function App() {
       >
         {(viewCount > 0)
         ? <ViewArea canvasRef={canvasRef} fullscreen={fullscreen} />
-        : <ManualArea />}
+        : <Suspense fallback={null}><ManualArea /></Suspense>}
         <ControllerArea fullscreen={fullscreen} />
       </Box>
     </ThemeProvider>
