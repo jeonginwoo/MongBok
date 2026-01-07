@@ -227,7 +227,7 @@ export default function ManualArea() {
             <ManualListItem
               icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
               primary="숲(SOOP) 플랫폼"
-              secondary="숲 플랫폼은 방송 종료 시간을 API로 제공하지 않아 '?'로 표시됩니다."
+              secondary="숲 플랫폼은 같은 방송을 동시에 띄울 수 없습니다. 또한, 방송 종료 시간을 API로 제공하지 않아 '?'로 표시됩니다."
             />
             <ManualListItem
               icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
@@ -236,8 +236,8 @@ export default function ManualArea() {
             />
             <ManualListItem
               icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
-              primary="동시 시청 및 채팅 주의"
-              secondary="숲(SOOP) 플랫폼은 같은 방송을 동시에 띄울 수 없습니다. 또한, 본 서비스에는 채팅 작성 기능이 없으므로, 채팅 참여를 위해서는 각 플랫폼 사이트를 이용해야 합니다."
+              primary="채팅"
+              secondary="본 서비스에는 채팅 작성 기능이 없으므로, 채팅 참여를 위해서는 각 플랫폼 사이트를 이용해야 합니다."
             />
             <ManualListItem
               icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
