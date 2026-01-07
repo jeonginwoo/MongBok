@@ -31,13 +31,13 @@ function CheeseChatRow({ chat }) {
         mt: "0.8rem",
         display: "flex",
         flexDirection: "column",
-        gap: "4px",
+        gap: "0.4rem",
         color: "white",
         fontSize: "1.5rem",
         background: `linear-gradient(270deg, rgba(0, 0, 0, 0.2), transparent),
     linear-gradient(180deg, hsla(0, 0%, 100%, 0.1), hsla(0, 0%, 100%, 0)), ${tierColor}`,
-        boxShadow: "inset 1px 1px 1px 0 hsla(0, 0%, 100%, 0.1)",
-        borderRadius: "8px",
+        boxShadow: "inset 0.1rem 0.1rem 0.1rem 0 hsla(0, 0%, 100%, 0.1)",
+        borderRadius: "0.8rem",
         padding: "1rem 1.2rem 1.2rem 1.2rem",
       }}
     >
@@ -49,7 +49,7 @@ function CheeseChatRow({ chat }) {
             "& .badge": {
               height: "2rem",
               paddingTop: "0.2rem",
-              paddingRight: "4px",
+              paddingRight: "0.4rem",
               verticalAlign: "top",
             },
           }}
@@ -65,7 +65,7 @@ function CheeseChatRow({ chat }) {
       <Box
         sx={{
           lineHeight: "1.45em",
-          textShadow: "black 0 0 1px",
+          textShadow: "black 0 0 0.1rem",
         }}
       >
         <Box
@@ -82,7 +82,7 @@ function CheeseChatRow({ chat }) {
             "& .emoji": {
               height: "1.8rem",
               verticalAlign: "top",
-              marginRight: "1px",
+              marginRight: "0.1rem",
             },
           }}
         >

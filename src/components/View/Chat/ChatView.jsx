@@ -42,7 +42,7 @@ export default function ChatView({ chatList }) {
           width: "0.4em",
         },
         "&::-webkit-scrollbar-track": {
-          boxShadow: "inset 0 0 6px rgba(0,0,0,0.00)",
+          boxShadow: "inset 0 0 0.6rem rgba(0,0,0,0.00)",
         },
         "&::-webkit-scrollbar-thumb": {
           backgroundColor: theme.palette.scrollbar.thumb,

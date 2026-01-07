@@ -33,7 +33,7 @@ const Section = ({ title, children }) => (
       mb: 4,
       backgroundColor: "background.level1",
       borderRadius: "1.2rem",
-      borderLeft: "5px solid",
+      borderLeft: "0.5rem solid",
       borderColor: (theme) => theme.palette.primary.main,
     }}
   >
@@ -71,7 +71,7 @@ const ManualListItem = ({ icon, primary, secondary }) => (
       primaryTypographyProps={{
         fontWeight: "bold",
         fontSize: "1.45rem",
-        marginBottom: "4px",
+        marginBottom: "0.4rem",
       }}
       secondaryTypographyProps={{
         lineHeight: 1.5,
@@ -115,7 +115,7 @@ export default function ManualArea() {
               `linear-gradient(45deg, ${theme.palette.common.pointColors.pointColor5} 30%, ${theme.palette.common.pointColors.pointColor7} 90%)`,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
-            textShadow: "1px 1px 3px rgba(0,0,0,0.1)",
+            textShadow: "0.1rem 0.1rem 0.3rem rgba(0,0,0,0.1)",
           }}
         >
           합★체 사용 설명서

@@ -23,7 +23,7 @@ export default function ControllerArea({ fullscreen }) {
         display: "flex",
         flexDirection: "column",
         paddingTop: "1.6rem",
-        borderLeft: "1px solid",
+        borderLeft: "0.1rem solid",
         borderColor: "divider",
       }}
     >
