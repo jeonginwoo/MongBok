@@ -26,7 +26,7 @@ import { getLiveStatus } from "@/api/live";
 import { canvas } from "@/data/layouts";
 import { palettes } from "@/data/color";
 
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import {
   pointerEventsEnabledAtom,
   showCurrentTimeAtom,
@@ -34,6 +34,7 @@ import {
   controllerExpandedAtom,
   themeModeAtom,
 } from "@/atoms/setting";
+import { snackbarAtom } from "@/atoms/ui";
 
 const iconStyle = { fontSize: "2.4rem" };
 const smallIconStyle = { fontSize: "2.0rem" };
@@ -65,39 +66,29 @@ const validateData = async (dataToValidate) => {
       parsedData === null ||
       Array.isArray(parsedData)
     ) {
-      console.error("Validation Error: Data is not a valid object.");
-      return false;
+      return "데이터는 유효한 객체 형식이 아닙니다.";
     }
 
     const dataKeys = Object.keys(parsedData);
     if (!dataKeys.every((key) => allowedKeys.includes(key))) {
       const invalidKeys = dataKeys.filter((key) => !allowedKeys.includes(key));
-      console.error(
-        `Validation Error: Contains unallowed keys: ${invalidKeys.join(
-          ", "
-        )}. Allowed keys are: ${allowedKeys.join(", ")}`
-      );
-      return false;
+      return `허용되지 않는 키가 포함되어 있습니다: ${invalidKeys.join(
+        ", "
+      )}. 허용되는 키는: ${allowedKeys.join(", ")} 입니다.`;
     }
 
     for (const key of dataKeys) {
       const value = parsedData[key];
       if (typeof value !== "string") {
-        console.error(
-          `Validation Error: Value for key '${key}' is not a string.`
-        );
-        return false;
+        return `'${key}'의 값은 문자열이어야 합니다.`;
       }
 
       switch (key) {
         case "themeMode":
           if (!Object.keys(palettes).includes(value)) {
-            console.error(
-              `Validation Error: Invalid themeMode value '${value}'. Allowed values are: ${Object.keys(
-                palettes
-              ).join(", ")}.`
-            );
-            return false;
+            return `유효하지 않은 테마 모드 값 '${value}'. 허용되는 값은: ${Object.keys(
+              palettes
+            ).join(", ")} 입니다.`;
           }
           break;
 
@@ -105,10 +96,7 @@ const validateData = async (dataToValidate) => {
         case "showCurrentTime":
         case "controllerExpanded":
           if (value !== "true" && value !== "false") {
-            console.error(
-              `Validation Error: Invalid boolean string value '${value}' for key '${key}'. Must be 'true' or 'false'.`
-            );
-            return false;
+            return `'${key}'에 대한 유효하지 않은 불리언 문자열 값 '${value}'. 'true' 또는 'false' 여야 합니다.`;
           }
           break;
 
@@ -120,12 +108,9 @@ const validateData = async (dataToValidate) => {
               )
           );
           if (!validRatios.includes(value)) {
-            console.error(
-              `Validation Error: Invalid ratio value '${value}'. Allowed values are: ${validRatios.join(
-                ", "
-              )}.`
-            );
-            return false;
+            return `유효하지 않은 비율 값 '${value}'. 허용되는 값은: ${validRatios.join(
+              ", "
+            )} 입니다.`;
           }
           break;
 
@@ -137,10 +122,7 @@ const validateData = async (dataToValidate) => {
               channelsObj === null ||
               Array.isArray(channelsObj)
             ) {
-              console.error(
-                "Validation Error: 'channels' value is not a valid JSON object."
-              );
-              return false;
+              return "'channels' 값이 유효한 JSON 객체가 아닙니다.";
             }
             const zoneIds = [];
             const validationPromises = Object.keys(channelsObj).map(
@@ -189,30 +171,24 @@ const validateData = async (dataToValidate) => {
               if (result.status === "rejected") {
                 const channelId = Object.keys(channelsObj)[index];
                 acc.push(channelId);
-                console.error(
-                  `Validation Error for channel '${channelId}':`,
-                  result.reason
-                );
+                // console.error(
+                //   `Validation Error for channel '${channelId}':`,
+                //   result.reason
+                // );
               }
               return acc;
             }, []);
 
             if (invalidChannels.length > 0) {
-              console.error(
-                `Validation Error: Could not fetch data for the following channel IDs: ${invalidChannels.join(
-                  ", "
-                )}. They may be invalid.`
-              );
-              return false;
+              return `다음 채널 ID에 대한 데이터를 가져올 수 없습니다: ${invalidChannels.join(
+                ", "
+              )}. 유효하지 않을 수 있습니다.`;
             }
 
             if (zoneIds.length > 0) {
               const uniqueZoneIds = [...new Set(zoneIds)];
               if (uniqueZoneIds.length !== zoneIds.length) {
-                console.error(
-                  "Validation Error: Duplicate zoneId found in 'channels'."
-                );
-                return false;
+                return "'channels'에서 중복된 zoneId가 발견되었습니다.";
               }
 
               const sortedZoneIds = uniqueZoneIds.sort((a, b) => a - b);
@@ -220,17 +196,11 @@ const validateData = async (dataToValidate) => {
                 sortedZoneIds[sortedZoneIds.length - 1] !==
                 sortedZoneIds.length
               ) {
-                console.error(
-                  "Validation Error: 'zoneId' values are not sequential starting from 1."
-                );
-                return false;
+                return "'zoneId' 값이 1부터 순차적이지 않습니다.";
               }
             }
           } catch (e) {
-            console.error(
-              `Validation Error: Failed to parse 'channels' JSON string: ${e.message}`
-            );
-            return false;
+            return `'channels' JSON 문자열을 구문 분석하지 못했습니다: ${e.message}`;
           }
           break;
         case "layout":
@@ -248,10 +218,7 @@ const validateData = async (dataToValidate) => {
       const layout = parsedData.layout;
 
       if (!ratio) {
-        console.error(
-          "Validation Error: 'ratio' is required for 'layout' validation."
-        );
-        return false;
+        return "'layout' 유효성 검사를 위해 'ratio'가 필요합니다.";
       }
 
       try {
@@ -261,53 +228,38 @@ const validateData = async (dataToValidate) => {
         if (viewCount > 0) {
           const [group, orientation] = ratio.split("-");
           if (!group || !orientation) {
-            console.error(
-              `Validation Error: Invalid ratio format '${ratio}'. Expected 'group-orientation'.`
-            );
-            return false;
+            return `유효하지 않은 비율 형식 '${ratio}'. 'group-orientation' 형식이 예상됩니다.`;
           }
 
           const ratioInfo = canvas[group]?.[orientation];
           if (!ratioInfo) {
-            console.error(
-              `Validation Error: Ratio group '${group}' or orientation '${orientation}' not found in canvas layouts.`
-            );
-            return false;
+            return `비율 그룹 '${group}' 또는 방향 '${orientation}'이 캔버스 레이아웃에서 찾을 수 없습니다.`;
           }
 
           if (viewCount > ratioInfo.maxViewCount) {
-            console.warn(
-              `Warning: viewCount (${viewCount}) exceeds maxViewCount (${ratioInfo.maxViewCount}) for ratio '${ratio}'. Layout validation will be skipped.`
-            );
+            // console.warn(
+            //   `Warning: viewCount (${viewCount}) exceeds maxViewCount (${ratioInfo.maxViewCount}) for ratio '${ratio}'. Layout validation will be skipped.`
+            // );
           } else {
             const availableLayouts = ratioInfo.layouts[viewCount];
             if (!availableLayouts || !availableLayouts[layout]) {
               const validLayouts = availableLayouts
                 ? Object.keys(availableLayouts)
                 : [];
-              console.error(
-                `Validation Error: Invalid layout '${layout}' for viewCount ${viewCount} and ratio '${ratio}'. Available layouts: ${validLayouts.join(
-                  ", "
-                )}`
-              );
-              return false;
+              return `viewCount ${viewCount} 및 비율 '${ratio}'에 대한 유효하지 않은 레이아웃 '${layout}'. 사용 가능한 레이아웃: ${validLayouts.join(
+                ", "
+              )}`;
             }
           }
         }
       } catch (e) {
-        console.error(
-          `Validation Error: Failed during 'layout' validation: ${e.message}`
-        );
-        return false;
+        return `'layout' 유효성 검사 중 실패했습니다: ${e.message}`;
       }
     }
 
     return true;
   } catch (e) {
-    console.error(
-      `Validation Error: Failed to parse the entire data string into JSON: ${e.message}`
-    );
-    return false;
+    return `전체 데이터 문자열을 JSON으로 구문 분석하지 못했습니다: ${e.message}`;
   }
 };
 
@@ -329,6 +281,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const setSnackbar = useSetAtom(snackbarAtom);
 
   const getLocalStorageDataString = () => {
     const localStorageData = [
@@ -365,8 +318,24 @@ export default function ControlButtonGroup({ fullscreen }) {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      if (!(await validateData(data))) {
-        throw new Error("Invalid data format or values");
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout")), 10000)
+      );
+
+      const validationResult = await Promise.race([
+        validateData(data),
+        timeoutPromise,
+      ]);
+
+      if (typeof validationResult === "string") {
+        setSnackbar({
+          open: true,
+          message: validationResult,
+          severity: "error",
+        });
+        setSaveError(true);
+        setTimeout(() => setSaveError(false), 500);
+        return;
       }
 
       const parsedData = JSON.parse(data);
@@ -390,12 +359,29 @@ export default function ControlButtonGroup({ fullscreen }) {
       }
 
       setSaveSuccess(true);
+      setSnackbar({
+        open: true,
+        message: "설정이 성공적으로 저장되었습니다!",
+        severity: "success",
+      });
       setTimeout(() => {
         setSaveSuccess(false);
+        setAnchorEl(null); // 팝오버 닫기
         window.location.reload();
       }, 500);
     } catch (e) {
-      console.error("Failed to parse and save data:", e);
+      let message;
+      if (e.message === "Timeout") {
+        message = "유효성 검사 시간이 초과되었습니다.";
+      } else {
+        message = "데이터를 저장하는 중 오류가 발생했습니다.";
+        console.error("Failed to parse and save data:", e);
+      }
+      setSnackbar({
+        open: true,
+        message,
+        severity: "error",
+      });
       setSaveError(true);
       setTimeout(() => setSaveError(false), 500);
     } finally {
@@ -757,7 +743,7 @@ export default function ControlButtonGroup({ fullscreen }) {
                 >
                   <span>
                     <IconButton
-                      disabled={saveSuccess || saveError || isSaving}
+                      disabled={saveSuccess || isSaving}
                       variant="contained"
                       onClick={handleSave}
                       sx={{
