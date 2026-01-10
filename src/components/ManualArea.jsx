@@ -147,7 +147,7 @@ export default function ManualArea() {
             <ManualListItem
               icon={<SearchIcon sx={{ fontSize: '2rem' }} />}
               primary="채널 검색"
-              secondary="우측 컨트롤러 상단의 검색창에서 원하는 채널을 검색할 수 있습니다. 검색어 입력 후 Enter를 누르거나, 0.5초 동안 입력이 없으면 자동으로 검색됩니다."
+              secondary="우측 컨트롤러 상단의 검색창에서 원하는 채널을 검색할 수 있습니다. 검색어 입력 후 Enter를 누르거나, 0.5초 동안 입력이 없으면 자동으로 검색됩니다. 검색 결과는 각 플랫폼 에서 최대 5개가 출력됩니다."
             />
             <ManualListItem
               icon={<AddToPhotosIcon sx={{ fontSize: '2rem' }} />}
@@ -186,27 +186,27 @@ export default function ManualArea() {
           <List>
             <ManualListItem
               icon={<FormatIndentIncreaseIcon sx={{ fontSize: '2rem' }} />}
-              primary="사이드바 펴기/접기 (S)"
+              primary="사이드바 펴기/접기 (단축키: S)"
               secondary="컨트롤러 영역을 펴거나 접습니다."
             />
             <ManualListItem
               icon={<Brightness4Icon sx={{ fontSize: '2rem' }} />}
-              primary="테마 전환 (M)"
+              primary="테마 전환 (단축키: M)"
               secondary="클릭할 때마다 라이트 모드와 다크 모드를 전환합니다."
             />
             <ManualListItem
               icon={<AccessTimeIcon sx={{ fontSize: '2rem' }} />}
-              primary="현재 시간 표시 (T)"
+              primary="현재 시간 표시 (단축키: T)"
               secondary="화면 좌측 상단에 표시되는 현재 시간의 ON/OFF 상태를 토글합니다. 현재 시간은 전체 화면 버튼과 동일한 기능을 합니다."
             />
             <ManualListItem
               icon={<MouseIcon sx={{ fontSize: '2rem' }} />}
-              primary="화면 모드 변경 (V)"
+              primary="화면 모드 변경 (단축키: V)"
               secondary="'화면 이동 모드'와 '화면 조작 모드'를 전환합니다. 조작 모드에서는 드래그 앤 드롭이 비활성화되는 대신, 각 방송 화면을 직접 클릭하여 제어할 수 있습니다."
             />
             <ManualListItem
               icon={<RefreshIcon sx={{ fontSize: '2rem' }} />}
-              primary="채널 정보 새로고침 (R)"
+              primary="채널 정보 새로고침 (단축키: R)"
               secondary="모든 채널의 라이브 상태, 시청자 수 등의 정보를 새로고침합니다. (60초마다 자동 새로고침되며, 채널이 off 상태에서 live 상태로 변화 감지 시 플레이어를 새로고침 합니다.)"
             />
             <ManualListItem
@@ -216,7 +216,7 @@ export default function ManualArea() {
             />
             <ManualListItem
               icon={<FullscreenIcon sx={{ fontSize: '2rem' }} />}
-              primary="전체 화면 (F)"
+              primary="전체 화면 (단축키: F)"
               secondary="전체 화면 모드를 켜거나 끕니다."
             />
           </List>

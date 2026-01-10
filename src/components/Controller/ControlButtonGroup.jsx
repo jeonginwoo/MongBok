@@ -302,7 +302,7 @@ export default function ControlButtonGroup({ fullscreen }) {
       </Tooltip>
 
       {controllerExpanded && (
-        <Box>
+        <>
           <Tooltip
             slotProps={tooltipSlotProps}
             title={
@@ -463,7 +463,7 @@ export default function ControlButtonGroup({ fullscreen }) {
               <FullscreenIcon sx={iconStyle} />
             </IconButton>
           </Tooltip>
-        </Box>
+        </>
       )}
     </Box>
   );
