@@ -78,7 +78,6 @@ export default function DraggableChat({ channel, zone }) {
 
   const style = (theme) => ({
     position: "absolute",
-    ...zone?.style,
     transform: transform
       ? `translate3d(${transform.x / 10}rem, ${transform.y / 10}rem, 0)`
       : undefined,
@@ -95,6 +94,7 @@ export default function DraggableChat({ channel, zone }) {
     zIndex: isDragging ? 300 : 100,
     overflow: "hidden",
     touchAction: "none",
+    ...zone?.style,
   });
 
   return (

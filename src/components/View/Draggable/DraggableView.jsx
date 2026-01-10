@@ -58,7 +58,6 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
 
   const style = (theme) => ({
     position: "absolute",
-    ...zone?.style,
     transform: transform
       ? `translate3d(${transform.x/10}rem, ${transform.y/10}rem, 0)`
       : undefined,
@@ -72,6 +71,7 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
     boxSizing: "border-box",
     zIndex: isDragging ? 310 : 110 + baseZIndex,
     touchAction: "none",
+    ...zone?.style,
   });
 
   const iframeSrc =
