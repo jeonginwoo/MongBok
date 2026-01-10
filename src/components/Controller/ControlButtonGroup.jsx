@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Box, IconButton, Tooltip, Popover, TextField, Button } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Tooltip,
+  Popover,
+  TextField,
+  Button,
+  CircularProgress,
+} from "@mui/material";
 import {
   Mouse as MouseIcon,
   PanTool as PanToolIcon,
@@ -15,6 +23,8 @@ import {
   Check as CheckIcon,
 } from "@mui/icons-material";
 import { getLiveStatus } from "@/api/live";
+import { canvas } from "@/data/layouts";
+import { palettes } from "@/data/color";
 
 import { useAtom } from "jotai";
 import {
@@ -36,6 +46,271 @@ const tooltipSlotProps = {
   },
 };
 
+const validateData = async (dataToValidate) => {
+  try {
+    const parsedData = JSON.parse(dataToValidate);
+
+    const allowedKeys = [
+      "channels",
+      "layout",
+      "ratio",
+      "pointerEventsEnabled",
+      "showCurrentTime",
+      "controllerExpanded",
+      "themeMode",
+    ];
+
+    if (
+      typeof parsedData !== "object" ||
+      parsedData === null ||
+      Array.isArray(parsedData)
+    ) {
+      console.error("Validation Error: Data is not a valid object.");
+      return false;
+    }
+
+    const dataKeys = Object.keys(parsedData);
+    if (!dataKeys.every((key) => allowedKeys.includes(key))) {
+      const invalidKeys = dataKeys.filter((key) => !allowedKeys.includes(key));
+      console.error(
+        `Validation Error: Contains unallowed keys: ${invalidKeys.join(
+          ", "
+        )}. Allowed keys are: ${allowedKeys.join(", ")}`
+      );
+      return false;
+    }
+
+    for (const key of dataKeys) {
+      const value = parsedData[key];
+      if (typeof value !== "string") {
+        console.error(
+          `Validation Error: Value for key '${key}' is not a string.`
+        );
+        return false;
+      }
+
+      switch (key) {
+        case "themeMode":
+          if (!Object.keys(palettes).includes(value)) {
+            console.error(
+              `Validation Error: Invalid themeMode value '${value}'. Allowed values are: ${Object.keys(
+                palettes
+              ).join(", ")}.`
+            );
+            return false;
+          }
+          break;
+
+        case "pointerEventsEnabled":
+        case "showCurrentTime":
+        case "controllerExpanded":
+          if (value !== "true" && value !== "false") {
+            console.error(
+              `Validation Error: Invalid boolean string value '${value}' for key '${key}'. Must be 'true' or 'false'.`
+            );
+            return false;
+          }
+          break;
+
+        case "ratio":
+          const validRatios = Object.entries(canvas).flatMap(
+            ([group, orientations]) =>
+              Object.keys(orientations).map(
+                (orientation) => `${group}-${orientation}`
+              )
+          );
+          if (!validRatios.includes(value)) {
+            console.error(
+              `Validation Error: Invalid ratio value '${value}'. Allowed values are: ${validRatios.join(
+                ", "
+              )}.`
+            );
+            return false;
+          }
+          break;
+
+        case "channels":
+          try {
+            const channelsObj = JSON.parse(value);
+            if (
+              typeof channelsObj !== "object" ||
+              channelsObj === null ||
+              Array.isArray(channelsObj)
+            ) {
+              console.error(
+                "Validation Error: 'channels' value is not a valid JSON object."
+              );
+              return false;
+            }
+            const zoneIds = [];
+            const validationPromises = Object.keys(channelsObj).map(
+              (channelId) => {
+                const channelData = channelsObj[channelId];
+                if (typeof channelId !== "string" || !channelId) {
+                  return Promise.reject({
+                    error: `Validation Error: Invalid channelId '${channelId}'.`,
+                  });
+                }
+                if (
+                  typeof channelData !== "object" ||
+                  channelData === null
+                ) {
+                  return Promise.reject({
+                    error: `Validation Error: Channel data for '${channelId}' is not a valid object.`,
+                  });
+                }
+
+                const { platform, zoneId } = channelData;
+                if (!["chzzk", "soop"].includes(platform)) {
+                  return Promise.reject({
+                    error: `Validation Error: Invalid platform '${platform}' for channel '${channelId}'. Must be 'chzzk' or 'soop'.`,
+                  });
+                }
+
+                if (zoneId !== null) {
+                  if (
+                    typeof zoneId !== "number" ||
+                    !Number.isInteger(zoneId) ||
+                    zoneId < 1
+                  ) {
+                    return Promise.reject({
+                      error: `Validation Error: Invalid zoneId '${zoneId}' for channel '${channelId}'. Must be null or a positive integer.`,
+                    });
+                  }
+                  zoneIds.push(zoneId);
+                }
+
+                return getLiveStatus(channelId, platform);
+              }
+            );
+            
+            const results = await Promise.allSettled(validationPromises);
+            const invalidChannels = results.reduce((acc, result, index) => {
+              if (result.status === "rejected") {
+                const channelId = Object.keys(channelsObj)[index];
+                acc.push(channelId);
+                console.error(
+                  `Validation Error for channel '${channelId}':`,
+                  result.reason
+                );
+              }
+              return acc;
+            }, []);
+
+            if (invalidChannels.length > 0) {
+              console.error(
+                `Validation Error: Could not fetch data for the following channel IDs: ${invalidChannels.join(
+                  ", "
+                )}. They may be invalid.`
+              );
+              return false;
+            }
+
+            if (zoneIds.length > 0) {
+              const uniqueZoneIds = [...new Set(zoneIds)];
+              if (uniqueZoneIds.length !== zoneIds.length) {
+                console.error(
+                  "Validation Error: Duplicate zoneId found in 'channels'."
+                );
+                return false;
+              }
+
+              const sortedZoneIds = uniqueZoneIds.sort((a, b) => a - b);
+              if (
+                sortedZoneIds[sortedZoneIds.length - 1] !==
+                sortedZoneIds.length
+              ) {
+                console.error(
+                  "Validation Error: 'zoneId' values are not sequential starting from 1."
+                );
+                return false;
+              }
+            }
+          } catch (e) {
+            console.error(
+              `Validation Error: Failed to parse 'channels' JSON string: ${e.message}`
+            );
+            return false;
+          }
+          break;
+        case "layout":
+          // Layout validation depends on other keys, handled below.
+          break;
+        default:
+          break;
+      }
+    }
+
+    // Layout validation
+    if ("layout" in parsedData) {
+      const channelsStr = parsedData.channels || "{}";
+      const ratio = parsedData.ratio;
+      const layout = parsedData.layout;
+
+      if (!ratio) {
+        console.error(
+          "Validation Error: 'ratio' is required for 'layout' validation."
+        );
+        return false;
+      }
+
+      try {
+        const channelsObj = JSON.parse(channelsStr);
+        const viewCount = Object.keys(channelsObj).length;
+
+        if (viewCount > 0) {
+          const [group, orientation] = ratio.split("-");
+          if (!group || !orientation) {
+            console.error(
+              `Validation Error: Invalid ratio format '${ratio}'. Expected 'group-orientation'.`
+            );
+            return false;
+          }
+
+          const ratioInfo = canvas[group]?.[orientation];
+          if (!ratioInfo) {
+            console.error(
+              `Validation Error: Ratio group '${group}' or orientation '${orientation}' not found in canvas layouts.`
+            );
+            return false;
+          }
+
+          if (viewCount > ratioInfo.maxViewCount) {
+            console.warn(
+              `Warning: viewCount (${viewCount}) exceeds maxViewCount (${ratioInfo.maxViewCount}) for ratio '${ratio}'. Layout validation will be skipped.`
+            );
+          } else {
+            const availableLayouts = ratioInfo.layouts[viewCount];
+            if (!availableLayouts || !availableLayouts[layout]) {
+              const validLayouts = availableLayouts
+                ? Object.keys(availableLayouts)
+                : [];
+              console.error(
+                `Validation Error: Invalid layout '${layout}' for viewCount ${viewCount} and ratio '${ratio}'. Available layouts: ${validLayouts.join(
+                  ", "
+                )}`
+              );
+              return false;
+            }
+          }
+        }
+      } catch (e) {
+        console.error(
+          `Validation Error: Failed during 'layout' validation: ${e.message}`
+        );
+        return false;
+      }
+    }
+
+    return true;
+  } catch (e) {
+    console.error(
+      `Validation Error: Failed to parse the entire data string into JSON: ${e.message}`
+    );
+    return false;
+  }
+};
+
 export default function ControlButtonGroup({ fullscreen }) {
   const [controllerExpanded, setControllerExpanded] = useAtom(
     controllerExpandedAtom
@@ -53,6 +328,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [copySuccess, setCopySuccess] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const getLocalStorageDataString = () => {
     const localStorageData = [
@@ -71,7 +347,7 @@ export default function ControlButtonGroup({ fullscreen }) {
       return obj;
     }, {});
     return JSON.stringify(localStorageData, null, 2);
-  }
+  };
 
   const handleOpenPopover = (event) => {
     setData(getLocalStorageDataString());
@@ -83,11 +359,16 @@ export default function ControlButtonGroup({ fullscreen }) {
     setData(dataString);
     navigator.clipboard.writeText(dataString);
     setCopySuccess(true);
-    setTimeout(() => setCopySuccess(false), 1000);
+    setTimeout(() => setCopySuccess(false), 500);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setIsSaving(true);
     try {
+      if (!(await validateData(data))) {
+        throw new Error("Invalid data format or values");
+      }
+
       const parsedData = JSON.parse(data);
 
       const allowedKeys = [
@@ -99,31 +380,12 @@ export default function ControlButtonGroup({ fullscreen }) {
         "controllerExpanded",
         "themeMode",
       ];
-      
-      if (typeof parsedData !== 'object' || parsedData === null) {
-        setSaveError(true);
-        setTimeout(() => setSaveError(false), 1000);
-        return;
-      }
 
-      const hasOnlyAllowedKeys = Object.keys(parsedData).every((key) => allowedKeys.includes(key));
-
-      if (!hasOnlyAllowedKeys) {
-        setSaveError(true);
-        setTimeout(() => setSaveError(false), 1000);
-        return;
-      }
-      
       // 먼저 모든 허용된 키를 로컬 스토리지에서 삭제합니다.
-      allowedKeys.forEach(key => window.localStorage.removeItem(key));
+      allowedKeys.forEach((key) => window.localStorage.removeItem(key));
 
       // 그 다음 파싱된 데이터로 새 값을 설정합니다.
       for (const key in parsedData) {
-        if (typeof parsedData[key] !== 'string') {
-          setSaveError(true);
-          setTimeout(() => setSaveError(false), 1000);
-          return;
-        }
         window.localStorage.setItem(key, parsedData[key]);
       }
 
@@ -131,11 +393,13 @@ export default function ControlButtonGroup({ fullscreen }) {
       setTimeout(() => {
         setSaveSuccess(false);
         window.location.reload();
-      }, 1000);
+      }, 500);
     } catch (e) {
       console.error("Failed to parse and save data:", e);
       setSaveError(true);
-      setTimeout(() => setSaveError(false), 1000);
+      setTimeout(() => setSaveError(false), 500);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -269,11 +533,11 @@ export default function ControlButtonGroup({ fullscreen }) {
   };
 
   const successAnimation = {
-    "50%": { color: "success.main" },
+    "100%": { color: "success.main" },
   };
 
   const errorAnimation = {
-    "50%": { color: "error.main" },
+    "100%": { color: "error.main" },
   };
 
   return (
@@ -288,11 +552,17 @@ export default function ControlButtonGroup({ fullscreen }) {
         title={
           <>
             {controllerExpanded ? "사이드 접기 " : "사이드 펴기 "}(
-            <Box component="span" sx={{ color: "common.skyBlue", fontWeight: "bold" }}>S</Box>)
+            <Box
+              component="span"
+              sx={{ color: "common.skyBlue", fontWeight: "bold" }}
+            >
+              S
+            </Box>
+            )
           </>
         }
       >
-        <IconButton  onClick={handleToggleController}>
+        <IconButton onClick={handleToggleController}>
           {controllerExpanded ? (
             <FormatIndentIncreaseIcon sx={iconStyle} />
           ) : (
@@ -308,12 +578,22 @@ export default function ControlButtonGroup({ fullscreen }) {
             title={
               <>
                 {themeMode === "light" ? "다크 모드 " : "화이트 모드 "}(
-                <Box component="span" sx={{ color: "common.skyBlue", fontWeight: "bold" }}>M</Box>)
+                <Box
+                  component="span"
+                  sx={{ color: "common.skyBlue", fontWeight: "bold" }}
+                >
+                  M
+                </Box>
+                )
               </>
             }
           >
             <IconButton onClick={handleToggleTheme}>
-              {themeMode === 'light' ? <Brightness4Icon sx={iconStyle}/> : <Brightness7Icon sx={iconStyle}/>}
+              {themeMode === "light" ? (
+                <Brightness4Icon sx={iconStyle} />
+              ) : (
+                <Brightness7Icon sx={iconStyle} />
+              )}
             </IconButton>
           </Tooltip>
 
@@ -322,15 +602,22 @@ export default function ControlButtonGroup({ fullscreen }) {
             title={
               <>
                 {showCurrentTime ? "현재 시간 on " : "현재 시간 off "}(
-                <Box component="span" sx={{ color: "common.skyBlue", fontWeight: "bold" }}>T</Box>)
+                <Box
+                  component="span"
+                  sx={{ color: "common.skyBlue", fontWeight: "bold" }}
+                >
+                  T
+                </Box>
+                )
               </>
             }
           >
             <IconButton
-              
               onClick={handleToggleCurrentTime}
               sx={{
-                "& .MuiSvgIcon-root": !showCurrentTime ? { color: "text.quaternary" } : {},
+                "& .MuiSvgIcon-root": !showCurrentTime
+                  ? { color: "text.quaternary" }
+                  : {},
               }}
             >
               <AccessTimeIcon sx={iconStyle} />
@@ -342,11 +629,20 @@ export default function ControlButtonGroup({ fullscreen }) {
             title={
               <>
                 {pointerEventsEnabled ? "화면 조작 모드 " : "화면 이동 모드 "}(
-                <Box component="span" sx={{ color: "common.skyBlue", fontWeight: "bold" }}>V</Box>)
+                <Box
+                  component="span"
+                  sx={{ color: "common.skyBlue", fontWeight: "bold" }}
+                >
+                  V
+                </Box>
+                )
               </>
             }
           >
-            <IconButton  onClick={handleTogglePointerEvents} sx={{ padding: 1.25 }}>
+            <IconButton
+              onClick={handleTogglePointerEvents}
+              sx={{ padding: 1.25 }}
+            >
               {pointerEventsEnabled ? (
                 <MouseIcon sx={smallIconStyle} />
               ) : (
@@ -359,12 +655,18 @@ export default function ControlButtonGroup({ fullscreen }) {
             slotProps={tooltipSlotProps}
             title={
               <>
-                채널 정보 갱신 (<Box component="span" sx={{ color: "common.skyBlue", fontWeight: "bold" }}>R</Box>)
+                채널 정보 갱신 (
+                <Box
+                  component="span"
+                  sx={{ color: "common.skyBlue", fontWeight: "bold" }}
+                >
+                  R
+                </Box>
+                )
               </>
             }
           >
             <IconButton
-              
               onClick={handleRefresh}
               disabled={refreshing}
               sx={{
@@ -374,7 +676,9 @@ export default function ControlButtonGroup({ fullscreen }) {
                       "@keyframes rotate360": rotate360,
                     }
                   : {},
-                "&.Mui-disabled .MuiSvgIcon-root": { color: "text.quaternary" },
+                "&.Mui-disabled .MuiSvgIcon-root": {
+                  color: "text.quaternary",
+                },
               }}
             >
               <RefreshIcon sx={iconStyle} />
@@ -382,9 +686,7 @@ export default function ControlButtonGroup({ fullscreen }) {
           </Tooltip>
 
           <Tooltip slotProps={tooltipSlotProps} title="데이터 동기화">
-            <IconButton
-              onClick={handleOpenPopover}
-            >
+            <IconButton onClick={handleOpenPopover}>
               <ImportExportIcon sx={iconStyle} />
             </IconButton>
           </Tooltip>
@@ -401,7 +703,16 @@ export default function ControlButtonGroup({ fullscreen }) {
               horizontal: "center",
             }}
           >
-            <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1, backgroundColor: "background.level1", width: "27rem" }}>
+            <Box
+              sx={{
+                p: 2,
+                display: "flex",
+                flexDirection: "column",
+                gap: 1,
+                backgroundColor: "background.level1",
+                width: "27rem",
+              }}
+            >
               <TextField
                 label="SETTING"
                 multiline
@@ -411,15 +722,22 @@ export default function ControlButtonGroup({ fullscreen }) {
                 variant="outlined"
                 fullWidth
               />
-              <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-                <Tooltip slotProps={tooltipSlotProps} title={copySuccess ? "복사 완료!" : "현재 설정 복사"}>
+              <Box
+                sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}
+              >
+                <Tooltip
+                  slotProps={tooltipSlotProps}
+                  title={copySuccess ? "복사 완료!" : "현재 설정 복사"}
+                >
                   <span>
                     <IconButton
                       disabled={copySuccess}
                       variant="contained"
                       onClick={handleCopy}
                       sx={{
-                        animation: copySuccess ? "successAnimation 1s ease" : "none",
+                        animation: copySuccess
+                          ? "successAnimation 0.5s ease"
+                          : "none",
                         "@keyframes successAnimation": successAnimation,
                       }}
                     >
@@ -427,23 +745,36 @@ export default function ControlButtonGroup({ fullscreen }) {
                     </IconButton>
                   </span>
                 </Tooltip>
-                <Tooltip slotProps={tooltipSlotProps} title={saveSuccess ? "저장 완료!" : (saveError ? "저장 실패" : "붙여넣은 설정 저장")}>
+                <Tooltip
+                  slotProps={tooltipSlotProps}
+                  title={
+                    saveSuccess
+                      ? "저장 완료!"
+                      : saveError
+                      ? "저장 실패"
+                      : "붙여넣은 설정 저장"
+                  }
+                >
                   <span>
                     <IconButton
-                      disabled={saveSuccess || saveError}
+                      disabled={saveSuccess || saveError || isSaving}
                       variant="contained"
                       onClick={handleSave}
                       sx={{
                         animation: saveSuccess
-                          ? "successAnimation 1s ease"
+                          ? "successAnimation 0.5s ease"
                           : saveError
-                          ? "errorAnimation 1s ease"
+                          ? "errorAnimation 0.5s ease"
                           : "none",
                         "@keyframes successAnimation": successAnimation,
                         "@keyframes errorAnimation": errorAnimation,
                       }}
                     >
-                      <CheckIcon />
+                      {isSaving ? (
+                        <CircularProgress size={15} />
+                      ) : (
+                        <CheckIcon />
+                      )}
                     </IconButton>
                   </span>
                 </Tooltip>
@@ -455,11 +786,18 @@ export default function ControlButtonGroup({ fullscreen }) {
             slotProps={tooltipSlotProps}
             title={
               <>
-                전체화면 (<Box component="span" sx={{ color: "common.skyBlue", fontWeight: "bold" }}>F</Box>)
+                전체화면 (
+                <Box
+                  component="span"
+                  sx={{ color: "common.skyBlue", fontWeight: "bold" }}
+                >
+                  F
+                </Box>
+                )
               </>
             }
           >
-            <IconButton  onClick={fullscreen}>
+            <IconButton onClick={fullscreen}>
               <FullscreenIcon sx={iconStyle} />
             </IconButton>
           </Tooltip>
