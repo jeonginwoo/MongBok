@@ -25,20 +25,23 @@ import {
   showCurrentTimeAtom,
 } from "@/atoms/setting";
 import { fitStyleAtom } from "@/atoms/ui";
+import {
+  useLayoutManager,
+  getRatioConfig,
+} from "@/hooks/useLayoutManager";
 
 export default function ViewArea({ canvasRef, fullscreen }) {
   const [isDraggingAny, setIsDraggingAny] = useState(false);
   const [draggingType, setDraggingType] = useState(null);
   const [fitStyle, setFitStyle] = useAtom(fitStyleAtom);
   const [channels, setChannels] = useAtom(channelsAtom);
-  const [ratioKey, setRatio] = useAtom(ratioAtom);
+  const [ratioKey] = useAtom(ratioAtom);
   const layout = useAtomValue(layoutAtom);
   const pointerEventsEnabled = useAtomValue(pointerEventsEnabledAtom);
   const showCurrentTime = useAtomValue(showCurrentTimeAtom);
+  const { selectRatio } = useLayoutManager();
 
-  const [group, orientation] = ratioKey.split("-");
-  const ratioConfig =
-    group && orientation ? canvas[group]?.[orientation] : null;
+  const ratioConfig = getRatioConfig(ratioKey);
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -71,8 +74,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
       if (canvas[group][newOrientation]) {
         const newRatioKey = `${group}-${newOrientation}`;
         if (newRatioKey !== ratioKey) {
-          setRatio(newRatioKey);
-          window.localStorage.setItem("ratio", newRatioKey);
+          selectRatio(newRatioKey);
         }
       }
     };
@@ -82,7 +84,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
     return () => {
       window.removeEventListener("orientationchange", handleOrientationChange);
     };
-  }, [ratioKey, setRatio]);
+  }, [ratioKey, selectRatio]);
 
   useEffect(() => {
     const element = canvasRef?.current;

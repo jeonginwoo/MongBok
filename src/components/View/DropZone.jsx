@@ -7,7 +7,7 @@ export default function DropZone({ zone, canvasRef }) {
     id: `${zone.type}-${zone.id}`,
   });
   const [fontSize, setFontSize] = useState(1.2);
-  const zoneAlias = { 1: "①", 2: "②", 3: "③", 4: "④" };
+  const zoneAlias = { 1: "①", 2: "②", 3: "③", 4: "④", 5: "⑤" };
 
   useEffect(() => {
     if (!canvasRef?.current) return;

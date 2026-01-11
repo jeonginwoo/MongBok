@@ -49,8 +49,8 @@ const common = {
   lightSkyBlue: "rgba(145, 227, 255, 1)",
   dropZone: {
     border: "rgb(76,192,101)",
-    background: "rgba(255,255,255,0.7)",
-    backgroundOver: "rgba(100,255,134,0.8)",
+    background: "rgba(255,255,255,0.3)",
+    backgroundOver: "rgba(100,255,134,0.7)",
     text: "rgba(0,0,0,0.15)",
   }
 };
