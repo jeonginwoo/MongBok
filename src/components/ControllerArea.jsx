@@ -25,6 +25,7 @@ export default function ControllerArea({ fullscreen }) {
         paddingTop: "1.6rem",
         borderLeft: "0.1rem solid",
         borderColor: "divider",
+        flexShrink: 0,
       }}
     >
       {/* 🔹 LayoutType 선택 */}
