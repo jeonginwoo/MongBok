@@ -91,10 +91,10 @@ export default function DraggableChat({ channel, zone }) {
     cursor: "grab",
     transition: isDragging ? "none" : "0.5s ease",
     boxSizing: "border-box",
-    zIndex: isDragging ? 300 : 100,
     overflow: "hidden",
     touchAction: "none",
     ...zone?.style,
+    zIndex: isDragging ? 300 : 100,
   });
 
   return (

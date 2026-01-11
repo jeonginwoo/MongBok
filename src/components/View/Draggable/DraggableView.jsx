@@ -69,9 +69,9 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
     cursor: "grab",
     transition: isDragging ? "none" : "0.5s ease",
     boxSizing: "border-box",
-    zIndex: isDragging ? 310 : 110 + baseZIndex,
     touchAction: "none",
     ...zone?.style,
+    zIndex: isDragging ? 310 : 110 + baseZIndex,
   });
 
   const iframeSrc =
