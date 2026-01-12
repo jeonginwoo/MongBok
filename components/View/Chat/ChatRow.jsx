@@ -19,20 +19,53 @@ export default function ChatRow({ chat }) {
         marginTop: "0.8rem",
       }}
     >
-      {badges.map((src, i) => (
-        <Image
-          key={i}
-          className="badge"
-          alt=""
-          src={src}
-          width={18}
-          height={18}
-          style={{
-            verticalAlign: "middle",
-            paddingRight: "0.4rem",
-          }}
-        />
-      ))}
+      {badges.map((src, i) => {
+        const isSoopSubscriptionBadge = src.startsWith('https://stimg.afreecatv.com/HASH/subscribecn/');
+        if (isSoopSubscriptionBadge) {
+          return (
+            <Box
+              key={i}
+              component="img"
+              className="badge"
+              alt=""
+              src={src}
+              sx={{
+                width: '1.8rem',
+                height: '1.8rem',
+                objectFit: 'contain',
+                borderRadius: '50%',
+                display: 'inline-block',
+                verticalAlign: 'middle',
+                mr: '0.4rem',
+              }}
+            />
+          );
+        }
+
+        return (
+          <Box
+            key={i}
+            sx={{
+              position: 'relative',
+              width: '1.8rem',
+              height: '1.8rem',
+              display: 'inline-block',
+              verticalAlign: 'middle',
+              mr: '0.4rem',
+            }}
+          >
+            <Image
+              className="badge"
+              alt=""
+              src={src}
+              fill
+              style={{
+                objectFit: 'contain',
+              }}
+            />
+          </Box>
+        );
+      })}
       <Box
         component="span"
         className="nickname"

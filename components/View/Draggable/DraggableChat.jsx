@@ -121,6 +121,7 @@ export default function DraggableChat({ channel, zone }) {
             aspectRatio: "100/30",
             background: (theme) => theme.palette.background.gradient,
             p: "3%",
+            zIndex: 10,
           }}
         >
           <Box>

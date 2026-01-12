@@ -166,9 +166,7 @@ export default function useSoopChat(channelId) {
         userId,
         nickname: soopMessage[6],
         badges: [
-          subscriptionMonths !== -1 && personalSubscriptionBadge
-            ? `https://stimg.afreecatv.com/HASH/subscribecn/${personalSubscriptionBadge}`
-            : null,
+          personalSubscriptionBadge,
           isManager ? "/afreecatv/ic_manager.svg" : null,
           !isManager && isTopFan ? "/afreecatv/ic_hot.svg" : null,
           !isManager && subscriptionMonths !== -1 && !personalSubscriptionBadge
@@ -247,9 +245,7 @@ export default function useSoopChat(channelId) {
         userId,
         nickname: soopMessage[7],
         badges: [
-          subscriptionMonths !== -1 && personalSubscriptionBadge
-            ? `https://stimg.afreecatv.com/HASH/subscribecn/${personalSubscriptionBadge}`
-            : null,
+          personalSubscriptionBadge,
           isManager ? "/afreecatv/ic_manager.svg" : null,
           !isManager && isTopFan ? "/afreecatv/ic_hot.svg" : null,
           !isManager &&
