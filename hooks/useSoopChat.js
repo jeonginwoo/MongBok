@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { defaultEmojis, afreecaNicknameColors } from "../data/soopConstants";
 import useSoopEmoticons from "./useSoopEmoticons";

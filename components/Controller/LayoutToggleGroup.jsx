@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect } from "react";
 import { Box, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { styled } from "@mui/material/styles";

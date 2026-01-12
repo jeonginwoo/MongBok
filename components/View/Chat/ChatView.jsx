@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useCallback } from "react";
 import Box from "@mui/material/Box";
 import ChatRow from "./ChatRow";

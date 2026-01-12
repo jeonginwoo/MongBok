@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { Box, Button, Menu, MenuItem } from "@mui/material";
 import { useAtom } from "jotai";

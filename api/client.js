@@ -8,7 +8,7 @@ export const chzzk_client = axios.create({
 });
 
 export const soop_channel_client = axios.create({
-  baseURL: "/api/soop/channel",
+  baseURL: "/api/soop/station",
   headers: {
     "Content-Type": "application/json",
   },

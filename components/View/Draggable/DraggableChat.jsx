@@ -1,29 +1,50 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import Box from "@mui/material/Box";
+
+import ChannelInfo from "@/components/Info/ChannelInfo/ViewAreaChannelInfo";
+import ChatView from "@/components/View/Chat/ChatView";
 
 import { useAtomValue } from "jotai";
 import { controllerExpandedAtom } from "@/atoms/setting";
 import { fitStyleAtom } from "@/atoms/ui";
 
-export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
+import useChzzkChat from "@/hooks/useChzzkChat";
+import useSoopChat from "@/hooks/useSoopChat";
+
+export default function DraggableChat({ channel, zone }) {
   if (!channel) return null;
 
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
   const fitStyle = useAtomValue(fitStyleAtom);
 
-  const draggableId = `${channel.id}-view`;
+  const draggableId = `${channel.id}-chat`;
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: draggableId,
     });
 
-  const baseZIndex = zone?.style.zIndex || 0;
   const containerRef = useRef(null);
   const [zoom, setZoom] = useState(1);
   const channelId = channel.id;
 
-  const BASE_WIDTH = window.screen.width;
+  const chzzkChatList = useChzzkChat(
+    channel.platform === "chzzk" ? channelId : null
+  );
+  const soopChatList = useSoopChat(
+    channel.platform === "soop" ? channelId : null
+  );
+
+  const chatList =
+    channel.platform === "chzzk"
+      ? chzzkChatList
+      : channel.platform === "soop"
+      ? soopChatList
+      : [];
+
+  const BASE_WIDTH = 360;
 
   useEffect(() => {
     const updateZoom = () => {
@@ -33,6 +54,7 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
       if (!canvas) return;
 
       const canvasWidth = canvas.clientWidth;
+
       const widthStr = zone?.style.width;
       let percent = 1;
       if (typeof widthStr === "string" && widthStr.endsWith("%")) {
@@ -40,6 +62,7 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
       }
 
       const zonePixelWidth = canvasWidth * percent;
+
       const newZoom =
         zonePixelWidth < BASE_WIDTH ? zonePixelWidth / BASE_WIDTH : 1;
       setZoom(newZoom);
@@ -48,20 +71,21 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
     updateZoom();
     const timer = setTimeout(updateZoom, 300);
     window.addEventListener("resize", updateZoom);
-    
+
     return () => {
       window.removeEventListener("resize", updateZoom);
       clearTimeout(timer);
     };
-    
   }, [zone?.style.width, controllerExpanded, fitStyle]);
 
   const style = (theme) => ({
     position: "absolute",
     transform: transform
-      ? `translate3d(${transform.x/10}rem, ${transform.y/10}rem, 0)`
+      ? `translate3d(${transform.x / 10}rem, ${transform.y / 10}rem, 0)`
       : undefined,
-    background: isDragging ? theme.palette.common.lightSkyBlue : theme.palette.background.canvas,
+    background: isDragging
+      ? theme.palette.common.lightSkyBlue
+      : theme.palette.background.canvas,
     opacity: isDragging ? 0.6 : 1,
     display: "flex",
     alignItems: "center",
@@ -69,40 +93,41 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
     cursor: "grab",
     transition: isDragging ? "none" : "0.5s ease",
     boxSizing: "border-box",
+    overflow: "hidden",
     touchAction: "none",
     ...zone?.style,
-    zIndex: isDragging ? 310 : 110 + baseZIndex,
+    zIndex: isDragging ? 300 : 100,
   });
-
-  const iframeSrc =
-    channel.platform === "chzzk"
-      ? `https://chzzk.naver.com/live/${channelId}`
-      : channel.platform === "soop"
-      ? `https://play.sooplive.co.kr/${channelId}/embed`
-      : "";
 
   return (
     <Box ref={setNodeRef} {...listeners} {...attributes} sx={style}>
       <Box
         ref={containerRef}
         sx={{
+          position: "relative",
           width: "100%",
           height: "100%",
           zoom: zoom,
           transformOrigin: "top left",
+          overflow: "hidden",
         }}
       >
         <Box
-          component="iframe"
-          key={channel?.isLive ? "live" : "offline"} 
-          src={iframeSrc}
           sx={{
+            position: "absolute",
+            left: 0,
             width: "100%",
-            height: "100%",
-            border: "none",
-            pointerEvents: pointerEventsEnabled ? "auto" : "none",
+            maxHeight: "10rem",
+            aspectRatio: "100/30",
+            background: (theme) => theme.palette.background.gradient,
+            p: "3%",
           }}
-        />
+        >
+          <Box>
+            <ChannelInfo channel={channel} />
+          </Box>
+        </Box>
+        <ChatView chatList={chatList} />
       </Box>
     </Box>
   );
