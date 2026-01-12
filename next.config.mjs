@@ -28,6 +28,46 @@ const nextConfig = {
       },
     ];
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'nng-phinf.pstatic.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'st.afreecatv.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'profile.img.afreecatv.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'stimg.afreecatv.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.afreecatv.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'static.file.sooplive.co.kr',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ogq-sticker-global-cdn-z01.sooplive.co.kr',
+      },
+      {
+        protocol: 'https',
+        hostname: 'profile.img.sooplive.co.kr',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ssl.pstatic.net',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

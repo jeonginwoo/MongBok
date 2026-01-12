@@ -1,14 +1,15 @@
 import { memo } from "react";
-import Box from "@mui/material/Box";
+import Image from "next/image";
+import cheeseIcon from "public/chzzk/cheese01.png";
 
 function CheeseIcon() {
   return (
-    <Box
-      component="img"
-      src="chzzk/cheese01.png"
+    <Image
+      src={cheeseIcon}
       alt="Cheese"
-      sx={{
-        height: "2rem",
+      width={20}
+      height={20}
+      style={{
         verticalAlign: "top",
         padding: "0.2rem 0.4rem 0 0",
       }}

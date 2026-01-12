@@ -2,6 +2,7 @@ import Box from "@mui/material/Box";
 import { Fragment } from "react";
 import urlRegexSafe from "url-regex-safe";
 import { useTheme } from "@mui/material/styles";
+import Image from "next/image";
 
 export default function ChatRow({ chat }) {
   const { time, nickname, badges, color, emojis, message, messageColor } = chat;
@@ -19,16 +20,16 @@ export default function ChatRow({ chat }) {
       }}
     >
       {badges.map((src, i) => (
-        <Box
+        <Image
           key={i}
-          component="img"
           className="badge"
           alt=""
           src={src}
-          sx={{
-            height: "1.8rem",
+          width={18}
+          height={18}
+          style={{
             verticalAlign: "middle",
-            pr: "0.4rem",
+            paddingRight: "0.4rem",
           }}
         />
       ))}
@@ -64,27 +65,28 @@ export default function ChatRow({ chat }) {
                 </Fragment>
               ))
             ) : part.type === "emoji" && emojis[part.emojiKey] ? (
-              <Box
-                component="img"
+              <Image
                 className="emoji"
                 alt={part.emojiKey}
                 src={emojis[part.emojiKey]}
-                sx={{
-                  height: "2.1rem",
+                width={21}
+                height={21}
+                style={{
                   verticalAlign: "top",
-                  mr: "0.1rem",
+                  marginRight: "0.1rem",
                 }}
               />
             ) : part.type === "sticker" ? (
-              <Box
-                component="img"
+              <Image
                 className="sticker"
                 alt="sticker"
                 src={part.url}
-                sx={{
-                  height: "4.8rem",
+                width={48}
+                height={48}
+                style={{
                   verticalAlign: "top",
-                  my: "0.4rem",
+                  marginTop: "0.4rem",
+                  marginBottom: "0.4rem",
                 }}
               />
             ) : null}

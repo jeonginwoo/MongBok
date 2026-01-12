@@ -1,23 +1,17 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { CssBaseline, Box } from "@mui/material";
-import { ThemeProvider } from "@mui/material/styles";
-import { getTheme } from "@/theme";
+import { Box } from "@mui/material";
 
 import ManualArea from "@/components/ManualArea";
 import ViewArea from "@/components/ViewArea";
 import ControllerArea from "@/components/ControllerArea";
 
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/react";
-
 import { useAtomValue } from "jotai";
-import { viewCountAtom, themeModeAtom } from "@/atoms/setting";
+import { viewCountAtom } from "@/atoms/setting";
 
 export default function App() {
   const viewCount = useAtomValue(viewCountAtom);
-  const themeMode = useAtomValue(themeModeAtom);
   const canvasRef = useRef(null);
 
   /** 🧭 전체화면 */
@@ -39,10 +33,6 @@ export default function App() {
   }, []);
 
   return (
-    <ThemeProvider theme={getTheme(themeMode)}>
-      <CssBaseline />
-      <Analytics />
-      <SpeedInsights />
       <Box
         sx={{
           display: "flex",
@@ -56,6 +46,5 @@ export default function App() {
         : <ManualArea />}
         <ControllerArea fullscreen={fullscreen} />
       </Box>
-    </ThemeProvider>
   );
 }

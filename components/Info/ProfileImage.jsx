@@ -1,4 +1,7 @@
 import { Box } from "@mui/material";
+import Image from 'next/image';
+
+const defaultProfileImg = "/chzzk/default_profile_dark.png";
 
 export default function ProfileImage({
   channel,
@@ -6,8 +9,6 @@ export default function ProfileImage({
   imgSize = 48,
   borderSize = 6,
 }) {
-  const default_profile_img = "chzzk/default_profile.png";
-
   return (
     <Box
       sx={(theme) => ({
@@ -32,14 +33,17 @@ export default function ProfileImage({
           overflow: "hidden",
           boxShadow: `0 0 0.6rem ${theme.palette.background.overlay}`,
           backgroundColor: "background.profile",
+          position: "relative",
         })}
       >
-        <img
-          src={channel.imageUrl || default_profile_img}
+        <Image
+          src={
+            (channel.imageUrl && channel.imageUrl.startsWith('//') ? 'https:' + channel.imageUrl : channel.imageUrl) ||
+            defaultProfileImg
+          }
           alt={`${channel.name || "channel"} profile`}
+          fill
           style={{
-            width: "100%",
-            height: "100%",
             objectFit: "cover",
           }}
         />

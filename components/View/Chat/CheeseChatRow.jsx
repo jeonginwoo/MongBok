@@ -2,7 +2,8 @@ import { Fragment, memo } from "react";
 import urlRegexSafe from "url-regex-safe";
 import CheeseIcon from "./CheeseIcon";
 import Box from "@mui/material/Box";
-import { CHEESE_COLORS } from "../../../data/color";
+import { CHEESE_COLORS } from "data/color";
+import Image from "next/image";
 
 function CheeseChatRow({ chat }) {
   const { nickname, badges, emojis, message, payAmount } = chat;
@@ -46,17 +47,23 @@ function CheeseChatRow({ chat }) {
           sx={{
             flex: 1,
             fontWeight: 1000,
-            "& .badge": {
-              height: "2rem",
-              paddingTop: "0.2rem",
-              paddingRight: "0.4rem",
-              verticalAlign: "top",
-            },
           }}
         >
           {badges.length > 0 &&
             badges.map((src, i) => (
-              <Box component="img" key={i} className="badge" alt="" src={src} />
+              <Image
+                key={i}
+                className="badge"
+                alt=""
+                src={src}
+                width={20}
+                height={20}
+                style={{
+                  paddingTop: "0.2rem",
+                  paddingRight: "0.4rem",
+                  verticalAlign: "top",
+                }}
+              />
             ))}
           <span>{nickname}</span>
         </Box>
@@ -79,11 +86,6 @@ function CheeseChatRow({ chat }) {
                 textDecoration: "underline",
               },
             },
-            "& .emoji": {
-              height: "1.8rem",
-              verticalAlign: "top",
-              marginRight: "0.1rem",
-            },
           }}
         >
           {message.map((part, i) => (
@@ -105,11 +107,16 @@ function CheeseChatRow({ chat }) {
                   <>{part.text}</>
                 )
               ) : part.type === "emoji" && emojis[part.emojiKey] ? (
-                <Box
-                  component="img"
+                <Image
                   className="emoji"
                   alt={part.emojiKey}
                   src={emojis[part.emojiKey]}
+                  width={18}
+                  height={18}
+                  style={{
+                    verticalAlign: "top",
+                    marginRight: "0.1rem",
+                  }}
                 />
               ) : null}
             </Fragment>
