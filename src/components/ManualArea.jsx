@@ -118,12 +118,12 @@ export default function ManualArea() {
             textShadow: "0.1rem 0.1rem 0.3rem rgba(0,0,0,0.1)",
           }}
         >
-          합★체 사용 설명서
+          스트림퓨전 사용 설명서
         </Typography>
 
         <Section title="1. 주요 기능">
           <Typography sx={{ lineHeight: 1.6, fontSize: "1.3rem" }}>
-            합★체는 여러 스트리밍 플랫폼의 방송을 한 화면에서 동시에
+            스트림퓨전(StreamFusion)은 여러 스트리밍 플랫폼의 방송을 한 화면에서 동시에
             시청할 수 있는 서비스입니다. 현재{" "}
             <strong style={{ color: PLATFORM_COLORS.chzzk.main }}>치지직</strong>과{" "}
             <strong style={{ color: PLATFORM_COLORS.soop.main }}>숲</strong>{" "}
