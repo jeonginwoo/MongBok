@@ -44,39 +44,24 @@ export const useLayoutManager = () => {
       return;
     }
 
-    // Case 3: viewCount doesn't exist
+    // Case 3: viewCount doesn't exist (e.g. current viewCount > new maxViewCount)
     setRatio(newRatioKey);
     window.localStorage.setItem("ratio", newRatioKey);
     setLayoutType("layout1");
     window.localStorage.setItem("layout", "layout1");
 
-    if (viewCount > 0) {
+    const maxViewCount = newRatioConfig.maxViewCount ?? 1;
+
+    if (viewCount > maxViewCount) {
       setChannels((prevChannels) => {
         const newChannels = structuredClone(prevChannels);
-        const channelToKeep =
-          Object.values(newChannels).find(
-            (c) => c.zoneId === 1 && c.isVisible
-          ) || Object.values(newChannels).find((c) => c.isVisible);
 
-        let isFirstVisibleFound = false;
-        if (channelToKeep) {
-          Object.values(newChannels).forEach((channel) => {
-            if (channel.id === channelToKeep.id) {
-              channel.isVisible = true;
-              channel.zoneId = 1;
-              isFirstVisibleFound = true;
-            } else {
-              channel.isVisible = false;
-              channel.zoneId = null;
-            }
-          });
-        }
-
-        if (!isFirstVisibleFound && Object.keys(newChannels).length > 0) {
-          const firstChannelId = Object.keys(newChannels)[0];
-          newChannels[firstChannelId].isVisible = true;
-          newChannels[firstChannelId].zoneId = 1;
-        }
+        Object.values(newChannels).forEach((channel) => {
+          if (channel.isVisible && channel.zoneId > maxViewCount) {
+            channel.isVisible = false;
+            channel.zoneId = null;
+          }
+        });
 
         const channelsToSave = Object.fromEntries(
           Object.entries(newChannels).map(([id, channel]) => [
