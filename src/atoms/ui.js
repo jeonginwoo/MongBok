@@ -7,3 +7,5 @@ export const snackbarAtom = atom({
 });
 
 export const fitStyleAtom = atom({ width: '100%' });
+
+export const isDraggingAtom = atom(false);

@@ -28,7 +28,7 @@ import { getLiveStatus } from "@/api/live";
 import { canvas } from "@/data/layouts";
 import { palettes } from "@/data/color";
 
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom, useSetAtom, useAtomValue } from "jotai";
 import {
   pointerEventsEnabledAtom,
   showCurrentTimeAtom,
@@ -36,7 +36,7 @@ import {
   controllerExpandedAtom,
   themeModeAtom,
 } from "@/atoms/setting";
-import { snackbarAtom } from "@/atoms/ui";
+import { snackbarAtom, isDraggingAtom } from "@/atoms/ui";
 
 const iconStyle = { fontSize: "2.4rem" };
 const smallIconStyle = { fontSize: "2.0rem" };
@@ -276,6 +276,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [showCurrentTime, setShowCurrentTime] = useAtom(showCurrentTimeAtom);
   const [channels, setChannels] = useAtom(channelsAtom);
   const [themeMode, setThemeMode] = useAtom(themeModeAtom);
+  const isDragging = useAtomValue(isDraggingAtom);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [data, setData] = useState("");
@@ -474,6 +475,7 @@ export default function ControlButtonGroup({ fullscreen }) {
         return;
       if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
         return;
+      if (isDragging) return;
 
       switch (event.key.toUpperCase()) {
         case "S":
@@ -513,6 +515,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     handleTogglePointerEvents,
     handleRefresh,
     fullscreen,
+    isDragging,
   ]);
 
   const rotate360 = {
