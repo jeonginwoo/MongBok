@@ -59,6 +59,7 @@ export default function ChatRow({ chat }) {
               alt=""
               src={src}
               fill
+              unoptimized
               style={{
                 objectFit: 'contain',
               }}
@@ -104,6 +105,7 @@ export default function ChatRow({ chat }) {
                 src={emojis[part.emojiKey]}
                 width={21}
                 height={21}
+                unoptimized
                 style={{
                   verticalAlign: "top",
                   marginRight: "0.1rem",
@@ -116,6 +118,7 @@ export default function ChatRow({ chat }) {
                 src={part.url}
                 width={48}
                 height={48}
+                unoptimized
                 style={{
                   verticalAlign: "top",
                   marginTop: "0.4rem",

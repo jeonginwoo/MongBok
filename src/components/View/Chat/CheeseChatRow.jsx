@@ -2,7 +2,7 @@ import { Fragment, memo } from "react";
 import urlRegexSafe from "url-regex-safe";
 import CheeseIcon from "./CheeseIcon";
 import Box from "@mui/material/Box";
-import { CHEESE_COLORS } from "data/color";
+import { CHEESE_COLORS } from "@/data/color";
 import Image from "next/image";
 
 function CheeseChatRow({ chat }) {
@@ -57,6 +57,7 @@ function CheeseChatRow({ chat }) {
                   alt=""
                   src={src}
                   fill
+                  unoptimized
                   style={{
                     objectFit: 'contain',
                   }}
@@ -111,6 +112,7 @@ function CheeseChatRow({ chat }) {
                   src={emojis[part.emojiKey]}
                   width={18}
                   height={18}
+                  unoptimized
                   style={{
                     verticalAlign: "top",
                     marginRight: "0.1rem",
