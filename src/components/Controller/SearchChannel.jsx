@@ -169,7 +169,7 @@ export default function SearchChannel() {
           color: "text.disabled",
           textAlign: "right",
           mt: "0.4rem",
-          mr: "0.2rem",
+          mr: "0.4rem",
           userSelect: "none"
         }}
       >

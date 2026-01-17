@@ -315,14 +315,14 @@ export default function ControlButtonGroup({ fullscreen }) {
     setData(dataString);
     navigator.clipboard.writeText(dataString);
     setCopySuccess(true);
-    setTimeout(() => setCopySuccess(false), 500);
+    setTimeout(() => setCopySuccess(false), 750);
   };
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Timeout")), 10000)
+        setTimeout(() => reject(new Error("Timeout")), 7500)
       );
 
       const validationResult = await Promise.race([
@@ -337,7 +337,7 @@ export default function ControlButtonGroup({ fullscreen }) {
           severity: "error",
         });
         setSaveError(true);
-        setTimeout(() => setSaveError(false), 500);
+        setTimeout(() => setSaveError(false), 750);
         return;
       }
 
@@ -371,7 +371,7 @@ export default function ControlButtonGroup({ fullscreen }) {
         setSaveSuccess(false);
         setAnchorEl(null); // 팝오버 닫기
         window.location.reload();
-      }, 500);
+      }, 750);
     } catch (e) {
       let message;
       if (e.message === "Timeout") {
@@ -386,7 +386,7 @@ export default function ControlButtonGroup({ fullscreen }) {
         severity: "error",
       });
       setSaveError(true);
-      setTimeout(() => setSaveError(false), 500);
+      setTimeout(() => setSaveError(false), 750);
     } finally {
       setIsSaving(false);
     }
@@ -452,7 +452,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     } catch (err) {
       console.error("❌ 라이브 상태 갱신 실패:", err);
     } finally {
-      setTimeout(() => setRefreshing(false), 1000);
+      setTimeout(() => setRefreshing(false), 750);
     }
   }, [channels, refreshing, setChannels]);
 
@@ -663,7 +663,7 @@ export default function ControlButtonGroup({ fullscreen }) {
               sx={{
                 "& .MuiSvgIcon-root": refreshing
                   ? {
-                      animation: "rotate360 1s ease-in-out",
+                      animation: "rotate360 0.750s ease-in-out",
                       "@keyframes rotate360": rotate360,
                     }
                   : {},
@@ -727,7 +727,7 @@ export default function ControlButtonGroup({ fullscreen }) {
                       onClick={handleCopy}
                       sx={{
                         animation: copySuccess
-                          ? "successAnimation 0.5s ease"
+                          ? "successAnimation 0.750s ease"
                           : "none",
                         "@keyframes successAnimation": successAnimation,
                       }}
@@ -753,9 +753,9 @@ export default function ControlButtonGroup({ fullscreen }) {
                       onClick={handleSave}
                       sx={{
                         animation: saveSuccess
-                          ? "successAnimation 0.5s ease"
+                          ? "successAnimation 0.750s ease"
                           : saveError
-                          ? "errorAnimation 0.5s ease"
+                          ? "errorAnimation 0.750s ease"
                           : "none",
                         "@keyframes successAnimation": successAnimation,
                         "@keyframes errorAnimation": errorAnimation,

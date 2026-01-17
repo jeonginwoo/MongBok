@@ -111,7 +111,7 @@ export default function ChannelInfo({ channel, isDragging = false }) {
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
-                  maxWidth: channel.isLive ? "8.8rem" : "16rem",
+                  maxWidth: channel.isLive && "8.8rem",
                 }}
               >
                 {channel.name}
