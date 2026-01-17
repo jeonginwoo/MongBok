@@ -159,6 +159,11 @@ export default function ManualArea() {
               primary="채널 삭제"
               secondary="채널 목록에서 각 채널 우측의 휴지통 아이콘을 클릭하여 목록에서 삭제할 수 있습니다."
             />
+            <ManualListItem
+              icon={<DragIndicatorIcon sx={{ fontSize: '2rem' }} />}
+              primary="채널 활성화 및 정렬"
+              secondary="목록의 채널을 클릭하면 상단으로 이동(활성화)되어 화면에 표시됩니다. 활성화된 채널은 드래그하여 순서를 변경할 수 있으며, 다시 클릭하면 목록으로 돌아갑니다. 비활성화된 채널은 1순위-시청자순, 2순위-채널명 으로 자동 정렬됩니다."
+            />
           </List>
         </Section>
 
@@ -212,7 +217,7 @@ export default function ManualArea() {
             <ManualListItem
               icon={<ImportExportIcon sx={{ fontSize: '2rem' }} />}
               primary="데이터 동기화"
-              secondary="다른 브라우저나 기기에서 현재 채널 목록과 설정을 그대로 사용하고 싶을 때 사용합니다. 'Copy' 버튼으로 현재 데이터를 복사한 후, 다른 환경의 입력란에 붙여넣고 'Save' 버튼을 누르면 데이터가 동기화됩니다."
+              secondary="모든 설정(비율, 레이아웃, 채널 목록 등)은 현재 브라우저에만 저장됩니다. 다른 기기나 브라우저에서도 설정을 그대로 사용하려면, 이 기능을 이용해 데이터를 복사하여 다른 환경에 적용 하세요."
             />
             <ManualListItem
               icon={<FullscreenIcon sx={{ fontSize: '2rem' }} />}
@@ -246,8 +251,13 @@ export default function ManualArea() {
             />
             <ManualListItem
               icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
+              primary="모바일 환경 최적화"
+              secondary="모바일 환경에서는 브라우저의 '데스크탑 사이트 보기' 설정을 권장합니다. 기기 해상도에 따라 화면 비율이나 폰트 크기 조절이 필요할 수 있습니다."
+            />
+            <ManualListItem
+              icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
               primary="메모리 사용량"
-              secondary="4개 채널을 동시에 시청할 경우, 약 1.3GB의 메모리가 사용될 수 있습니다."
+              secondary="4~5개 채널을 동시에 시청할 경우, 약 2GB 가량의 메모리가 사용될 수 있습니다."
             />
           </List>
         </Section>
