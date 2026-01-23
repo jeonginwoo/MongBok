@@ -51,7 +51,7 @@ function CheeseChatRow({ chat }) {
         >
           {badges.length > 0 &&
             badges.map((src, i) => (
-              <Box key={i} sx={{ position: 'relative', width: '2rem', height: '2rem', display: 'inline-block', verticalAlign: 'top', paddingTop: '0.2rem', paddingRight: '0.4rem' }}>
+              <Box key={i} sx={{ position: 'relative', width: '2rem', height: '2rem', display: 'inline-block', verticalAlign: 'top', paddingTop: '0.2rem', marginRight: '0.4rem' }}>
                 <Image
                   className="badge"
                   alt=""
