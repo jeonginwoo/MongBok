@@ -147,7 +147,7 @@ export default function ManualArea() {
             <ManualListItem
               icon={<SearchIcon sx={{ fontSize: '2rem' }} />}
               primary="채널 검색"
-              secondary="우측 컨트롤러 상단의 검색창에서 원하는 채널을 검색할 수 있습니다. 검색어 입력 후 Enter를 누르거나, 0.5초 동안 입력이 없으면 자동으로 검색됩니다. 검색 결과는 각 플랫폼 에서 최대 5개가 출력됩니다."
+              secondary="우측 컨트롤러 상단의 검색창에서 원하는 채널을 검색할 수 있습니다. 검색어 입력 후 Enter를 누르거나, 0.5초 동안 입력이 없으면 자동으로 검색됩니다. 검색 결과는 각 플랫폼에서 상위 5개가 출력됩니다."
             />
             <ManualListItem
               icon={<AddToPhotosIcon sx={{ fontSize: '2rem' }} />}
@@ -157,7 +157,7 @@ export default function ManualArea() {
             <ManualListItem
               icon={<DeleteForeverIcon sx={{ fontSize: '2rem' }} />}
               primary="채널 삭제"
-              secondary="채널 목록에서 각 채널 우측의 휴지통 아이콘을 클릭하여 목록에서 삭제할 수 있습니다."
+              secondary="채널 목록에서 각 채널에 마우스를 올렸을 때 나타나는 우측의 휴지통 아이콘을 클릭하여 목록에서 삭제할 수 있습니다. 모바일에서는 휴지통이 안보이지만 해당 위치 클릭하면 삭제할 수 있습니다."
             />
             <ManualListItem
               icon={<DragIndicatorIcon sx={{ fontSize: '2rem' }} />}
@@ -232,7 +232,7 @@ export default function ManualArea() {
             <ManualListItem
               icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
               primary="숲(SOOP) 플랫폼"
-              secondary="숲 플랫폼은 같은 방송을 동시에 띄울 수 없습니다. 또한, 방송 종료 시간을 API로 제공하지 않아 '?'로 표시됩니다."
+              secondary="숲 플랫폼은 같은 방송을 동시에 띄울 수 없습니다. 방송 종료 시간을 API로 제공하지 않아 '?'로 표시됩니다."
             />
             <ManualListItem
               icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
@@ -241,7 +241,7 @@ export default function ManualArea() {
             />
             <ManualListItem
               icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
-              primary="채팅"
+              primary="채팅 X"
               secondary="본 서비스에는 채팅 작성 기능이 없으므로, 채팅 참여를 위해서는 각 플랫폼 사이트를 이용해야 합니다."
             />
             <ManualListItem
@@ -251,13 +251,13 @@ export default function ManualArea() {
             />
             <ManualListItem
               icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
-              primary="모바일 환경 최적화"
-              secondary="모바일 환경에서는 브라우저의 '데스크탑 사이트 보기' 설정을 권장합니다. 기기 해상도에 따라 화면 비율이나 폰트 크기 조절이 필요할 수 있습니다."
+              primary="모바일 환경"
+              secondary="본 서비스는 기본적으로 PC 사용을 권장하며, 모바일 환경에서는 브라우저의 '데스크탑 사이트 보기' 설정을 권장합니다. 기기 해상도에 따라 화면 비율이나 폰트 크기 조절이 필요할 수 있습니다."
             />
             <ManualListItem
               icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
               primary="메모리 사용량"
-              secondary="4~5개 채널을 동시에 시청할 경우, 약 2GB 가량의 메모리가 사용될 수 있습니다."
+              secondary="4~5개 채널을 동시에 시청할 경우, 약 2~3GB 가량의 메모리가 사용될 수 있습니다."
             />
           </List>
         </Section>

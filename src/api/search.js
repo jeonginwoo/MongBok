@@ -10,16 +10,23 @@ const getChzzkSearch = async (keyword) => {
     const list = response.data?.content?.data ?? [];
     const result = await Promise.all(
       list.map(async (item) => {
-        const liveStatus = await getLiveStatus(item.channel.channelId, "chzzk");
-        return {
-          ...liveStatus,
-          id: item.channel.channelId,
-          platform: "chzzk",
-        };
+        try {
+          const liveStatus = await getLiveStatus(
+            item.channel.channelId,
+            "chzzk"
+          );
+          return {
+            ...liveStatus,
+            id: item.channel.channelId,
+            platform: "chzzk",
+          };
+        } catch (e) {
+          return null;
+        }
       })
     );
 
-    return result;
+    return result.filter((item) => item !== null);
   } catch (error) {
     console.error("❌ [Chzzk] 검색 실패:", error);
     throw error;
@@ -39,16 +46,20 @@ const getSoopSearch = async (keyword) => {
     const list = response.data?.suggest_bj ?? [];
     const result = await Promise.all(
       list.map(async (item) => {
-        const liveStatus = await getLiveStatus(item.user_id, "soop");
-        return {
-          ...liveStatus,
-          id: item.user_id,
-          platform: "soop",
-        };
+        try {
+          const liveStatus = await getLiveStatus(item.user_id, "soop");
+          return {
+            ...liveStatus,
+            id: item.user_id,
+            platform: "soop",
+          };
+        } catch (e) {
+          return null;
+        }
       })
     );
 
-    return result;
+    return result.filter((item) => item !== null);
   } catch (error) {
     console.error("❌ [Soop] 검색 실패:", error);
     throw error;
