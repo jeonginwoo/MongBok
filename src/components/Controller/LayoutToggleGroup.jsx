@@ -49,7 +49,6 @@ export default function LayoutToggleGroup() {
   const handleChange = (_, newType) => {
     if (newType !== null) {
       setLayoutType(newType);
-      window.localStorage.setItem("layout", newType);
     }
   };
 
@@ -85,7 +84,6 @@ export default function LayoutToggleGroup() {
         // 현재 레이아웃과 다를 경우에만 변경
         if (targetLayout !== layoutType) {
           setLayoutType(targetLayout);
-          window.localStorage.setItem("layout", targetLayout);
         }
       }
     };

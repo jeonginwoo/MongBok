@@ -31,24 +31,19 @@ export const useLayoutManager = () => {
     // Case 1: Same viewCount and layoutType exist
     if (newRatioConfig.layouts?.[viewCount]?.[layoutType]) {
       setRatio(newRatioKey);
-      window.localStorage.setItem("ratio", newRatioKey);
       return;
     }
 
     // Case 2: Only same viewCount exists
     if (newRatioConfig.layouts?.[viewCount]) {
       setRatio(newRatioKey);
-      window.localStorage.setItem("ratio", newRatioKey);
       setLayoutType("layout1");
-      window.localStorage.setItem("layout", "layout1");
       return;
     }
 
     // Case 3: viewCount doesn't exist (e.g. current viewCount > new maxViewCount)
     setRatio(newRatioKey);
-    window.localStorage.setItem("ratio", newRatioKey);
     setLayoutType("layout1");
-    window.localStorage.setItem("layout", "layout1");
 
     const maxViewCount = newRatioConfig.maxViewCount ?? 1;
 
