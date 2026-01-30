@@ -24,6 +24,7 @@ import {
   ContentCopy as ContentCopyIcon,
   Check as CheckIcon,
 } from "@mui/icons-material";
+import { getLiveStatus } from "@/api/live";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 import { 
   validatePreferences, 
@@ -72,6 +73,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [timeToNextRefresh, setTimeToNextRefresh] = useState(60);
   const setSnackbar = useSetAtom(snackbarAtom);
 
   const getLocalStorageDataString = () => {
@@ -228,6 +230,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   const handleRefresh = useCallback(async () => {
     if (refreshing) return;
     setRefreshing(true);
+    setTimeToNextRefresh(60);
 
     try {
       const entries = Object.entries(channels);
@@ -260,6 +263,16 @@ export default function ControlButtonGroup({ fullscreen }) {
 
     return () => clearInterval(interval);
   }, [handleRefresh, channels]);
+
+  useEffect(() => {
+    if (Object.keys(channels).length === 0) return;
+
+    const countdownInterval = setInterval(() => {
+      setTimeToNextRefresh((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(countdownInterval);
+  }, [channels]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -448,27 +461,29 @@ export default function ControlButtonGroup({ fullscreen }) {
                 >
                   R
                 </Box>
-                )
+                ) {timeToNextRefresh}
               </>
             }
           >
-            <IconButton
-              onClick={handleRefresh}
-              disabled={refreshing}
-              sx={{
-                "& .MuiSvgIcon-root": refreshing
-                  ? {
-                      animation: "rotate360 0.750s ease-in-out",
-                      "@keyframes rotate360": rotate360,
-                    }
-                  : {},
-                "&.Mui-disabled .MuiSvgIcon-root": {
-                  color: "text.quaternary",
-                },
-              }}
-            >
-              <RefreshIcon sx={iconStyle} />
-            </IconButton>
+            <span>
+              <IconButton
+                onClick={handleRefresh}
+                disabled={refreshing}
+                sx={{
+                  "& .MuiSvgIcon-root": refreshing
+                    ? {
+                        animation: "rotate360 0.750s ease-in-out",
+                        "@keyframes rotate360": rotate360,
+                      }
+                    : {},
+                  "&.Mui-disabled .MuiSvgIcon-root": {
+                    color: "text.quaternary",
+                  },
+                }}
+              >
+                <RefreshIcon sx={iconStyle} />
+              </IconButton>
+            </span>
           </Tooltip>
 
           <Tooltip slotProps={tooltipSlotProps} title="데이터 동기화">
