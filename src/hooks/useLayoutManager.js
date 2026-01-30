@@ -6,6 +6,7 @@ import {
   channelsAtom,
 } from "@/atoms/setting";
 import { canvas } from "@/data/layouts";
+import { updatePreferences, validateChannels } from "@/utils/preferences";
 
 export const getRatioConfig = (ratioKey) => {
   if (!ratioKey) return null;
@@ -65,10 +66,15 @@ export const useLayoutManager = () => {
           ])
         );
 
-        window.localStorage.setItem(
-          "channels",
-          JSON.stringify(channelsToSave)
-        );
+        // 유효성 검사 후 저장
+        validateChannels(channelsToSave).then((result) => {
+          if (result === true) {
+            updatePreferences({ channels: channelsToSave });
+          } else {
+            console.error("채널 데이터 유효성 검사 실패:", result);
+          }
+        });
+        
         return newChannels;
       });
     }

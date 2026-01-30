@@ -22,6 +22,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ChannelInfo from "@/components/Info/ChannelInfo/ChannelListChannelInfo";
 
 import { canvas } from "@/data/layouts";
+import { updatePreferences, validateChannels } from "@/utils/preferences";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 import {
   channelsAtom,
@@ -151,10 +152,11 @@ export default function ChannelList() {
     });
 
     setLayoutType("layout1");
-    window.localStorage.setItem("layout", "layout1");
+    // window.localStorage.setItem("layout", "layout1");
+    updatePreferences({ layout: "layout1" });
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     setChannels((prev) => {
       const updated = structuredClone(prev);
       delete updated[id];
@@ -165,7 +167,15 @@ export default function ChannelList() {
           { platform: ch.platform },
         ])
       );
-      window.localStorage.setItem("channels", JSON.stringify(storeObj));
+      
+      // 유효성 검사 후 저장
+      validateChannels(storeObj).then((result) => {
+        if (result === true) {
+          updatePreferences({ channels: storeObj });
+        } else {
+          console.error("채널 데이터 유효성 검사 실패:", result);
+        }
+      });
 
       return updated;
     });

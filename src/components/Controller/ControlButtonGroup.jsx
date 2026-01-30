@@ -24,11 +24,13 @@ import {
   ContentCopy as ContentCopyIcon,
   Check as CheckIcon,
 } from "@mui/icons-material";
-import { getLiveStatus } from "@/api/live";
-import { canvas } from "@/data/layouts";
-import { palettes } from "@/data/color";
-
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
+import { 
+  validatePreferences, 
+  applyPreferences, 
+  validateThemeMode,
+  validateBoolean 
+} from "@/utils/preferences";
 import {
   pointerEventsEnabledAtom,
   showCurrentTimeAtom,
@@ -49,221 +51,7 @@ const tooltipSlotProps = {
   },
 };
 
-const validateData = async (dataToValidate) => {
-  try {
-    const parsedData = JSON.parse(dataToValidate);
 
-    const allowedKeys = [
-      "channels",
-      "layout",
-      "ratio",
-      "pointerEventsEnabled",
-      "showCurrentTime",
-      "controllerExpanded",
-      "themeMode",
-    ];
-
-    if (
-      typeof parsedData !== "object" ||
-      parsedData === null ||
-      Array.isArray(parsedData)
-    ) {
-      return "데이터는 유효한 객체 형식이 아닙니다.";
-    }
-
-    const dataKeys = Object.keys(parsedData);
-    if (!dataKeys.every((key) => allowedKeys.includes(key))) {
-      const invalidKeys = dataKeys.filter((key) => !allowedKeys.includes(key));
-      return `허용되지 않는 키가 포함되어 있습니다: ${invalidKeys.join(
-        ", "
-      )}. 허용되는 키는: ${allowedKeys.join(", ")} 입니다.`;
-    }
-
-    for (const key of dataKeys) {
-      const value = parsedData[key];
-      if (typeof value !== "string") {
-        return `'${key}'의 값은 문자열이어야 합니다.`;
-      }
-
-      switch (key) {
-        case "themeMode":
-          if (!Object.keys(palettes).includes(value)) {
-            return `유효하지 않은 테마 모드 값 '${value}'. 허용되는 값은: ${Object.keys(
-              palettes
-            ).join(", ")} 입니다.`;
-          }
-          break;
-
-        case "pointerEventsEnabled":
-        case "showCurrentTime":
-        case "controllerExpanded":
-          if (value !== "true" && value !== "false") {
-            return `'${key}'에 대한 유효하지 않은 불리언 문자열 값 '${value}'. 'true' 또는 'false' 여야 합니다.`;
-          }
-          break;
-
-        case "ratio":
-          const validRatios = Object.entries(canvas).flatMap(
-            ([group, orientations]) =>
-              Object.keys(orientations).map(
-                (orientation) => `${group}-${orientation}`
-              )
-          );
-          if (!validRatios.includes(value)) {
-            return `유효하지 않은 비율 값 '${value}'. 허용되는 값은: ${validRatios.join(
-              ", "
-            )} 입니다.`;
-          }
-          break;
-
-        case "channels":
-          try {
-            const channelsObj = JSON.parse(value);
-            if (
-              typeof channelsObj !== "object" ||
-              channelsObj === null ||
-              Array.isArray(channelsObj)
-            ) {
-              return "'channels' 값이 유효한 JSON 객체가 아닙니다.";
-            }
-            const zoneIds = [];
-            const validationPromises = Object.keys(channelsObj).map(
-              (channelId) => {
-                const channelData = channelsObj[channelId];
-                if (typeof channelId !== "string" || !channelId) {
-                  return Promise.reject({
-                    error: `Validation Error: Invalid channelId '${channelId}'.`,
-                  });
-                }
-                if (
-                  typeof channelData !== "object" ||
-                  channelData === null
-                ) {
-                  return Promise.reject({
-                    error: `Validation Error: Channel data for '${channelId}' is not a valid object.`,
-                  });
-                }
-
-                const { platform, zoneId } = channelData;
-                if (!["chzzk", "soop"].includes(platform)) {
-                  return Promise.reject({
-                    error: `Validation Error: Invalid platform '${platform}' for channel '${channelId}'. Must be 'chzzk' or 'soop'.`,
-                  });
-                }
-
-                if (zoneId !== null) {
-                  if (
-                    typeof zoneId !== "number" ||
-                    !Number.isInteger(zoneId) ||
-                    zoneId < 1
-                  ) {
-                    return Promise.reject({
-                      error: `Validation Error: Invalid zoneId '${zoneId}' for channel '${channelId}'. Must be null or a positive integer.`,
-                    });
-                  }
-                  zoneIds.push(zoneId);
-                }
-
-                return getLiveStatus(channelId, platform);
-              }
-            );
-            
-            const results = await Promise.allSettled(validationPromises);
-            const invalidChannels = results.reduce((acc, result, index) => {
-              if (result.status === "rejected") {
-                const channelId = Object.keys(channelsObj)[index];
-                acc.push(channelId);
-                // console.error(
-                //   `Validation Error for channel '${channelId}':`,
-                //   result.reason
-                // );
-              }
-              return acc;
-            }, []);
-
-            if (invalidChannels.length > 0) {
-              return `다음 채널 ID에 대한 데이터를 가져올 수 없습니다: ${invalidChannels.join(
-                ", "
-              )}. 유효하지 않을 수 있습니다.`;
-            }
-
-            if (zoneIds.length > 0) {
-              const uniqueZoneIds = [...new Set(zoneIds)];
-              if (uniqueZoneIds.length !== zoneIds.length) {
-                return "'channels'에서 중복된 zoneId가 발견되었습니다.";
-              }
-
-              const sortedZoneIds = uniqueZoneIds.sort((a, b) => a - b);
-              if (
-                sortedZoneIds[sortedZoneIds.length - 1] !==
-                sortedZoneIds.length
-              ) {
-                return "'zoneId' 값이 1부터 순차적이지 않습니다.";
-              }
-            }
-          } catch (e) {
-            return `'channels' JSON 문자열을 구문 분석하지 못했습니다: ${e.message}`;
-          }
-          break;
-        case "layout":
-          // Layout validation depends on other keys, handled below.
-          break;
-        default:
-          break;
-      }
-    }
-
-    // Layout validation
-    if ("layout" in parsedData) {
-      const channelsStr = parsedData.channels || "{}";
-      const ratio = parsedData.ratio;
-      const layout = parsedData.layout;
-
-      if (!ratio) {
-        return "'layout' 유효성 검사를 위해 'ratio'가 필요합니다.";
-      }
-
-      try {
-        const channelsObj = JSON.parse(channelsStr);
-        const viewCount = Object.keys(channelsObj).length;
-
-        if (viewCount > 0) {
-          const [group, orientation] = ratio.split("-");
-          if (!group || !orientation) {
-            return `유효하지 않은 비율 형식 '${ratio}'. 'group-orientation' 형식이 예상됩니다.`;
-          }
-
-          const ratioInfo = canvas[group]?.[orientation];
-          if (!ratioInfo) {
-            return `비율 그룹 '${group}' 또는 방향 '${orientation}'이 캔버스 레이아웃에서 찾을 수 없습니다.`;
-          }
-
-          if (viewCount > ratioInfo.maxViewCount) {
-            // console.warn(
-            //   `Warning: viewCount (${viewCount}) exceeds maxViewCount (${ratioInfo.maxViewCount}) for ratio '${ratio}'. Layout validation will be skipped.`
-            // );
-          } else {
-            const availableLayouts = ratioInfo.layouts[viewCount];
-            if (!availableLayouts || !availableLayouts[layout]) {
-              const validLayouts = availableLayouts
-                ? Object.keys(availableLayouts)
-                : [];
-              return `viewCount ${viewCount} 및 비율 '${ratio}'에 대한 유효하지 않은 레이아웃 '${layout}'. 사용 가능한 레이아웃: ${validLayouts.join(
-                ", "
-              )}`;
-            }
-          }
-        }
-      } catch (e) {
-        return `'layout' 유효성 검사 중 실패했습니다: ${e.message}`;
-      }
-    }
-
-    return true;
-  } catch (e) {
-    return `전체 데이터 문자열을 JSON으로 구문 분석하지 못했습니다: ${e.message}`;
-  }
-};
 
 export default function ControlButtonGroup({ fullscreen }) {
   const [controllerExpanded, setControllerExpanded] = useAtom(
@@ -298,7 +86,11 @@ export default function ControlButtonGroup({ fullscreen }) {
     ].reduce((obj, key) => {
       const value = window.localStorage.getItem(key);
       if (value) {
-        obj[key] = value;
+        try {
+          obj[key] = JSON.parse(value);
+        } catch (e) {
+          obj[key] = value;
+        }
       }
       return obj;
     }, {});
@@ -326,7 +118,7 @@ export default function ControlButtonGroup({ fullscreen }) {
       );
 
       const validationResult = await Promise.race([
-        validateData(data),
+        validatePreferences(data),
         timeoutPromise,
       ]);
 
@@ -343,26 +135,9 @@ export default function ControlButtonGroup({ fullscreen }) {
 
       const parsedData = JSON.parse(data);
 
-      const allowedKeys = [
-        "channels",
-        "layout",
-        "ratio",
-        "pointerEventsEnabled",
-        "showCurrentTime",
-        "controllerExpanded",
-        "themeMode",
-      ];
+      applyPreferences(parsedData);
 
-      // 먼저 모든 허용된 키를 로컬 스토리지에서 삭제합니다.
-      allowedKeys.forEach((key) => window.localStorage.removeItem(key));
-
-      // 그 다음 파싱된 데이터로 새 값을 설정합니다.
-      for (const key in parsedData) {
-        window.localStorage.setItem(key, parsedData[key]);
-      }
-
-      setSaveSuccess(true);
-      setSnackbar({
+      setSaveSuccess(true);      setSnackbar({
         open: true,
         message: "설정이 성공적으로 저장되었습니다!",
         severity: "success",
@@ -395,10 +170,15 @@ export default function ControlButtonGroup({ fullscreen }) {
   const handleToggleController = () => {
     setControllerExpanded((prev) => {
       const nextState = !prev;
-      window.localStorage.setItem(
-        "controllerExpanded",
-        JSON.stringify(nextState)
-      );
+      const validation = validateBoolean(nextState, "controllerExpanded");
+      if (validation === true) {
+        window.localStorage.setItem(
+          "controllerExpanded",
+          JSON.stringify(nextState)
+        );
+      } else {
+        console.error("controllerExpanded 유효성 검사 실패:", validation);
+      }
       return nextState;
     });
   };
@@ -406,7 +186,12 @@ export default function ControlButtonGroup({ fullscreen }) {
   const handleToggleTheme = () => {
     setThemeMode((prev) => {
       const nextState = prev === "light" ? "dark" : "light";
-      window.localStorage.setItem("themeMode", nextState);
+      const validation = validateThemeMode(nextState);
+      if (validation === true) {
+        window.localStorage.setItem("themeMode", nextState);
+      } else {
+        console.error("테마 모드 유효성 검사 실패:", validation);
+      }
       return nextState;
     });
   };
@@ -414,10 +199,15 @@ export default function ControlButtonGroup({ fullscreen }) {
   const handleTogglePointerEvents = () => {
     setPointerEventsEnabled((prev) => {
       const nextState = !prev;
-      window.localStorage.setItem(
-        "pointerEventsEnabled",
-        JSON.stringify(nextState)
-      );
+      const validation = validateBoolean(nextState, "pointerEventsEnabled");
+      if (validation === true) {
+        window.localStorage.setItem(
+          "pointerEventsEnabled",
+          JSON.stringify(nextState)
+        );
+      } else {
+        console.error("pointerEventsEnabled 유효성 검사 실패:", validation);
+      }
       return nextState;
     });
   };
@@ -425,7 +215,12 @@ export default function ControlButtonGroup({ fullscreen }) {
   const handleToggleCurrentTime = () => {
     setShowCurrentTime((prev) => {
       const nextState = !prev;
-      window.localStorage.setItem("showCurrentTime", JSON.stringify(nextState));
+      const validation = validateBoolean(nextState, "showCurrentTime");
+      if (validation === true) {
+        window.localStorage.setItem("showCurrentTime", JSON.stringify(nextState));
+      } else {
+        console.error("showCurrentTime 유효성 검사 실패:", validation);
+      }
       return nextState;
     });
   };

@@ -12,6 +12,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import SearchChannelInfo from "@/components/Info/ChannelInfo/SearchChannelInfo";
 import { searchChannels } from "@/api/search";
+import { updatePreferences, validateChannels } from "@/utils/preferences";
 
 import { useAtom, useSetAtom } from "jotai";
 import { channelsAtom } from "@/atoms/setting";
@@ -120,17 +121,21 @@ export default function SearchChannel() {
         },
       };
 
-      window.localStorage.setItem(
-        "channels",
-        JSON.stringify(
-          Object.fromEntries(
-            Object.entries(updated).map(([id, ch]) => [
-              id,
-              { platform: ch.platform, zoneId: ch.zoneId ?? null },
-            ])
-          )
-        )
+      const channelsToSave = Object.fromEntries(
+        Object.entries(updated).map(([id, ch]) => [
+          id,
+          { platform: ch.platform, zoneId: ch.zoneId ?? null },
+        ])
       );
+
+      // 유효성 검사 후 저장
+      validateChannels(channelsToSave).then((result) => {
+        if (result === true) {
+          updatePreferences({ channels: channelsToSave });
+        } else {
+          console.error("채널 데이터 유효성 검사 실패:", result);
+        }
+      });
 
       return updated;
     });
