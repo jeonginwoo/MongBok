@@ -9,6 +9,12 @@ import {
   TextField,
   Button,
   CircularProgress,
+  Switch,
+  Typography,
+  Stack,
+  Divider,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 import {
   Mouse as MouseIcon,
@@ -23,6 +29,7 @@ import {
   ImportExport as ImportExportIcon,
   ContentCopy as ContentCopyIcon,
   Check as CheckIcon,
+  Settings as SettingsIcon,
 } from "@mui/icons-material";
 import { getLiveStatus } from "@/api/live";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
@@ -67,7 +74,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [themeMode, setThemeMode] = useAtom(themeModeAtom);
   const isDragging = useAtomValue(isDraggingAtom);
 
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
   const [data, setData] = useState("");
   const [copySuccess, setCopySuccess] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -99,9 +106,9 @@ export default function ControlButtonGroup({ fullscreen }) {
     return JSON.stringify(localStorageData, null, 2);
   };
 
-  const handleOpenPopover = (event) => {
+  const handleOpenSettingsPopover = (event) => {
     setData(getLocalStorageDataString());
-    setAnchorEl(event.currentTarget);
+    setSettingsAnchorEl(event.currentTarget);
   };
 
   const handleCopy = () => {
@@ -139,14 +146,16 @@ export default function ControlButtonGroup({ fullscreen }) {
 
       applyPreferences(parsedData);
 
-      setSaveSuccess(true);      setSnackbar({
+      
+      setSaveSuccess(true);
+      setSnackbar({
         open: true,
         message: "설정이 성공적으로 저장되었습니다!",
         severity: "success",
       });
       setTimeout(() => {
         setSaveSuccess(false);
-        setAnchorEl(null); // 팝오버 닫기
+        setSettingsAnchorEl(null); // 팝오버 닫기
         window.location.reload();
       }, 750);
     } catch (e) {
@@ -185,17 +194,29 @@ export default function ControlButtonGroup({ fullscreen }) {
     });
   };
 
+  const handleChangeTheme = (newMode) => {
+    const validation = validateThemeMode(newMode);
+    if (validation === true) {
+      setThemeMode(newMode);
+      window.localStorage.setItem("themeMode", newMode);
+    } else {
+      console.error("테마 모드 유효성 검사 실패:", validation);
+    }
+  };
+
   const handleToggleTheme = () => {
-    setThemeMode((prev) => {
-      const nextState = prev === "light" ? "dark" : "light";
-      const validation = validateThemeMode(nextState);
-      if (validation === true) {
-        window.localStorage.setItem("themeMode", nextState);
-      } else {
-        console.error("테마 모드 유효성 검사 실패:", validation);
-      }
-      return nextState;
-    });
+    const nextState = themeMode === "light" ? "dark" : "light";
+    handleChangeTheme(nextState);
+  };
+
+  const handleChangePointerEvents = (event, newMode) => {
+    if (newMode !== null) {
+      setPointerEventsEnabled(newMode);
+      window.localStorage.setItem(
+        "pointerEventsEnabled",
+        JSON.stringify(newMode)
+      );
+    }
   };
 
   const handleTogglePointerEvents = () => {
@@ -339,6 +360,11 @@ export default function ControlButtonGroup({ fullscreen }) {
     "100%": { color: "error.main" },
   };
 
+  const availableThemes = [
+    { mode: "light", color: "#ffffff", label: "화이트" },
+    { mode: "dark", color: "#333333", label: "다크" },
+  ];
+
   return (
     <Box
       sx={{
@@ -371,84 +397,234 @@ export default function ControlButtonGroup({ fullscreen }) {
       </Tooltip>
 
       {controllerExpanded && (
-        <>
-          <Tooltip
-            slotProps={tooltipSlotProps}
-            title={
-              <>
-                {themeMode === "light" ? "다크 모드 " : "화이트 모드 "}(
-                <Box
-                  component="span"
-                  sx={{ color: "common.skyBlue", fontWeight: "bold" }}
-                >
-                  M
-                </Box>
-                )
-              </>
-            }
-          >
-            <IconButton onClick={handleToggleTheme}>
-              {themeMode === "light" ? (
-                <Brightness4Icon sx={iconStyle} />
-              ) : (
-                <Brightness7Icon sx={iconStyle} />
-              )}
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Tooltip slotProps={tooltipSlotProps} placement="top" title="설정">
+            <IconButton onClick={handleOpenSettingsPopover}>
+              <SettingsIcon sx={iconStyle} />
             </IconButton>
           </Tooltip>
-
-          <Tooltip
-            slotProps={tooltipSlotProps}
-            title={
-              <>
-                {showCurrentTime ? "현재 시간 on " : "현재 시간 off "}(
-                <Box
-                  component="span"
-                  sx={{ color: "common.skyBlue", fontWeight: "bold" }}
-                >
-                  T
-                </Box>
-                )
-              </>
-            }
+          <Popover
+            open={Boolean(settingsAnchorEl)}
+            anchorEl={settingsAnchorEl}
+            onClose={() => setSettingsAnchorEl(null)}
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "center",
+            }}
+            transformOrigin={{
+              vertical: "bottom",
+              horizontal: "center",
+            }}
           >
-            <IconButton
-              onClick={handleToggleCurrentTime}
+            <Box
               sx={{
-                "& .MuiSvgIcon-root": !showCurrentTime
-                  ? { color: "text.quaternary" }
-                  : {},
+                p: 2,
+                width: 340,
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+                backgroundColor: "background.level1",
               }}
             >
-              <AccessTimeIcon sx={iconStyle} />
-            </IconButton>
-          </Tooltip>
+              <Typography sx={{ fontWeight: "bold", fontSize: "1.6rem" }}>
+                설정
+              </Typography>
 
-          <Tooltip
-            slotProps={tooltipSlotProps}
-            title={
-              <>
-                {pointerEventsEnabled ? "화면 조작 모드 " : "화면 이동 모드 "}(
-                <Box
-                  component="span"
-                  sx={{ color: "common.skyBlue", fontWeight: "bold" }}
+              {/* 테마 설정 */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography sx={{ fontSize: "1.4rem" }}>테마</Typography>
+                <Stack direction="row" spacing={1}>
+                  {availableThemes.map((t) => (
+                    <Tooltip slotProps={tooltipSlotProps} placement="top" title={t.label} key={t.mode}>
+                      <Box
+                        onClick={() => handleChangeTheme(t.mode)}
+                        sx={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: "50%",
+                          backgroundColor: t.color,
+                          border:
+                            themeMode === t.mode
+                              ? "3px solid"
+                              : "1px solid rgba(0,0,0,0.1)",
+                          borderColor:
+                            themeMode === t.mode ? "primary.main" : "divider",
+                          cursor: "pointer",
+                          boxShadow:
+                            themeMode === t.mode ? 2 : 0,
+                          transition: "all 0.2s",
+                          "&:hover": {
+                            transform: "scale(1.1)",
+                          },
+                        }}
+                      />
+                    </Tooltip>
+                  ))}
+                </Stack>
+              </Box>
+
+              {/* 현재 시간 표시 */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography sx={{ fontSize: "1.4rem" }}>
+                  현재 시간 표시{" "}
+                  <Box
+                    component="span"
+                    sx={{ color: "common.skyBlue", fontWeight: "bold" }}
+                  >
+                    (T)
+                  </Box>
+                </Typography>
+                <Switch
+                  checked={showCurrentTime}
+                  onChange={handleToggleCurrentTime}
+                  sx={{
+                    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                      backgroundColor: "primary.main",
+                      opacity: 1,
+                    },
+                    "& .MuiSwitch-track": {
+                      backgroundColor: "rgba(0,0,0,0.5)",
+                    },
+                  }}
+                />
+              </Box>
+
+              {/* 화면 조작 모드 */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography sx={{ fontSize: "1.4rem" }}>
+                  {pointerEventsEnabled ? "화면 조작 모드" : "화면 이동 모드"}{" "}
+                  <Box
+                    component="span"
+                    sx={{ color: "common.skyBlue", fontWeight: "bold" }}
+                  >
+                    (V)
+                  </Box>
+                </Typography>
+                <ToggleButtonGroup
+                  value={pointerEventsEnabled}
+                  exclusive
+                  onChange={handleChangePointerEvents}
+                  aria-label="pointer events"
                 >
-                  V
+                  <ToggleButton value={false} aria-label="pan tool">
+                    <Tooltip slotProps={tooltipSlotProps} title="화면 이동 모드" placement="top">
+                      <PanToolIcon />
+                    </Tooltip>
+                  </ToggleButton>
+                  <ToggleButton value={true} aria-label="mouse">
+                    <Tooltip slotProps={tooltipSlotProps} title="화면 조작 모드" placement="top">
+                      <MouseIcon />
+                    </Tooltip>
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
+
+              <Divider />
+
+              {/* 데이터 동기화 */}
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Typography sx={{ fontSize: "1.4rem" }}>
+                  데이터 동기화
+                </Typography>
+                <TextField
+                  multiline
+                  rows={6}
+                  value={data}
+                  onChange={(e) => setData(e.target.value)}
+                  variant="outlined"
+                  fullWidth
+                  size="small"
+                  placeholder="설정 데이터를 여기에 붙여넣거나 복사하세요."
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "background.paper",
+                    },
+                  }}
+                />
+                <Box
+                  sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}
+                >
+                  <Tooltip
+                    slotProps={tooltipSlotProps}
+                    title={copySuccess ? "복사 완료!" : "현재 설정 복사"}
+                  >
+                    <span>
+                      <IconButton
+                        disabled={copySuccess}
+                        onClick={handleCopy}
+                        size="small"
+                        sx={{
+                          border: "1px solid",
+                          borderColor: "divider",
+                          borderRadius: 1,
+                          animation: copySuccess
+                            ? "successAnimation 0.750s ease"
+                            : "none",
+                          "@keyframes successAnimation": successAnimation,
+                        }}
+                      >
+                        <ContentCopyIcon fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip
+                    slotProps={tooltipSlotProps}
+                    title={
+                      saveSuccess
+                        ? "저장 완료!"
+                        : saveError
+                        ? "저장 실패"
+                        : "설정 저장"
+                    }
+                  >
+                    <span>
+                      <IconButton
+                        disabled={saveSuccess || isSaving}
+                        onClick={handleSave}
+                        size="small"
+                        sx={{
+                          border: "1px solid",
+                          borderColor: "divider",
+                          borderRadius: 1,
+                          animation: saveSuccess
+                            ? "successAnimation 0.750s ease"
+                            : saveError
+                            ? "errorAnimation 0.750s ease"
+                            : "none",
+                          "@keyframes successAnimation": successAnimation,
+                          "@keyframes errorAnimation": errorAnimation,
+                        }}
+                      >
+                        {isSaving ? (
+                          <CircularProgress size={15} />
+                        ) : (
+                          <CheckIcon fontSize="small" />
+                        )}
+                      </IconButton>
+                    </span>
+                  </Tooltip>
                 </Box>
-                )
-              </>
-            }
-          >
-            <IconButton
-              onClick={handleTogglePointerEvents}
-              sx={{ padding: 1.25 }}
-            >
-              {pointerEventsEnabled ? (
-                <MouseIcon sx={smallIconStyle} />
-              ) : (
-                <PanToolIcon sx={smallIconStyle} />
-              )}
-            </IconButton>
-          </Tooltip>
+              </Box>
+            </Box>
+          </Popover>
 
           <Tooltip
             slotProps={tooltipSlotProps}
@@ -486,103 +662,6 @@ export default function ControlButtonGroup({ fullscreen }) {
             </span>
           </Tooltip>
 
-          <Tooltip slotProps={tooltipSlotProps} title="데이터 동기화">
-            <IconButton onClick={handleOpenPopover}>
-              <ImportExportIcon sx={iconStyle} />
-            </IconButton>
-          </Tooltip>
-          <Popover
-            open={Boolean(anchorEl)}
-            anchorEl={anchorEl}
-            onClose={() => setAnchorEl(null)}
-            anchorOrigin={{
-              vertical: "top",
-              horizontal: "center",
-            }}
-            transformOrigin={{
-              vertical: "bottom",
-              horizontal: "center",
-            }}
-          >
-            <Box
-              sx={{
-                p: 2,
-                display: "flex",
-                flexDirection: "column",
-                gap: 1,
-                backgroundColor: "background.level1",
-                width: "27rem",
-              }}
-            >
-              <TextField
-                label="SETTING"
-                multiline
-                rows={8}
-                value={data}
-                onChange={(e) => setData(e.target.value)}
-                variant="outlined"
-                fullWidth
-              />
-              <Box
-                sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}
-              >
-                <Tooltip
-                  slotProps={tooltipSlotProps}
-                  title={copySuccess ? "복사 완료!" : "현재 설정 복사"}
-                >
-                  <span>
-                    <IconButton
-                      disabled={copySuccess}
-                      variant="contained"
-                      onClick={handleCopy}
-                      sx={{
-                        animation: copySuccess
-                          ? "successAnimation 0.750s ease"
-                          : "none",
-                        "@keyframes successAnimation": successAnimation,
-                      }}
-                    >
-                      <ContentCopyIcon />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Tooltip
-                  slotProps={tooltipSlotProps}
-                  title={
-                    saveSuccess
-                      ? "저장 완료!"
-                      : saveError
-                      ? "저장 실패"
-                      : "붙여넣은 설정 저장"
-                  }
-                >
-                  <span>
-                    <IconButton
-                      disabled={saveSuccess || isSaving}
-                      variant="contained"
-                      onClick={handleSave}
-                      sx={{
-                        animation: saveSuccess
-                          ? "successAnimation 0.750s ease"
-                          : saveError
-                          ? "errorAnimation 0.750s ease"
-                          : "none",
-                        "@keyframes successAnimation": successAnimation,
-                        "@keyframes errorAnimation": errorAnimation,
-                      }}
-                    >
-                      {isSaving ? (
-                        <CircularProgress size={15} />
-                      ) : (
-                        <CheckIcon />
-                      )}
-                    </IconButton>
-                  </span>
-                </Tooltip>
-              </Box>
-            </Box>
-          </Popover>
-
           <Tooltip
             slotProps={tooltipSlotProps}
             title={
@@ -602,7 +681,7 @@ export default function ControlButtonGroup({ fullscreen }) {
               <FullscreenIcon sx={iconStyle} />
             </IconButton>
           </Tooltip>
-        </>
+        </Box>
       )}
     </Box>
   );
