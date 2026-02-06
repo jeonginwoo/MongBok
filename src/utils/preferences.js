@@ -1,5 +1,5 @@
 import { canvas } from "@/data/layouts";
-import { palettes } from "@/data/color";
+import { palettes, POINT_COLORS } from "@/data/color";
 import { getLiveStatus } from "@/api/live";
 
 const ALLOWED_KEYS = [
@@ -10,6 +10,7 @@ const ALLOWED_KEYS = [
   "showCurrentTime",
   "controllerExpanded",
   "themeMode",
+  "pointColor",
 ];
 
 // ========== 개별 키 유효성 검사 함수 ==========
@@ -18,6 +19,15 @@ export const validateThemeMode = (value) => {
   if (typeof value !== "string" || !Object.keys(palettes).includes(value)) {
     return `유효하지 않은 테마 모드 값 '${value}'. 허용되는 값은: ${Object.keys(
       palettes
+    ).join(", ")} 입니다.`;
+  }
+  return true;
+};
+
+export const validatePointColor = (value) => {
+  if (typeof value !== "string" || !Object.keys(POINT_COLORS).includes(value)) {
+    return `유효하지 않은 포인트 컬러 값 '${value}'. 허용되는 값은: ${Object.keys(
+      POINT_COLORS
     ).join(", ")} 입니다.`;
   }
   return true;
@@ -229,6 +239,10 @@ export const validatePreferences = async (dataToValidate) => {
       switch (key) {
         case "themeMode":
           validationResult = validateThemeMode(value);
+          break;
+
+        case "pointColor":
+          validationResult = validatePointColor(value);
           break;
 
         case "pointerEventsEnabled":

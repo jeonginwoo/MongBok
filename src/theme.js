@@ -1,8 +1,21 @@
 import { createTheme } from "@mui/material/styles";
-import { palettes } from "@/data/color";
+import { palettes, POINT_COLORS } from "@/data/color";
 
-export const getTheme = (mode) => {
-  const palette = palettes[mode];
+export const getTheme = (mode, pointColorName = 'default') => {
+  const basePalette = palettes[mode];
+  const pointColor = POINT_COLORS[pointColorName] || POINT_COLORS.default;
+  const primaryMain = pointColor[mode];
+
+  const palette = {
+    ...basePalette,
+    primary: {
+      ...basePalette.primary,
+      main: primaryMain,
+      gradient: pointColor.gradient,
+      brand: pointColor.brand || primaryMain,
+    },
+  };
+
   return createTheme({
     palette: palette,
     components: {

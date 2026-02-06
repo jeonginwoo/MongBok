@@ -59,6 +59,9 @@ export const controllerExpandedAtom = atomWithStorage(
 // 테마 on/off
 export const themeModeAtom = atomWithStorage("themeMode", "dark", storage);
 
+// 포인트 컬러
+export const pointColorAtom = atomWithStorage("pointColor", "default", storage);
+
 // ----------------------------------------------------
 
 // Viewer로 올라간 채널 수

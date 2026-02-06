@@ -20,6 +20,52 @@ export const CHEESE_COLORS = {
   tier5: "rgb(197, 73, 82)",
 };
 
+export const POINT_COLORS = {
+  default: {
+    label: "Default",
+    value: "default",
+    light: "rgba(94, 94, 94, 1)",
+    dark: "rgba(211, 211, 211, 1)",
+    gradient: "linear-gradient(45deg, #FF6B6B 30%, #FF8E53 90%)",
+    brand: "#FF6B6B",
+  },
+  blue: {
+    label: "Blue",
+    value: "blue",
+    light: "rgba(33, 150, 243, 1)", // Blue 500
+    dark: "rgba(100, 181, 246, 1)", // Blue 300
+    gradient: "linear-gradient(45deg, #2196F3 30%, #00BCD4 90%)",
+  },
+  green: {
+    label: "Green",
+    value: "green",
+    light: "rgba(76, 175, 80, 1)", // Green 500
+    dark: "rgba(129, 199, 132, 1)", // Green 300
+    gradient: "linear-gradient(45deg, #4CAF50 30%, #CDDC39 90%)",
+  },
+  purple: {
+    label: "Purple",
+    value: "purple",
+    light: "rgba(156, 39, 176, 1)", // Purple 500
+    dark: "rgba(186, 104, 200, 1)", // Purple 300
+    gradient: "linear-gradient(45deg, #9C27B0 30%, #E91E63 90%)",
+  },
+  orange: {
+    label: "Orange",
+    value: "orange",
+    light: "rgba(255, 152, 0, 1)", // Orange 500
+    dark: "rgba(255, 183, 77, 1)", // Orange 300
+    gradient: "linear-gradient(45deg, #FF9800 30%, #FFEB3B 90%)",
+  },
+  red: {
+    label: "Red",
+    value: "red",
+    light: "rgba(239, 83, 80, 1)", // Red 400
+    dark: "rgba(229, 115, 115, 1)", // Red 300
+    gradient: "linear-gradient(45deg, #EF5350 30%, #FF9800 90%)",
+  },
+};
+
 const common = {
   pointColors: {
     pointColor1: "#88d3f2", // Light blue

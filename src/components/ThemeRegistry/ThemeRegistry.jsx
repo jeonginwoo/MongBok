@@ -6,7 +6,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { getTheme } from '@/theme';
 import { useAtomValue } from 'jotai';
-import { themeModeAtom } from '@/atoms/setting';
+import { themeModeAtom, pointColorAtom } from '@/atoms/setting';
 import React from 'react';
 
 // This implementation is from emotion-js
@@ -14,6 +14,9 @@ import React from 'react';
 export default function ThemeRegistry(props) {
   const { options, children } = props;
   const themeMode = useAtomValue(themeModeAtom);
+  const pointColor = useAtomValue(pointColorAtom);
+  
+  const theme = React.useMemo(() => getTheme(themeMode, pointColor), [themeMode, pointColor]);
 
   const [{ cache, flush }] = React.useState(() => {
     const cache = createCache(options);
@@ -57,7 +60,7 @@ export default function ThemeRegistry(props) {
 
   return (
     <CacheProvider value={cache}>
-      <ThemeProvider theme={getTheme(themeMode)}>
+      <ThemeProvider theme={theme}>
         <CssBaseline />
         {children}
       </ThemeProvider>

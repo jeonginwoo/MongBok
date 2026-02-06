@@ -158,6 +158,8 @@ export default function SearchChannel() {
           "& .MuiOutlinedInput-root": {
             "& fieldset": { borderColor: "border.primary" },
             "&:hover fieldset": { borderColor: "border.secondary" },
+            "&.Mui-focused fieldset": { borderColor: "primary.main" },
+            "&.Mui-focused:hover fieldset": { borderColor: "primary.main" },
             "& .MuiInputAdornment-root": { marginRight: "0.4rem" }
           },
         }}

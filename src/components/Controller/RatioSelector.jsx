@@ -27,7 +27,8 @@ const RatioDisplay = ({ ratioConfig, sx }) => {
     <Box
       sx={{
         ...style,
-        backgroundColor: "primary.opacity",
+        backgroundColor: "primary.main",
+        opacity: 0.4,
         transition: "width 0.25s ease-out, height 0.25s ease-out",
         ...sx,
       }}
@@ -78,9 +79,10 @@ export default function RatioSelector() {
             transform: "translate(-50%, -50%)",
             fontSize: "1.4rem",
             fontWeight: "bold",
-            color: "primary.main",
+            color: "text.secondary",
             width: "100%",
             lineHeight: 1,
+            zIndex: 1,
           }}
         >
           {currentRatioConfig?.style?.aspectRatio.replace(" / ", " : ")}

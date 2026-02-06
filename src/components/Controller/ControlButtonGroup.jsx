@@ -45,8 +45,10 @@ import {
   channelsAtom,
   controllerExpandedAtom,
   themeModeAtom,
+  pointColorAtom,
 } from "@/atoms/setting";
 import { snackbarAtom, isDraggingAtom } from "@/atoms/ui";
+import { POINT_COLORS } from "@/data/color";
 
 const iconStyle = { fontSize: "2.4rem" };
 const smallIconStyle = { fontSize: "2.0rem" };
@@ -72,6 +74,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [showCurrentTime, setShowCurrentTime] = useAtom(showCurrentTimeAtom);
   const [channels, setChannels] = useAtom(channelsAtom);
   const [themeMode, setThemeMode] = useAtom(themeModeAtom);
+  const [pointColor, setPointColor] = useAtom(pointColorAtom);
   const isDragging = useAtomValue(isDraggingAtom);
 
   const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
@@ -83,7 +86,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [timeToNextRefresh, setTimeToNextRefresh] = useState(60);
   const setSnackbar = useSetAtom(snackbarAtom);
 
-  const getLocalStorageDataString = () => {
+  const getLocalStorageDataString = useCallback(() => {
     const localStorageData = [
       "channels",
       "layout",
@@ -92,6 +95,7 @@ export default function ControlButtonGroup({ fullscreen }) {
       "showCurrentTime",
       "controllerExpanded",
       "themeMode",
+      "pointColor",
     ].reduce((obj, key) => {
       const value = window.localStorage.getItem(key);
       if (value) {
@@ -104,7 +108,7 @@ export default function ControlButtonGroup({ fullscreen }) {
       return obj;
     }, {});
     return JSON.stringify(localStorageData, null, 2);
-  };
+  }, []);
 
   const handleOpenSettingsPopover = (event) => {
     setData(getLocalStorageDataString());
@@ -247,6 +251,11 @@ export default function ControlButtonGroup({ fullscreen }) {
       return nextState;
     });
   };
+  
+  const handleChangePointColor = (color) => {
+    setPointColor(color);
+    window.localStorage.setItem("pointColor", JSON.stringify(color));
+  }; 
 
   const handleRefresh = useCallback(async () => {
     if (refreshing) return;
@@ -347,6 +356,22 @@ export default function ControlButtonGroup({ fullscreen }) {
     isDragging,
   ]);
 
+  // 설정 팝업이 열려있을 때 설정 값이 변경되면 데이터 동기화 텍스트도 업데이트
+  useEffect(() => {
+    if (settingsAnchorEl) {
+      setData(getLocalStorageDataString());
+    }
+  }, [
+    settingsAnchorEl,
+    themeMode,
+    pointColor,
+    showCurrentTime,
+    pointerEventsEnabled,
+    controllerExpanded,
+    channels,
+    getLocalStorageDataString,
+  ]);
+
   const rotate360 = {
     "0%": { transform: "rotate(0deg)" },
     "100%": { transform: "rotate(360deg)" },
@@ -361,8 +386,8 @@ export default function ControlButtonGroup({ fullscreen }) {
   };
 
   const availableThemes = [
-    { mode: "light", color: "#ffffff", label: "화이트" },
-    { mode: "dark", color: "#333333", label: "다크" },
+    { mode: "light", color: "#ffffff", label: "Light" },
+    { mode: "dark", color: "#333333", label: "Dark" },
   ];
 
   return (
@@ -379,7 +404,7 @@ export default function ControlButtonGroup({ fullscreen }) {
             {controllerExpanded ? "사이드 접기 " : "사이드 펴기 "}(
             <Box
               component="span"
-              sx={{ color: "common.skyBlue", fontWeight: "bold" }}
+              sx={{ color: "primary.main", fontWeight: "bold" }}
             >
               S
             </Box>
@@ -387,7 +412,9 @@ export default function ControlButtonGroup({ fullscreen }) {
           </>
         }
       >
-        <IconButton onClick={handleToggleController}>
+        <IconButton
+          onClick={handleToggleController}
+        >
           {controllerExpanded ? (
             <FormatIndentIncreaseIcon sx={iconStyle} />
           ) : (
@@ -399,7 +426,14 @@ export default function ControlButtonGroup({ fullscreen }) {
       {controllerExpanded && (
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Tooltip slotProps={tooltipSlotProps} placement="top" title="설정">
-            <IconButton onClick={handleOpenSettingsPopover}>
+            <IconButton
+              onClick={handleOpenSettingsPopover}
+              sx={{
+                "& .MuiSvgIcon-root": Boolean(settingsAnchorEl)
+                  ? { color: "primary.main" } // 포인트 컬러 적용
+                  : {},
+              }}
+            >
               <SettingsIcon sx={iconStyle} />
             </IconButton>
           </Tooltip>
@@ -438,7 +472,15 @@ export default function ControlButtonGroup({ fullscreen }) {
                   alignItems: "center",
                 }}
               >
-                <Typography sx={{ fontSize: "1.4rem" }}>테마</Typography>
+                <Typography sx={{ fontSize: "1.4rem" }}>
+                  테마{" "}
+                  <Box
+                    component="span"
+                    sx={{ color: "primary.main", fontWeight: "bold" }}
+                  >
+                    (M)
+                  </Box>
+                </Typography>
                 <Stack direction="row" spacing={1}>
                   {availableThemes.map((t) => (
                     <Tooltip slotProps={tooltipSlotProps} placement="top" title={t.label} key={t.mode}>
@@ -469,6 +511,49 @@ export default function ControlButtonGroup({ fullscreen }) {
                 </Stack>
               </Box>
 
+              {/* 포인트 컬러 설정 */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography sx={{ fontSize: "1.4rem" }}>포인트 컬러</Typography>
+                <Stack direction="row" spacing={1}>
+                  {Object.values(POINT_COLORS).map((p) => (
+                    <Tooltip
+                      slotProps={tooltipSlotProps}
+                      placement="top"
+                      title={p.label}
+                      key={p.value}
+                    >
+                      <Box
+                        onClick={() => handleChangePointColor(p.value)}
+                        sx={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: "50%",
+                          backgroundColor: p[themeMode],
+                          border:
+                            pointColor === p.value
+                              ? "3px solid"
+                              : "1px solid rgba(0,0,0,0.1)",
+                          borderColor:
+                            pointColor === p.value ? "primary.main" : "divider",
+                          cursor: "pointer",
+                          boxShadow: pointColor === p.value ? 2 : 0,
+                          transition: "all 0.2s",
+                          "&:hover": {
+                            transform: "scale(1.1)",
+                          },
+                        }}
+                      />
+                    </Tooltip>
+                  ))}
+                </Stack>
+              </Box>
+
               {/* 현재 시간 표시 */}
               <Box
                 sx={{
@@ -481,7 +566,7 @@ export default function ControlButtonGroup({ fullscreen }) {
                   현재 시간 표시{" "}
                   <Box
                     component="span"
-                    sx={{ color: "common.skyBlue", fontWeight: "bold" }}
+                    sx={{ color: "primary.main", fontWeight: "bold" }}
                   >
                     (T)
                   </Box>
@@ -492,7 +577,7 @@ export default function ControlButtonGroup({ fullscreen }) {
                   sx={{
                     "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
                       backgroundColor: "primary.main",
-                      opacity: 1,
+                      opacity: 0.65,
                     },
                     "& .MuiSwitch-track": {
                       backgroundColor: "rgba(0,0,0,0.5)",
@@ -513,7 +598,7 @@ export default function ControlButtonGroup({ fullscreen }) {
                   {pointerEventsEnabled ? "화면 조작 모드" : "화면 이동 모드"}{" "}
                   <Box
                     component="span"
-                    sx={{ color: "common.skyBlue", fontWeight: "bold" }}
+                    sx={{ color: "primary.main", fontWeight: "bold" }}
                   >
                     (V)
                   </Box>
@@ -523,6 +608,16 @@ export default function ControlButtonGroup({ fullscreen }) {
                   exclusive
                   onChange={handleChangePointerEvents}
                   aria-label="pointer events"
+                  sx={{
+                    "& .MuiToggleButton-root.Mui-selected": {
+                      backgroundColor: "primary.main",
+                      color: "#fff",
+                      "&:hover": {
+                        backgroundColor: "primary.main",
+                        filter: "brightness(0.9)",
+                      },
+                    },
+                  }}
                 >
                   <ToggleButton value={false} aria-label="pan tool">
                     <Tooltip slotProps={tooltipSlotProps} title="화면 이동 모드" placement="top">
@@ -614,7 +709,7 @@ export default function ControlButtonGroup({ fullscreen }) {
                         }}
                       >
                         {isSaving ? (
-                          <CircularProgress size={15} />
+                          <CircularProgress size={12.5} />
                         ) : (
                           <CheckIcon fontSize="small" />
                         )}
@@ -633,7 +728,7 @@ export default function ControlButtonGroup({ fullscreen }) {
                 채널 정보 갱신 (
                 <Box
                   component="span"
-                  sx={{ color: "common.skyBlue", fontWeight: "bold" }}
+                  sx={{ color: "primary.main", fontWeight: "bold" }}
                 >
                   R
                 </Box>
@@ -650,6 +745,7 @@ export default function ControlButtonGroup({ fullscreen }) {
                     ? {
                         animation: "rotate360 0.750s ease-in-out",
                         "@keyframes rotate360": rotate360,
+                        color: "primary.main", // 갱신 중일 때 포인트 컬러
                       }
                     : {},
                   "&.Mui-disabled .MuiSvgIcon-root": {
@@ -669,7 +765,7 @@ export default function ControlButtonGroup({ fullscreen }) {
                 전체화면 (
                 <Box
                   component="span"
-                  sx={{ color: "common.skyBlue", fontWeight: "bold" }}
+                  sx={{ color: "primary.main", fontWeight: "bold" }}
                 >
                   F
                 </Box>

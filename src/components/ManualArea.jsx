@@ -9,20 +9,24 @@ import {
   ListItemText,
   Divider,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import AddToPhotosIcon from "@mui/icons-material/AddToPhotos";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import AspectRatioIcon from "@mui/icons-material/AspectRatio";
-import ViewQuiltIcon from "@mui/icons-material/ViewQuilt";
-import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
-import MouseIcon from "@mui/icons-material/Mouse";
-import FormatIndentIncreaseIcon from "@mui/icons-material/FormatIndentIncrease";
-import Brightness4Icon from "@mui/icons-material/Brightness4";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import FullscreenIcon from "@mui/icons-material/Fullscreen";
-import InfoIcon from "@mui/icons-material/Info";
-import ImportExportIcon from "@mui/icons-material/ImportExport";
+import { lighten } from "@mui/material/styles";
+import {
+  Settings as SettingsIcon,
+  Search as SearchIcon,
+  AddToPhotos as AddToPhotosIcon,
+  DeleteForever as DeleteForeverIcon,
+  AspectRatio as AspectRatioIcon,
+  ViewQuilt as ViewQuiltIcon,
+  DragIndicator as DragIndicatorIcon,
+  Mouse as MouseIcon,
+  FormatIndentIncrease as FormatIndentIncreaseIcon,
+  Brightness4 as Brightness4Icon,
+  AccessTime as AccessTimeIcon,
+  Refresh as RefreshIcon,
+  Fullscreen as FullscreenIcon,
+  Info as InfoIcon,
+  ImportExport as ImportExportIcon,
+} from "@mui/icons-material";
 import { PLATFORM_COLORS } from "@/data/color";
 
 const Section = ({ title, children }) => (
@@ -43,7 +47,6 @@ const Section = ({ title, children }) => (
       gutterBottom
       sx={{
         fontWeight: "bold",
-        color: (theme) => theme.palette.primary.main,
         fontSize: "2.4rem",
       }}
     >
@@ -54,12 +57,12 @@ const Section = ({ title, children }) => (
   </Paper>
 );
 
-const ManualListItem = ({ icon, primary, secondary }) => (
-  <ListItem sx={{ py: 1.5, alignItems: "flex-start" }}>
+const ManualListItem = ({ icon, primary, secondary, nested }) => (
+  <ListItem sx={{ py: 1.5, alignItems: "flex-start", pl: nested ? 10 : 2 }}>
     <ListItemIcon
       sx={{
         minWidth: "6.0rem",
-        color: (theme) => theme.palette.common.pointColors.pointColor6,
+        color: (theme) => theme.palette.primary.brand,
         mt: 1,
       }}
     >
@@ -111,19 +114,18 @@ export default function ManualArea() {
             fontWeight: "bold",
             my: 4,
             fontSize: { xs: "2.5rem", sm: "3rem", md: "3.5rem" },
-            background: (theme) =>
-              `linear-gradient(45deg, ${theme.palette.common.pointColors.pointColor5} 30%, ${theme.palette.common.pointColors.pointColor7} 90%)`,
+            background: (theme) => theme.palette.primary.gradient,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             textShadow: "0.1rem 0.1rem 0.3rem rgba(0,0,0,0.1)",
           }}
         >
-          스트림퓨전 사용 설명서
+          스퓨즈 사용 설명서
         </Typography>
 
         <Section title="1. 주요 기능">
           <Typography sx={{ lineHeight: 1.6, fontSize: "1.3rem" }}>
-            스트림퓨전(StreamFusion)은 여러 스트리밍 플랫폼의 방송을 한 화면에서 동시에
+            스퓨즈(S-Fuz)는 여러 스트리밍 플랫폼의 방송을 한 화면에서 동시에
             시청할 수 있는 서비스입니다. 현재{" "}
             <strong style={{ color: PLATFORM_COLORS.chzzk.main }}>치지직</strong>과{" "}
             <strong style={{ color: PLATFORM_COLORS.soop.main }}>숲</strong>{" "}
@@ -192,37 +194,46 @@ export default function ManualArea() {
             <ManualListItem
               icon={<FormatIndentIncreaseIcon sx={{ fontSize: '2rem' }} />}
               primary="사이드바 펴기/접기 (단축키: S)"
-              secondary="컨트롤러 영역을 펴거나 접습니다."
+              secondary="컨트롤러(사이드바) 영역을 펴거나 접습니다. 넓은 화면으로 시청하고 싶을 때 유용합니다."
+            />
+            <ManualListItem
+              icon={<SettingsIcon sx={{ fontSize: '2rem' }} />}
+              primary="설정"
+              secondary="테마 색상, 포인트 컬러, 현재 시간 표시 여부, 화면 조작 모드 설정, 데이터 동기화 기능이 포함된 설정 팝업을 엽니다."
             />
             <ManualListItem
               icon={<Brightness4Icon sx={{ fontSize: '2rem' }} />}
-              primary="테마 전환 (단축키: M)"
-              secondary="클릭할 때마다 라이트 모드와 다크 모드를 전환합니다."
-            />
-            <ManualListItem
-              icon={<AccessTimeIcon sx={{ fontSize: '2rem' }} />}
-              primary="현재 시간 표시 (단축키: T)"
-              secondary="화면 좌측 상단에 표시되는 현재 시간의 ON/OFF 상태를 토글합니다. 현재 시간은 전체 화면 버튼과 동일한 기능을 합니다."
+              nested
+              primary="테마/포인트 컬러 변경"
+              secondary="라이트/다크 모드 전환 및 앱의 포인트 컬러를 변경하여 원하는 디자인으로 꾸밀 수 있습니다."
             />
             <ManualListItem
               icon={<MouseIcon sx={{ fontSize: '2rem' }} />}
-              primary="화면 모드 변경 (단축키: V)"
-              secondary="'화면 이동 모드'와 '화면 조작 모드'를 전환합니다. 조작 모드에서는 드래그 앤 드롭이 비활성화되는 대신, 각 방송 화면을 직접 클릭하여 제어할 수 있습니다."
+              nested
+              primary="화면 조작/이동 모드 (단축키: V)"
+              secondary="'화면 이동 모드'와 '화면 조작 모드'를 전환합니다. 이동 모드에서는 드래그&드롭으로 화면 배치를 변경할 수 있고, 조작 모드에서는 각 방송 화면(치지직 채팅창 닫기 등)을 직접 클릭하여 제어할 수 있습니다."
+            />
+            <ManualListItem
+              icon={<AccessTimeIcon sx={{ fontSize: '2rem' }} />}
+              nested
+              primary="현재 시간 (단축키: T)"
+              secondary="설정에서 시간 표시를 켠 경우, 화면 좌측 상단에 현재 시간이 표시됩니다. 시간을 클릭하면 전체 화면 모드가 토글됩니다."
+            />
+            <ManualListItem
+              icon={<ImportExportIcon sx={{ fontSize: '2rem' }} />}
+              nested
+              primary="데이터 동기화"
+              secondary="현재 브라우저에 저장된 설정(채널 목록, 레이아웃 등)을 텍스트 형태로 복사하거나, 다른 기기에서 복사한 설정을 붙여넣어 동기화할 수 있습니다."
             />
             <ManualListItem
               icon={<RefreshIcon sx={{ fontSize: '2rem' }} />}
               primary="채널 정보 새로고침 (단축키: R)"
-              secondary="모든 채널의 라이브 상태, 시청자 수 등의 정보를 새로고침합니다. (60초마다 자동 새로고침되며, 채널이 off 상태에서 live 상태로 변화 감지 시 플레이어를 새로고침 합니다.)"
-            />
-            <ManualListItem
-              icon={<ImportExportIcon sx={{ fontSize: '2rem' }} />}
-              primary="데이터 동기화"
-              secondary="모든 설정(비율, 레이아웃, 채널 목록 등)은 현재 브라우저에만 저장됩니다. 다른 기기나 브라우저에서도 설정을 그대로 사용하려면, 이 기능을 이용해 데이터를 복사하여 다른 환경에 적용 하세요."
+              secondary="모든 채널의 라이브 상태, 시청자 수 등의 정보를 즉시 새로고침합니다. (60초마다 자동 갱신되며, 방송 시작 감지 시 자동으로 플레이어를 불러옵니다.)"
             />
             <ManualListItem
               icon={<FullscreenIcon sx={{ fontSize: '2rem' }} />}
               primary="전체 화면 (단축키: F)"
-              secondary="전체 화면 모드를 켜거나 끕니다."
+              secondary="브라우저 전체 화면 모드를 켜거나 끕니다."
             />
           </List>
         </Section>
