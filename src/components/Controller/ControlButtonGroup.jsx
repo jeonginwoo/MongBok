@@ -51,6 +51,9 @@ import {
 } from "@/atoms/setting";
 import { snackbarAtom, isDraggingAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
+import Editor from "react-simple-code-editor";
+import Prism from "prismjs";
+import "prismjs/components/prism-json";
 
 const iconStyle = { fontSize: "2.4rem" };
 const smallIconStyle = { fontSize: "2.0rem" };
@@ -65,7 +68,7 @@ const tooltipSlotProps = {
 
 const sliderMarks = Array.from({ length: 16 }, (_, i) => ({ value: i - 5 }));
 
-const CustomMark = ({ style, ...props }) => {
+const CustomMark = ({ style, ownerState, markActive, ...props }) => {
   const index = props["data-index"];
   const mark = sliderMarks[index];
 
@@ -136,6 +139,9 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [isSliderHovered, setIsSliderHovered] = useState(false);
   const [timeToNextRefresh, setTimeToNextRefresh] = useState(60);
   const setSnackbar = useSetAtom(snackbarAtom);
+
+  const activePointColor =
+    POINT_COLORS[pointColor]?.[themeMode] || POINT_COLORS["default"][themeMode];
 
   const getLocalStorageDataString = useCallback(() => {
     const localStorageData = [
@@ -428,7 +434,6 @@ export default function ControlButtonGroup({ fullscreen }) {
     isDragging,
   ]);
 
-  // 설정 팝업이 열려있을 때 설정 값이 변경되면 데이터 동기화 텍스트도 업데이트
   useEffect(() => {
     if (settingsAnchorEl) {
       setData(getLocalStorageDataString());
@@ -467,7 +472,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     <Box
       sx={{
         display: "flex",
-        justifyContent: controllerExpanded ? "space-between" : "center",
+        justifyContent: "space-between",
       }}
     >
       <Tooltip
@@ -496,360 +501,392 @@ export default function ControlButtonGroup({ fullscreen }) {
         </IconButton>
       </Tooltip>
 
-      {controllerExpanded && (
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Tooltip slotProps={tooltipSlotProps} placement="top" title="설정">
-            <IconButton
-              onClick={handleOpenSettingsPopover}
-              sx={{
-                "& .MuiSvgIcon-root": Boolean(settingsAnchorEl)
-                  ? { color: "primary.main" } // 포인트 컬러 적용
-                  : {},
-              }}
-            >
-              <SettingsIcon sx={iconStyle} />
-            </IconButton>
-          </Tooltip>
-          <Popover
-            open={Boolean(settingsAnchorEl)}
-            anchorEl={settingsAnchorEl}
-            onClose={() => setSettingsAnchorEl(null)}
-            anchorOrigin={{
-              vertical: "top",
-              horizontal: "center",
-            }}
-            transformOrigin={{
-              vertical: "bottom",
-              horizontal: "center",
+      <Box sx={{ display: "flex", alignItems: "center" }}>
+        <Tooltip slotProps={tooltipSlotProps} placement="top" title="설정">
+          <IconButton
+            onClick={handleOpenSettingsPopover}
+            sx={{
+              "& .MuiSvgIcon-root": Boolean(settingsAnchorEl)
+                ? { color: "primary.main" } // 포인트 컬러 적용
+                : {},
             }}
           >
+            <SettingsIcon sx={iconStyle} />
+          </IconButton>
+        </Tooltip>
+        <Popover
+          open={Boolean(settingsAnchorEl)}
+          anchorEl={settingsAnchorEl}
+          onClose={() => setSettingsAnchorEl(null)}
+          anchorOrigin={{
+            vertical: "top",
+            horizontal: "center",
+          }}
+          transformOrigin={{
+            vertical: "bottom",
+            horizontal: "center",
+          }}
+        >
+          <Box
+            sx={{
+              p: 2,
+              width: 340,
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              backgroundColor: "background.level1",
+            }}
+          >
+            <Typography sx={{ fontWeight: "bold", fontSize: "1.6rem" }}>
+              설정
+            </Typography>
+
+            {/* 테마 설정 */}
             <Box
               sx={{
-                p: 2,
-                width: 340,
                 display: "flex",
-                flexDirection: "column",
-                gap: 2,
-                backgroundColor: "background.level1",
+                justifyContent: "space-between",
+                alignItems: "center",
               }}
             >
-              <Typography sx={{ fontWeight: "bold", fontSize: "1.6rem" }}>
-                설정
-              </Typography>
-
-              {/* 테마 설정 */}
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Typography sx={{ fontSize: "1.4rem" }}>
-                  테마{" "}
-                  <Box
-                    component="span"
-                    sx={{ color: "primary.main", fontWeight: "bold" }}
-                  >
-                    (M)
-                  </Box>
-                </Typography>
-                <Stack direction="row" spacing={1}>
-                  {availableThemes.map((t) => (
-                    <Tooltip slotProps={tooltipSlotProps} placement="top" title={t.label} key={t.mode}>
-                      <Box
-                        onClick={() => handleChangeTheme(t.mode)}
-                        sx={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: "50%",
-                          backgroundColor: t.color,
-                          border:
-                            themeMode === t.mode
-                              ? "3px solid"
-                              : "1px solid rgba(0,0,0,0.1)",
-                          borderColor:
-                            themeMode === t.mode ? "primary.main" : "divider",
-                          cursor: "pointer",
-                          boxShadow:
-                            themeMode === t.mode ? 2 : 0,
-                          transition: "all 0.2s",
-                          "&:hover": {
-                            transform: "scale(1.1)",
-                          },
-                        }}
-                      />
-                    </Tooltip>
-                  ))}
-                </Stack>
-              </Box>
-
-              {/* 포인트 컬러 설정 */}
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Typography sx={{ fontSize: "1.4rem" }}>포인트 컬러</Typography>
-                <Stack direction="row" spacing={1}>
-                  {Object.values(POINT_COLORS).map((p) => (
-                    <Tooltip
-                      slotProps={tooltipSlotProps}
-                      placement="top"
-                      title={p.label}
-                      key={p.value}
-                    >
-                      <Box
-                        onClick={() => handleChangePointColor(p.value)}
-                        sx={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: "50%",
-                          backgroundColor: p[themeMode],
-                          border:
-                            pointColor === p.value
-                              ? "3px solid"
-                              : "1px solid rgba(0,0,0,0.1)",
-                          borderColor:
-                            pointColor === p.value ? "primary.main" : "divider",
-                          cursor: "pointer",
-                          boxShadow: pointColor === p.value ? 2 : 0,
-                          transition: "all 0.2s",
-                          "&:hover": {
-                            transform: "scale(1.1)",
-                          },
-                        }}
-                      />
-                    </Tooltip>
-                  ))}
-                </Stack>
-              </Box>
-
-              {/* 현재 시간 표시 */}
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Typography sx={{ fontSize: "1.4rem" }}>
-                  현재 시간 표시{" "}
-                  <Box
-                    component="span"
-                    sx={{ color: "primary.main", fontWeight: "bold" }}
-                  >
-                    (T)
-                  </Box>
-                </Typography>
-                <Switch
-                  checked={showCurrentTime}
-                  onChange={handleToggleCurrentTime}
-                  sx={{
-                    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                      backgroundColor: "primary.main",
-                      opacity: 0.65,
-                    },
-                    "& .MuiSwitch-track": {
-                      backgroundColor: "rgba(0,0,0,0.5)",
-                    },
-                  }}
-                />
-              </Box>
-
-              {/* 화면 조작 모드 */}
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Typography sx={{ fontSize: "1.4rem" }}>
-                  {pointerEventsEnabled ? "화면 조작 모드" : "화면 이동 모드"}{" "}
-                  <Box
-                    component="span"
-                    sx={{ color: "primary.main", fontWeight: "bold" }}
-                  >
-                    (V)
-                  </Box>
-                </Typography>
-                <ToggleButtonGroup
-                  value={pointerEventsEnabled}
-                  exclusive
-                  onChange={handleChangePointerEvents}
-                  aria-label="pointer events"
-                  sx={{
-                    "& .MuiToggleButton-root.Mui-selected": {
-                      backgroundColor: "primary.main",
-                      color: "#fff",
-                      "&:hover": {
-                        backgroundColor: "primary.main",
-                        filter: "brightness(0.9)",
-                      },
-                    },
-                  }}
-                >
-                  <ToggleButton value={false} aria-label="pan tool">
-                    <Tooltip slotProps={tooltipSlotProps} title="화면 이동 모드" placement="top">
-                      <PanToolIcon />
-                    </Tooltip>
-                  </ToggleButton>
-                  <ToggleButton value={true} aria-label="mouse">
-                    <Tooltip slotProps={tooltipSlotProps} title="화면 조작 모드" placement="top">
-                      <MouseIcon />
-                    </Tooltip>
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              </Box>
-
-              {/* 채팅창 글자 크기 */}
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Typography sx={{ fontSize: "1.4rem" }}>
-                  채팅창 글자 크기
-                  <Box
-                    component="span"
-                    sx={{ color: "text.secondary", fontSize: "1.2rem", ml: 0.5 }}
-                  >
-                    ({chatFontSizeAdjustment > 0 ? "+" : ""}
-                    {chatFontSizeAdjustment})
-                  </Box>
-                </Typography>
+              <Typography sx={{ fontSize: "1.4rem" }}>
+                테마{" "}
                 <Box
-                  sx={{ width: 170, px: 1 }}
-                  onMouseEnter={() => setIsSliderHovered(true)}
-                  onMouseLeave={() => setIsSliderHovered(false)}
+                  component="span"
+                  sx={{ color: "primary.main", fontWeight: "bold" }}
                 >
-                  <Slider
-                    size="small"
-                    value={chatFontSizeAdjustment}
-                    min={-5}
-                    max={10}
-                    step={1}
-                    valueLabelDisplay={isSliderHovered ? "on" : "auto"}
-                    marks={sliderMarks}
-                    slots={{ mark: CustomMark }}
-                    onChange={handleChangeChatFontSize}
-                    slotProps={{
-                      thumb: {
-                        sx: {
-                          transition: "0.2s",
-                          "&::before": { display: "none" },
-                          "&:hover, &.Mui-focusVisible": {
-                            boxShadow: (theme) =>
-                              `0px 0px 0px 6px ${theme.palette.primary.opacity}`,
-                          },
+                  (M)
+                </Box>
+              </Typography>
+              <Stack direction="row" spacing={1}>
+                {availableThemes.map((t) => (
+                  <Tooltip slotProps={tooltipSlotProps} placement="top" title={t.label} key={t.mode}>
+                    <Box
+                      onClick={() => handleChangeTheme(t.mode)}
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: "50%",
+                        backgroundColor: t.color,
+                        border:
+                          themeMode === t.mode
+                            ? "3px solid"
+                            : "1px solid rgba(0,0,0,0.1)",
+                        borderColor:
+                          themeMode === t.mode ? "primary.main" : "divider",
+                        cursor: "pointer",
+                        boxShadow:
+                          themeMode === t.mode ? 2 : 0,
+                        transition: "all 0.2s",
+                        "&:hover": {
+                          transform: "scale(1.1)",
+                        },
+                      }}
+                    />
+                  </Tooltip>
+                ))}
+              </Stack>
+            </Box>
+
+            {/* 포인트 컬러 설정 */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography sx={{ fontSize: "1.4rem" }}>포인트 컬러</Typography>
+              <Stack direction="row" spacing={1}>
+                {Object.values(POINT_COLORS).map((p) => (
+                  <Tooltip
+                    slotProps={tooltipSlotProps}
+                    placement="top"
+                    title={p.label}
+                    key={p.value}
+                  >
+                    <Box
+                      onClick={() => handleChangePointColor(p.value)}
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: "50%",
+                        backgroundColor: p[themeMode],
+                        border:
+                          pointColor === p.value
+                            ? "3px solid"
+                            : "1px solid rgba(0,0,0,0.1)",
+                        borderColor:
+                          pointColor === p.value ? "primary.main" : "divider",
+                        cursor: "pointer",
+                        boxShadow: pointColor === p.value ? 2 : 0,
+                        transition: "all 0.2s",
+                        "&:hover": {
+                          transform: "scale(1.1)",
+                        },
+                      }}
+                    />
+                  </Tooltip>
+                ))}
+              </Stack>
+            </Box>
+
+            {/* 현재 시간 표시 */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography sx={{ fontSize: "1.4rem" }}>
+                현재 시간 표시{" "}
+                <Box
+                  component="span"
+                  sx={{ color: "primary.main", fontWeight: "bold" }}
+                >
+                  (T)
+                </Box>
+              </Typography>
+              <Switch
+                checked={showCurrentTime}
+                onChange={handleToggleCurrentTime}
+                sx={{
+                  "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                    backgroundColor: "primary.main",
+                    opacity: 0.65,
+                  },
+                  "& .MuiSwitch-track": {
+                    backgroundColor: "rgba(0,0,0,0.5)",
+                  },
+                }}
+              />
+            </Box>
+
+            {/* 화면 조작 모드 */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography sx={{ fontSize: "1.4rem" }}>
+                {pointerEventsEnabled ? "화면 조작 모드" : "화면 이동 모드"}{" "}
+                <Box
+                  component="span"
+                  sx={{ color: "primary.main", fontWeight: "bold" }}
+                >
+                  (V)
+                </Box>
+              </Typography>
+              <ToggleButtonGroup
+                value={pointerEventsEnabled}
+                exclusive
+                onChange={handleChangePointerEvents}
+                aria-label="pointer events"
+                sx={{
+                  "& .MuiToggleButton-root.Mui-selected": {
+                    backgroundColor: "primary.main",
+                    color: "#fff",
+                    "&:hover": {
+                      backgroundColor: "primary.main",
+                      filter: "brightness(0.9)",
+                    },
+                  },
+                }}
+              >
+                <ToggleButton value={false} aria-label="pan tool">
+                  <Tooltip slotProps={tooltipSlotProps} title="화면 이동 모드" placement="top">
+                    <PanToolIcon />
+                  </Tooltip>
+                </ToggleButton>
+                <ToggleButton value={true} aria-label="mouse">
+                  <Tooltip slotProps={tooltipSlotProps} title="화면 조작 모드" placement="top">
+                    <MouseIcon />
+                  </Tooltip>
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+
+            {/* 채팅창 글자 크기 */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography sx={{ fontSize: "1.4rem" }}>
+                채팅창 글자 크기
+                <Box
+                  component="span"
+                  sx={{ color: "text.secondary", fontSize: "1.2rem", ml: 0.5 }}
+                >
+                  ({chatFontSizeAdjustment > 0 ? "+" : ""}
+                  {chatFontSizeAdjustment})
+                </Box>
+              </Typography>
+              <Box
+                sx={{ width: 170, px: 1 }}
+                onMouseEnter={() => setIsSliderHovered(true)}
+                onMouseLeave={() => setIsSliderHovered(false)}
+              >
+                <Slider
+                  size="small"
+                  value={chatFontSizeAdjustment}
+                  min={-5}
+                  max={10}
+                  step={1}
+                  valueLabelDisplay={isSliderHovered ? "on" : "auto"}
+                  marks={sliderMarks}
+                  slots={{ mark: CustomMark }}
+                  onChange={handleChangeChatFontSize}
+                  slotProps={{
+                    thumb: {
+                      sx: {
+                        transition: "0.2s",
+                        "&::before": { display: "none" },
+                        "&:hover, &.Mui-focusVisible": {
+                          boxShadow: (theme) =>
+                            `0px 0px 0px 6px ${theme.palette.primary.opacity}`,
                         },
                       },
-                    }}
-                    sx={{
-                      color: "primary.main",
-                      "& .MuiSlider-mark": {
-                        backgroundColor: "transparent",
-                      },
-                    }}
-                  />
-                </Box>
-              </Box>
-
-              <Divider />
-
-              {/* 데이터 동기화 */}
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                <Typography sx={{ fontSize: "1.4rem" }}>
-                  데이터 동기화
-                </Typography>
-                <TextField
-                  multiline
-                  rows={6}
-                  value={data}
-                  onChange={(e) => setData(e.target.value)}
-                  variant="outlined"
-                  fullWidth
-                  size="small"
-                  placeholder="설정 데이터를 여기에 붙여넣거나 복사하세요."
+                    },
+                  }}
                   sx={{
-                    "& .MuiOutlinedInput-root": {
-                      backgroundColor: "background.paper",
+                    color: "primary.main",
+                    "& .MuiSlider-mark": {
+                      backgroundColor: "transparent",
                     },
                   }}
                 />
-                <Box
-                  sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}
-                >
-                  <Tooltip
-                    slotProps={tooltipSlotProps}
-                    title={copySuccess ? "복사 완료!" : "현재 설정 복사"}
-                  >
-                    <span>
-                      <IconButton
-                        disabled={copySuccess}
-                        onClick={handleCopy}
-                        size="small"
-                        sx={{
-                          border: "1px solid",
-                          borderColor: "divider",
-                          borderRadius: 1,
-                          animation: copySuccess
-                            ? "successAnimation 0.750s ease"
-                            : "none",
-                          "@keyframes successAnimation": successAnimation,
-                        }}
-                      >
-                        <ContentCopyIcon fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                  <Tooltip
-                    slotProps={tooltipSlotProps}
-                    title={
-                      saveSuccess
-                        ? "저장 완료!"
-                        : saveError
-                        ? "저장 실패"
-                        : "설정 저장"
-                    }
-                  >
-                    <span>
-                      <IconButton
-                        disabled={saveSuccess || isSaving}
-                        onClick={handleSave}
-                        size="small"
-                        sx={{
-                          border: "1px solid",
-                          borderColor: "divider",
-                          borderRadius: 1,
-                          animation: saveSuccess
-                            ? "successAnimation 0.750s ease"
-                            : saveError
-                            ? "errorAnimation 0.750s ease"
-                            : "none",
-                          "@keyframes successAnimation": successAnimation,
-                          "@keyframes errorAnimation": errorAnimation,
-                        }}
-                      >
-                        {isSaving ? (
-                          <CircularProgress size={12.5} />
-                        ) : (
-                          <CheckIcon fontSize="small" />
-                        )}
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                </Box>
               </Box>
             </Box>
-          </Popover>
 
-          <Tooltip
+            <Divider />
+
+            {/* 설정 동기화 */}
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Typography sx={{ fontSize: "1.4rem" }}>
+                설정 동기화
+              </Typography>
+              <Box
+                sx={{
+                  border: 1,
+                  borderColor: "divider",
+                  borderRadius: 1,
+                  bgcolor: "background.paper",
+                  overflow: "auto",
+                  height: "135px",
+                  transition: "border-color 0.2s",
+                  "&:hover": {
+                    borderColor: "text.primary",
+                  },
+                  "&:focus-within": {
+                    borderColor: "primary.main",
+                    borderWidth: 2,
+                    m: "-1px",
+                  },
+                  "& .token.property": { color: activePointColor },
+                  "& .token.string": {
+                    color: themeMode === "dark" ? "#ce9178" : "#a31515",
+                  },
+                  "& .token.number": {
+                    color: themeMode === "dark" ? "#b5cea8" : "#098658",
+                  },
+                  "& .token.boolean": {
+                    color: themeMode === "dark" ? "#9cdcfe" : "#0451a5",
+                  },
+                  "& .token.punctuation": { color: "text.secondary" },
+                  "& textarea": { outline: "none" },
+                }}
+              >
+                <Editor
+                  value={data}
+                  onValueChange={(code) => setData(code)}
+                  highlight={(code) =>
+                    Prism.highlight(code, Prism.languages.json, "json")
+                  }
+                  padding={10}
+                  style={{
+                    fontFamily: '"Fira code", "Fira Mono", monospace',
+                    fontSize: "1.2rem",
+                    minHeight: "100%",
+                  }}
+                  placeholder="설정 데이터를 여기에 붙여넣거나 복사하세요."
+                />
+              </Box>
+              <Box
+                sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}
+              >
+                <Tooltip
+                  slotProps={tooltipSlotProps}
+                  title={copySuccess ? "복사 완료!" : "현재 설정 복사"}
+                >
+                  <span>
+                    <IconButton
+                      disabled={copySuccess}
+                      onClick={handleCopy}
+                      size="small"
+                      sx={{
+                        border: "1px solid",
+                        borderColor: "divider",
+                        borderRadius: 1,
+                        animation: copySuccess
+                          ? "successAnimation 0.750s ease"
+                          : "none",
+                        "@keyframes successAnimation": successAnimation,
+                      }}
+                    >
+                      <ContentCopyIcon fontSize="small" />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+                <Tooltip
+                  slotProps={tooltipSlotProps}
+                  title={
+                    saveSuccess
+                      ? "저장 완료!"
+                      : saveError
+                      ? "저장 실패"
+                      : "설정 저장"
+                  }
+                >
+                  <span>
+                    <IconButton
+                      disabled={saveSuccess || isSaving}
+                      onClick={handleSave}
+                      size="small"
+                      sx={{
+                        border: "1px solid",
+                        borderColor: "divider",
+                        borderRadius: 1,
+                        animation: saveSuccess
+                          ? "successAnimation 0.750s ease"
+                          : saveError
+                          ? "errorAnimation 0.750s ease"
+                          : "none",
+                        "@keyframes successAnimation": successAnimation,
+                        "@keyframes errorAnimation": errorAnimation,
+                      }}
+                    >
+                      {isSaving ? (
+                        <CircularProgress size={12.5} />
+                      ) : (
+                        <CheckIcon fontSize="small" />
+                      )}
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              </Box>
+            </Box>
+          </Box>
+        </Popover>
+
+        {controllerExpanded && (
+          <>
+            <Tooltip
             slotProps={tooltipSlotProps}
             title={
               <>
@@ -863,50 +900,51 @@ export default function ControlButtonGroup({ fullscreen }) {
                 ) {timeToNextRefresh}
               </>
             }
-          >
-            <span>
-              <IconButton
-                onClick={handleRefresh}
-                disabled={refreshing}
-                sx={{
-                  "& .MuiSvgIcon-root": refreshing
-                    ? {
-                        animation: "rotate360 0.750s ease-in-out",
-                        "@keyframes rotate360": rotate360,
-                        color: "primary.main", // 갱신 중일 때 포인트 컬러
-                      }
-                    : {},
-                  "&.Mui-disabled .MuiSvgIcon-root": {
-                    color: "text.quaternary",
-                  },
-                }}
-              >
-                <RefreshIcon sx={iconStyle} />
-              </IconButton>
-            </span>
-          </Tooltip>
-
-          <Tooltip
-            slotProps={tooltipSlotProps}
-            title={
-              <>
-                전체화면 (
-                <Box
-                  component="span"
-                  sx={{ color: "primary.main", fontWeight: "bold" }}
+            >
+              <span>
+                <IconButton
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  sx={{
+                    "& .MuiSvgIcon-root": refreshing
+                      ? {
+                          animation: "rotate360 0.750s ease-in-out",
+                          "@keyframes rotate360": rotate360,
+                          color: "primary.main", // 갱신 중일 때 포인트 컬러
+                        }
+                      : {},
+                    "&.Mui-disabled .MuiSvgIcon-root": {
+                      color: "text.quaternary",
+                    },
+                  }}
                 >
-                  F
-                </Box>
-                )
-              </>
-            }
-          >
-            <IconButton onClick={fullscreen}>
-              <FullscreenIcon sx={iconStyle} />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      )}
+                  <RefreshIcon sx={iconStyle} />
+                </IconButton>
+              </span>
+            </Tooltip>
+
+            <Tooltip
+              slotProps={tooltipSlotProps}
+              title={
+                <>
+                  전체화면 (
+                  <Box
+                    component="span"
+                    sx={{ color: "primary.main", fontWeight: "bold" }}
+                  >
+                    F
+                  </Box>
+                  )
+                </>
+              }
+            >
+              <IconButton onClick={fullscreen}>
+                <FullscreenIcon sx={iconStyle} />
+              </IconButton>
+            </Tooltip>
+          </>
+        )}
+      </Box>
     </Box>
   );
 }

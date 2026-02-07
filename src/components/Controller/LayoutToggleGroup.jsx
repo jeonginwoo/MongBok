@@ -32,7 +32,8 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
       color: theme.palette.primary.contrastText,
       borderColor: `${theme.palette.primary.main} !important`,
       "&:hover": {
-        backgroundColor: theme.palette.primary.dark,
+        backgroundColor: theme.palette.primary.main,
+        filter: "brightness(0.9)",
       },
     },
   },

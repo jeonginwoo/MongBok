@@ -200,7 +200,7 @@ export default function ManualArea() {
             <ManualListItem
               icon={<SettingsIcon sx={{ fontSize: '2rem' }} />}
               primary="설정"
-              secondary="테마 색상, 포인트 컬러, 현재 시간 표시 여부, 화면 조작 모드 설정, 데이터 동기화 기능이 포함된 설정 팝업을 엽니다."
+              secondary="테마 색상, 포인트 컬러, 현재 시간 표시 여부, 화면 조작 모드 설정, 설정 동기화 기능이 포함된 설정 팝업을 엽니다."
             />
             <ManualListItem
               icon={<Brightness4Icon sx={{ fontSize: '2rem' }} />}
@@ -229,7 +229,7 @@ export default function ManualArea() {
             <ManualListItem
               icon={<ImportExportIcon sx={{ fontSize: '2rem' }} />}
               nested
-              primary="데이터 동기화"
+              primary="설정 동기화"
               secondary="현재 브라우저에 저장된 설정(채널 목록, 레이아웃 등)을 텍스트 형태로 복사하거나, 다른 기기에서 복사한 설정을 붙여넣어 동기화할 수 있습니다."
             />
             <ManualListItem
