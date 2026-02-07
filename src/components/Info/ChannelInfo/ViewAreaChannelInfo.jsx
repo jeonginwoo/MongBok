@@ -42,7 +42,7 @@ export default function ChannelInfo({ channel }) {
           variant="subtitle2"
           sx={{
             color: "text.primary",
-            fontSize: "1.4rem",
+            fontSize: "1.4em",
             fontWeight: "bord",
             whiteSpace: "nowrap",
             textOverflow: "ellipsis",
@@ -60,7 +60,7 @@ export default function ChannelInfo({ channel }) {
             gap: 1,
           }}
         >
-          <LiveCategory channel={channel} />
+          <LiveCategory channel={channel} fontSize="1.2em" />
           <UserCount channel={channel} />
         </Box>
       </Box>

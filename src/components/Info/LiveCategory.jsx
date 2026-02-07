@@ -1,7 +1,7 @@
 import { Box, useTheme } from "@mui/material";
 import TagWrap from "@/components/Common/TagWrap";
 
-const LiveCategory = ({ channel, isTag = false }) => {
+const LiveCategory = ({ channel, isTag = false, fontSize }) => {
   if (!channel.liveCategory) return null;
 
   const theme = useTheme();
@@ -12,7 +12,7 @@ const LiveCategory = ({ channel, isTag = false }) => {
   }
 
   return (
-    <Box sx={{ color: platformColor, fontSize: "1.2rem", fontWeight: "bold" }}>
+    <Box sx={{ color: platformColor, fontSize: fontSize, fontWeight: "bold" }}>
       {channel.liveCategory}
     </Box>
   );

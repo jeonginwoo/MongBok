@@ -11,6 +11,7 @@ const ALLOWED_KEYS = [
   "controllerExpanded",
   "themeMode",
   "pointColor",
+  "chatFontSizeAdjustment",
 ];
 
 // ========== 개별 키 유효성 검사 함수 ==========
@@ -40,6 +41,14 @@ export const validateBoolean = (value, keyName) => {
     value !== "false"
   ) {
     return `'${keyName}'에 대한 유효하지 않은 값 '${value}'. boolean 또는 'true', 'false' 여야 합니다.`;
+  }
+  return true;
+};
+
+export const validateNumber = (value, keyName) => {
+  const num = Number(value);
+  if (isNaN(num)) {
+    return `'${keyName}'에 대한 유효하지 않은 값 '${value}'. 숫자여야 합니다.`;
   }
   return true;
 };
@@ -249,6 +258,10 @@ export const validatePreferences = async (dataToValidate) => {
         case "showCurrentTime":
         case "controllerExpanded":
           validationResult = validateBoolean(value, key);
+          break;
+
+        case "chatFontSizeAdjustment":
+          validationResult = validateNumber(value, key);
           break;
 
         case "ratio":

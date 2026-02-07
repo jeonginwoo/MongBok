@@ -33,7 +33,7 @@ export default function ChatView({ chatList }) {
         width: "100%",
         height: "100%",
         overflowY: "auto",
-        p: "1rem 1.8rem",
+        p: "1em 1.8em",
         boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",

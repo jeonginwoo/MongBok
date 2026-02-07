@@ -8,7 +8,7 @@ import ChannelInfo from "@/components/Info/ChannelInfo/ViewAreaChannelInfo";
 import ChatView from "@/components/View/Chat/ChatView";
 
 import { useAtomValue } from "jotai";
-import { controllerExpandedAtom } from "@/atoms/setting";
+import { controllerExpandedAtom, chatFontSizeAdjustmentAtom, CHAT_FONT_SIZE_STEP } from "@/atoms/setting";
 import { fitStyleAtom } from "@/atoms/ui";
 
 import useChzzkChat from "@/hooks/useChzzkChat";
@@ -19,6 +19,7 @@ export default function DraggableChat({ channel, zone }) {
 
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
   const fitStyle = useAtomValue(fitStyleAtom);
+  const chatFontSizeAdjustment = useAtomValue(chatFontSizeAdjustmentAtom);
 
   const draggableId = `${channel.id}-chat`;
   const { attributes, listeners, setNodeRef, transform, isDragging } =
@@ -110,6 +111,7 @@ export default function DraggableChat({ channel, zone }) {
           zoom: zoom,
           transformOrigin: "top left",
           overflow: "hidden",
+          fontSize: `${1 + chatFontSizeAdjustment * CHAT_FONT_SIZE_STEP}rem`,
         }}
       >
         <Box

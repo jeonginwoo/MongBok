@@ -26,6 +26,7 @@ import {
   Fullscreen as FullscreenIcon,
   Info as InfoIcon,
   ImportExport as ImportExportIcon,
+  FormatSize as FormatSizeIcon,
 } from "@mui/icons-material";
 import { PLATFORM_COLORS } from "@/data/color";
 
@@ -218,6 +219,12 @@ export default function ManualArea() {
               nested
               primary="현재 시간 (단축키: T)"
               secondary="설정에서 시간 표시를 켠 경우, 화면 좌측 상단에 현재 시간이 표시됩니다. 시간을 클릭하면 전체 화면 모드가 토글됩니다."
+            />
+            <ManualListItem
+              icon={<FormatSizeIcon sx={{ fontSize: "2rem" }} />}
+              nested
+              primary="채팅창 글자 크기 조절 (단축키: ↑, ↓)"
+              secondary="설정 팝업을 열지 않고도, 방향키 위(↑)/아래(↓) 버튼을 눌러 채팅창의 글자 크기를 간편하게 조절할 수 있습니다."
             />
             <ManualListItem
               icon={<ImportExportIcon sx={{ fontSize: '2rem' }} />}

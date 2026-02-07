@@ -15,6 +15,7 @@ import {
   Divider,
   ToggleButton,
   ToggleButtonGroup,
+  Slider,
 } from "@mui/material";
 import {
   Mouse as MouseIcon,
@@ -46,6 +47,7 @@ import {
   controllerExpandedAtom,
   themeModeAtom,
   pointColorAtom,
+  chatFontSizeAdjustmentAtom,
 } from "@/atoms/setting";
 import { snackbarAtom, isDraggingAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
@@ -61,7 +63,52 @@ const tooltipSlotProps = {
   },
 };
 
+const sliderMarks = Array.from({ length: 16 }, (_, i) => ({ value: i - 5 }));
 
+const CustomMark = ({ style, ...props }) => {
+  const index = props["data-index"];
+  const mark = sliderMarks[index];
+
+  if (!mark) return <span style={style} {...props} />;
+
+  return (
+    <Tooltip
+      title={mark.value > 0 ? `+${mark.value}` : mark.value}
+      placement="top"
+      arrow
+      slotProps={tooltipSlotProps}
+    >
+      <Box
+        component="span"
+        style={style}
+        {...props}
+        sx={{
+          position: "absolute",
+          width: 4,
+          height: 4,
+          borderRadius: "50%",
+          bgcolor: "text.quaternary",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          opacity: 0.5,
+          "&::after": {
+            content: '""',
+            position: "absolute",
+            top: -5,
+            bottom: -5,
+            left: -1.5,
+            right: -1.5,
+          },
+          "&:hover": {
+            opacity: 1,
+            bgcolor: "primary.main",
+            transform: "translate(-50%, -50%) scale(1.5)",
+          },
+        }}
+      />
+    </Tooltip>
+  );
+};
 
 export default function ControlButtonGroup({ fullscreen }) {
   const [controllerExpanded, setControllerExpanded] = useAtom(
@@ -75,6 +122,9 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [channels, setChannels] = useAtom(channelsAtom);
   const [themeMode, setThemeMode] = useAtom(themeModeAtom);
   const [pointColor, setPointColor] = useAtom(pointColorAtom);
+  const [chatFontSizeAdjustment, setChatFontSizeAdjustment] = useAtom(
+    chatFontSizeAdjustmentAtom
+  );
   const isDragging = useAtomValue(isDraggingAtom);
 
   const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
@@ -83,6 +133,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSliderHovered, setIsSliderHovered] = useState(false);
   const [timeToNextRefresh, setTimeToNextRefresh] = useState(60);
   const setSnackbar = useSetAtom(snackbarAtom);
 
@@ -96,6 +147,7 @@ export default function ControlButtonGroup({ fullscreen }) {
       "controllerExpanded",
       "themeMode",
       "pointColor",
+      "chatFontSizeAdjustment",
     ].reduce((obj, key) => {
       const value = window.localStorage.getItem(key);
       if (value) {
@@ -255,7 +307,15 @@ export default function ControlButtonGroup({ fullscreen }) {
   const handleChangePointColor = (color) => {
     setPointColor(color);
     window.localStorage.setItem("pointColor", JSON.stringify(color));
-  }; 
+  };
+
+  const handleChangeChatFontSize = (event, newValue) => {
+    setChatFontSizeAdjustment(newValue);
+    window.localStorage.setItem(
+      "chatFontSizeAdjustment",
+      JSON.stringify(newValue)
+    );
+  };
 
   const handleRefresh = useCallback(async () => {
     if (refreshing) return;
@@ -340,6 +400,18 @@ export default function ControlButtonGroup({ fullscreen }) {
           event.preventDefault();
           fullscreen();
           break;
+        case "ARROWUP":
+          event.preventDefault();
+          if (chatFontSizeAdjustment < 10) {
+            handleChangeChatFontSize(null, chatFontSizeAdjustment + 1);
+          }
+          break;
+        case "ARROWDOWN":
+          event.preventDefault();
+          if (chatFontSizeAdjustment > -5) {
+            handleChangeChatFontSize(null, chatFontSizeAdjustment - 1);
+          }
+          break;
         default:
           break;
       }
@@ -365,6 +437,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     settingsAnchorEl,
     themeMode,
     pointColor,
+    chatFontSizeAdjustment,
     showCurrentTime,
     pointerEventsEnabled,
     controllerExpanded,
@@ -630,6 +703,61 @@ export default function ControlButtonGroup({ fullscreen }) {
                     </Tooltip>
                   </ToggleButton>
                 </ToggleButtonGroup>
+              </Box>
+
+              {/* 채팅창 글자 크기 */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography sx={{ fontSize: "1.4rem" }}>
+                  채팅창 글자 크기
+                  <Box
+                    component="span"
+                    sx={{ color: "text.secondary", fontSize: "1.2rem", ml: 0.5 }}
+                  >
+                    ({chatFontSizeAdjustment > 0 ? "+" : ""}
+                    {chatFontSizeAdjustment})
+                  </Box>
+                </Typography>
+                <Box
+                  sx={{ width: 170, px: 1 }}
+                  onMouseEnter={() => setIsSliderHovered(true)}
+                  onMouseLeave={() => setIsSliderHovered(false)}
+                >
+                  <Slider
+                    size="small"
+                    value={chatFontSizeAdjustment}
+                    min={-5}
+                    max={10}
+                    step={1}
+                    valueLabelDisplay={isSliderHovered ? "on" : "auto"}
+                    marks={sliderMarks}
+                    slots={{ mark: CustomMark }}
+                    onChange={handleChangeChatFontSize}
+                    slotProps={{
+                      thumb: {
+                        sx: {
+                          transition: "0.2s",
+                          "&::before": { display: "none" },
+                          "&:hover, &.Mui-focusVisible": {
+                            boxShadow: (theme) =>
+                              `0px 0px 0px 6px ${theme.palette.primary.opacity}`,
+                          },
+                        },
+                      },
+                    }}
+                    sx={{
+                      color: "primary.main",
+                      "& .MuiSlider-mark": {
+                        backgroundColor: "transparent",
+                      },
+                    }}
+                  />
+                </Box>
               </Box>
 
               <Divider />

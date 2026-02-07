@@ -15,8 +15,8 @@ export default function ChatRow({ chat }) {
         lineHeight: 1.4,
         wordWrap: "break-word",
         color: theme.palette.text.primary,
-        fontSize: "1.6rem",
-        marginTop: "0.8rem",
+        fontSize: "1.6em",
+        marginTop: "0.6em",
       }}
     >
       {badges.map((src, i) => {
@@ -30,13 +30,13 @@ export default function ChatRow({ chat }) {
               alt=""
               src={src}
               sx={{
-                width: '1.8rem',
-                height: '1.8rem',
+                width: '1.125em',
+                height: '1.125em',
                 objectFit: 'contain',
                 borderRadius: '50%',
                 display: 'inline-block',
                 verticalAlign: 'middle',
-                mr: '0.4rem',
+                mr: '0.25em',
               }}
             />
           );
@@ -47,11 +47,11 @@ export default function ChatRow({ chat }) {
             key={i}
             sx={{
               position: 'relative',
-              width: '1.8rem',
-              height: '1.8rem',
+              width: '1.125em',
+              height: '1.125em',
               display: 'inline-block',
               verticalAlign: 'middle',
-              mr: '0.4rem',
+              mr: '0.25em',
             }}
           >
             <Image
@@ -70,7 +70,7 @@ export default function ChatRow({ chat }) {
       <Box
         component="span"
         className="nickname"
-        sx={{ color, verticalAlign: "middle", pr: "0.8rem" }}
+        sx={{ color, verticalAlign: "middle", pr: "0.8em" }}
       >
         {nickname}
       </Box>

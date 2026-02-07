@@ -29,17 +29,17 @@ function CheeseChatRow({ chat }) {
   return (
     <Box
       sx={{
-        mt: "0.8rem",
+        mt: "0.4rem",
         display: "flex",
         flexDirection: "column",
-        gap: "0.4rem",
+        gap: "0.4em",
         color: "white",
-        fontSize: "1.5rem",
+        fontSize: "1.5em",
         background: `linear-gradient(270deg, rgba(0, 0, 0, 0.2), transparent),
     linear-gradient(180deg, hsla(0, 0%, 100%, 0.1), hsla(0, 0%, 100%, 0)), ${tierColor}`,
-        boxShadow: "inset 0.1rem 0.1rem 0.1rem 0 hsla(0, 0%, 100%, 0.1)",
-        borderRadius: "0.8rem",
-        padding: "1rem 1.2rem 1.2rem 1.2rem",
+        boxShadow: "inset 0.1em 0.1em 0.1em 0 hsla(0, 0%, 100%, 0.1)",
+        borderRadius: "0.8em",
+        padding: "1em 1.2em 1em 1.2em",
       }}
     >
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -51,7 +51,7 @@ function CheeseChatRow({ chat }) {
         >
           {badges.length > 0 &&
             badges.map((src, i) => (
-              <Box key={i} sx={{ position: 'relative', width: '2rem', height: '2rem', display: 'inline-block', verticalAlign: 'top', paddingTop: '0.2rem', marginRight: '0.4rem' }}>
+              <Box key={i} sx={{ position: 'relative', width: '1.34em', height: '1.34em', display: 'inline-block', verticalAlign: 'top', paddingTop: '0.2em', marginRight: '0.27em' }}>
                 <Image
                   className="badge"
                   alt=""
@@ -127,7 +127,7 @@ function CheeseChatRow({ chat }) {
       {payAmount > 0 && (
         <Box
           sx={{
-            mt: "0.3rem",
+            mt: "0.2em",
             display: "flex",
             alignItems: "center",
           }}
@@ -135,10 +135,10 @@ function CheeseChatRow({ chat }) {
           <Box
             sx={{
               backgroundColor: "rgba(0, 0, 0, 0.15)",
-              borderRadius: "1.3rem",
-              padding: "0.2rem 0.8rem 0.4rem 0.6rem",
-              fontWeight: 800,
-              fontSize: "1.4rem",
+              borderRadius: "1.3em",
+              padding: "0.3em 0.8em 0.2em 0.6em",
+              fontWeight: "bold",
+              fontSize: "1em",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
