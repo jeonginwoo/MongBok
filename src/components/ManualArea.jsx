@@ -27,6 +27,7 @@ import {
   Info as InfoIcon,
   ImportExport as ImportExportIcon,
   FormatSize as FormatSizeIcon,
+  FiberManualRecord as FiberManualRecordIcon,
 } from "@mui/icons-material";
 import { PLATFORM_COLORS } from "@/data/color";
 
@@ -241,6 +242,11 @@ export default function ManualArea() {
               icon={<FullscreenIcon sx={{ fontSize: '2rem' }} />}
               primary="전체 화면 (단축키: F)"
               secondary="브라우저 전체 화면 모드를 켜거나 끕니다."
+            />
+            <ManualListItem
+              icon={<FiberManualRecordIcon sx={{ fontSize: '2rem' }} />}
+              primary="방송 화면 녹화"
+              secondary="컨트롤러의 녹화 버튼(●)을 클릭하여 현재 시청 중인 방송 화면(Canvas 영역)을 녹화할 수 있습니다. 녹화 시작 시 브라우저 팝업에서 '이 탭 (Current Tab)'을 선택해야 사이드바 등을 제외한 순수 방송 화면만 깔끔하게 녹화됩니다. 설정 메뉴에서 '자동 녹화 (1번 Zone)' 기능을 켜면, 가장 큰 화면(1번 구역)의 방송 상태에 따라 자동으로 녹화가 시작/종료됩니다."
             />
           </List>
         </Section>

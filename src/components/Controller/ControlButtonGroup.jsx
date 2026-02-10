@@ -31,6 +31,7 @@ import {
   ContentCopy as ContentCopyIcon,
   Check as CheckIcon,
   Settings as SettingsIcon,
+  FiberManualRecord as FiberManualRecordIcon,
 } from "@mui/icons-material";
 import { getLiveStatus } from "@/api/live";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
@@ -48,8 +49,9 @@ import {
   themeModeAtom,
   pointColorAtom,
   chatFontSizeAdjustmentAtom,
+  autoRecordEnabledAtom,
 } from "@/atoms/setting";
-import { snackbarAtom, isDraggingAtom } from "@/atoms/ui";
+import { snackbarAtom, isDraggingAtom, isRecordingAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
 import Editor from "react-simple-code-editor";
 import Prism from "prismjs";
@@ -139,9 +141,44 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [isSliderHovered, setIsSliderHovered] = useState(false);
   const [timeToNextRefresh, setTimeToNextRefresh] = useState(60);
   const setSnackbar = useSetAtom(snackbarAtom);
+  const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
+  const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
+  const prevZone1LiveRef = React.useRef(undefined);
 
   const activePointColor =
     POINT_COLORS[pointColor]?.[themeMode] || POINT_COLORS["default"][themeMode];
+
+  useEffect(() => {
+    const zone1Channel = Object.values(channels).find((c) => c.zoneId === 1);
+    const isLive = zone1Channel?.isLive === true;
+
+    if (autoRecordEnabled) {
+      if (prevZone1LiveRef.current === false && isLive) {
+        setIsRecording(true);
+      }
+      if (prevZone1LiveRef.current === true && !isLive) {
+        setIsRecording(false);
+      }
+    }
+
+    prevZone1LiveRef.current = isLive;
+  }, [channels, autoRecordEnabled, setIsRecording]);
+
+  const handleToggleAutoRecord = () => {
+    setAutoRecordEnabled((prev) => {
+      const nextState = !prev;
+      const validation = validateBoolean(nextState, "autoRecordEnabled");
+      if (validation === true) {
+        window.localStorage.setItem(
+          "autoRecordEnabled",
+          JSON.stringify(nextState)
+        );
+      } else {
+        console.error("autoRecordEnabled 유효성 검사 실패:", validation);
+      }
+      return nextState;
+    });
+  };
 
   const getLocalStorageDataString = useCallback(() => {
     const localStorageData = [
@@ -154,6 +191,7 @@ export default function ControlButtonGroup({ fullscreen }) {
       "themeMode",
       "pointColor",
       "chatFontSizeAdjustment",
+      "autoRecordEnabled",
     ].reduce((obj, key) => {
       const value = window.localStorage.getItem(key);
       if (value) {
@@ -447,6 +485,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     pointerEventsEnabled,
     controllerExpanded,
     channels,
+    autoRecordEnabled,
     getLocalStorageDataString,
   ]);
 
@@ -651,6 +690,38 @@ export default function ControlButtonGroup({ fullscreen }) {
               <Switch
                 checked={showCurrentTime}
                 onChange={handleToggleCurrentTime}
+                sx={{
+                  "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                    backgroundColor: "primary.main",
+                    opacity: 0.65,
+                  },
+                  "& .MuiSwitch-track": {
+                    backgroundColor: "rgba(0,0,0,0.5)",
+                  },
+                }}
+              />
+            </Box>
+
+            {/* 자동 녹화 설정 */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography sx={{ fontSize: "1.4rem" }}>
+                자동 녹화{" "}
+                <Box
+                  component="span"
+                  sx={{ color: "text.secondary", fontSize: "1.2rem" }}
+                >
+                  (1번 Zone)
+                </Box>
+              </Typography>
+              <Switch
+                checked={autoRecordEnabled}
+                onChange={handleToggleAutoRecord}
                 sx={{
                   "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
                     backgroundColor: "primary.main",
@@ -886,6 +957,22 @@ export default function ControlButtonGroup({ fullscreen }) {
 
         {controllerExpanded && (
           <>
+            <Tooltip
+              slotProps={tooltipSlotProps}
+              title={isRecording ? "녹화중" : "녹화"}
+            >
+              <IconButton
+                onClick={() => setIsRecording((prev) => !prev)}
+                sx={{
+                  "& .MuiSvgIcon-root": {
+                    color: isRecording ? "primary.main" : "inherit",
+                  },
+                }}
+              >
+                <FiberManualRecordIcon sx={iconStyle} />
+              </IconButton>
+            </Tooltip>
+
             <Tooltip
             slotProps={tooltipSlotProps}
             title={

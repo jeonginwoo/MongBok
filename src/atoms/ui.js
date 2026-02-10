@@ -8,4 +8,6 @@ export const snackbarAtom = atom({
 
 export const fitStyleAtom = atom({ width: '100%' });
 
+export const isRecordingAtom = atom(false);
+
 export const isDraggingAtom = atom(false);

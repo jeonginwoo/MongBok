@@ -49,6 +49,13 @@ export const showCurrentTimeAtom = atomWithStorage(
   storage
 );
 
+// 자동 녹화 on/off
+export const autoRecordEnabledAtom = atomWithStorage(
+  "autoRecordEnabled",
+  false,
+  storage
+);
+
 // 컨트롤러 확장/축소
 export const controllerExpandedAtom = atomWithStorage(
   "controllerExpanded",

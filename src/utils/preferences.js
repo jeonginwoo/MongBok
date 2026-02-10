@@ -12,6 +12,7 @@ const ALLOWED_KEYS = [
   "themeMode",
   "pointColor",
   "chatFontSizeAdjustment",
+  "autoRecordEnabled",
 ];
 
 // ========== 개별 키 유효성 검사 함수 ==========

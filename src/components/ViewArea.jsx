@@ -31,6 +31,7 @@ import {
   useLayoutManager,
   getRatioConfig,
 } from "@/hooks/useLayoutManager";
+import { useScreenRecorder } from "@/hooks/useScreenRecorder";
 
 export default function ViewArea({ canvasRef, fullscreen }) {
   const [isDraggingAny, setIsDraggingAny] = useAtom(isDraggingAtom);
@@ -42,6 +43,8 @@ export default function ViewArea({ canvasRef, fullscreen }) {
   const pointerEventsEnabled = useAtomValue(pointerEventsEnabledAtom);
   const showCurrentTime = useAtomValue(showCurrentTimeAtom);
   const { selectRatio } = useLayoutManager();
+  
+  const canvasContentRef = useScreenRecorder();
 
   const ratioConfig = getRatioConfig(ratioKey);
 
@@ -187,6 +190,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
       >
         <Box
           className="canvas"
+          ref={canvasContentRef}
           sx={{
             position: "relative",
             backgroundColor: "background.canvas",
