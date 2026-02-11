@@ -9,8 +9,26 @@ export const useScreenRecorder = () => {
   const quality = useAtomValue(recordQualityAtom);
   const frameRate = useAtomValue(recordFrameRateAtom);
   const mediaRecorderRef = useRef(null);
+  const streamRef = useRef(null);
   const chunksRef = useRef([]);
   const contentRef = useRef(null);
+  const latestIsRecordingRef = useRef(isRecording);
+
+  useEffect(() => {
+    latestIsRecordingRef.current = isRecording;
+  }, [isRecording]);
+
+  // 컴포넌트 언마운트 시 녹화 정리 (ViewArea가 사라질 때)
+  useEffect(() => {
+    return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+        mediaRecorderRef.current.stop();
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const startRecording = async () => {
@@ -40,6 +58,14 @@ export const useScreenRecorder = () => {
           preferCurrentTab: true, // '이 탭' 선택 유도
           selfBrowserSurface: "include", // 현재 탭 공유 허용
         });
+
+        // 사용자가 취소했거나 상태가 변경된 경우 즉시 종료
+        if (!latestIsRecordingRef.current) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
+        streamRef.current = stream;
 
         // 사용자가 선택한 스트림의 비디오 트랙을 가져옴
         const [videoTrack] = stream.getVideoTracks();
@@ -76,7 +102,8 @@ export const useScreenRecorder = () => {
           const blob = new Blob(chunksRef.current, { type: mimeType });
           if (blob.size === 0) {
             // 데이터가 없으면 저장하지 않고 종료
-            stream.getTracks().forEach((track) => track.stop());
+            streamRef.current?.getTracks().forEach((track) => track.stop());
+            streamRef.current = null;
             setIsRecording(false);
             mediaRecorderRef.current = null;
             return;
@@ -98,7 +125,8 @@ export const useScreenRecorder = () => {
             window.URL.revokeObjectURL(url);
           }, 100);
 
-          stream.getTracks().forEach((track) => track.stop());
+          streamRef.current?.getTracks().forEach((track) => track.stop());
+          streamRef.current = null;
           setIsRecording(false);
           mediaRecorderRef.current = null;
         };
@@ -113,6 +141,7 @@ export const useScreenRecorder = () => {
             // 이미 stop된 경우 상태만 동기화
             setIsRecording(false);
             mediaRecorderRef.current = null;
+            streamRef.current = null;
           }
         };
 
@@ -133,6 +162,10 @@ export const useScreenRecorder = () => {
         mediaRecorderRef.current.state === "recording"
       ) {
         mediaRecorderRef.current.stop();
+      } else if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        mediaRecorderRef.current = null;
       }
     }
   }, [isRecording, setIsRecording, quality, frameRate]);
