@@ -13,9 +13,43 @@ const ALLOWED_KEYS = [
   "pointColor",
   "chatFontSizeAdjustment",
   "autoRecordEnabled",
+  "recordQuality",
+  "recordFrameRate",
 ];
 
 // ========== 개별 키 유효성 검사 함수 ==========
+
+export const validateRecordQuality = (value) => {
+  const allowed = ["high", "medium", "low"];
+  if (!allowed.includes(value)) {
+    return `유효하지 않은 녹화 품질 값 '${value}'. 허용되는 값은: ${allowed.join(
+      ", "
+    )} 입니다.`;
+  }
+  return true;
+};
+
+export const validateRecordFrameRate = (value) => {
+  const allowed = [30, 60];
+  const num = Number(value);
+  if (!allowed.includes(num)) {
+    return `유효하지 않은 녹화 프레임 값 '${value}'. 허용되는 값은: ${allowed.join(
+      ", "
+    )} 입니다.`;
+  }
+  return true;
+};
+
+export const validateChatFontSizeAdjustment = (value) => {
+  const num = Number(value);
+  if (isNaN(num)) {
+    return `'chatFontSizeAdjustment'에 대한 유효하지 않은 값 '${value}'. 숫자여야 합니다.`;
+  }
+  if (num < -5 || num > 10) {
+    return `'chatFontSizeAdjustment' 값은 -5에서 10 사이여야 합니다.`;
+  }
+  return true;
+};
 
 export const validateThemeMode = (value) => {
   if (typeof value !== "string" || !Object.keys(palettes).includes(value)) {
@@ -262,7 +296,15 @@ export const validatePreferences = async (dataToValidate) => {
           break;
 
         case "chatFontSizeAdjustment":
-          validationResult = validateNumber(value, key);
+          validationResult = validateChatFontSizeAdjustment(value);
+          break;
+
+        case "recordQuality":
+          validationResult = validateRecordQuality(value);
+          break;
+
+        case "recordFrameRate":
+          validationResult = validateRecordFrameRate(value);
           break;
 
         case "ratio":
