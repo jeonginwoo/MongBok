@@ -105,3 +105,17 @@ export const layoutAtom = atom((get) => {
 
   return {};
 });
+
+// 녹화 화질 설정 (high, medium, low)
+export const recordQualityAtom = atomWithStorage(
+  "recordQuality",
+  "high",
+  storage
+);
+
+// 녹화 프레임 설정 (30, 60)
+export const recordFrameRateAtom = atomWithStorage(
+  "recordFrameRate",
+  60,
+  storage
+);

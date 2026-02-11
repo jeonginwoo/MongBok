@@ -1,10 +1,13 @@
 import { useRef, useEffect } from "react";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { isRecordingAtom } from "@/atoms/ui";
+import { recordQualityAtom, recordFrameRateAtom } from "@/atoms/setting";
 import dayjs from "dayjs";
 
 export const useScreenRecorder = () => {
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
+  const quality = useAtomValue(recordQualityAtom);
+  const frameRate = useAtomValue(recordFrameRateAtom);
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
   const contentRef = useRef(null);
@@ -26,6 +29,7 @@ export const useScreenRecorder = () => {
           video: {
             displaySurface: "browser",
             cursor: "never",
+            frameRate: { ideal: frameRate },
           },
           audio: {
             echoCancellation: false,
@@ -49,9 +53,17 @@ export const useScreenRecorder = () => {
           ? "video/webm; codecs=vp9"
           : "video/webm";
 
+        const bitrateMap = {
+          high: 8000000,
+          medium: 5000000,
+          low: 2500000,
+        };
+        const videoBitsPerSecond = bitrateMap[quality] || 8000000;
+
         const recorder = new MediaRecorder(stream, {
           mimeType,
           audioBitsPerSecond: 192000,
+          videoBitsPerSecond,
         });
         mediaRecorderRef.current = recorder;
         chunksRef.current = [];
@@ -123,7 +135,7 @@ export const useScreenRecorder = () => {
         mediaRecorderRef.current.stop();
       }
     }
-  }, [isRecording, setIsRecording]);
+  }, [isRecording, setIsRecording, quality, frameRate]);
 
   return contentRef;
 };

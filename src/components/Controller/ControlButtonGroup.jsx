@@ -50,6 +50,8 @@ import {
   pointColorAtom,
   chatFontSizeAdjustmentAtom,
   autoRecordEnabledAtom,
+  recordQualityAtom,
+  recordFrameRateAtom,
 } from "@/atoms/setting";
 import { snackbarAtom, isDraggingAtom, isRecordingAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
@@ -143,6 +145,8 @@ export default function ControlButtonGroup({ fullscreen }) {
   const setSnackbar = useSetAtom(snackbarAtom);
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
   const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
+  const [recordQuality, setRecordQuality] = useAtom(recordQualityAtom);
+  const [recordFrameRate, setRecordFrameRate] = useAtom(recordFrameRateAtom);
   const prevZone1LiveRef = React.useRef(undefined);
 
   const activePointColor =
@@ -180,6 +184,23 @@ export default function ControlButtonGroup({ fullscreen }) {
     });
   };
 
+  const handleChangeRecordQuality = (event, newQuality) => {
+    if (newQuality !== null) {
+      setRecordQuality(newQuality);
+      window.localStorage.setItem("recordQuality", JSON.stringify(newQuality));
+    }
+  };
+
+  const handleChangeRecordFrameRate = (event, newFrameRate) => {
+    if (newFrameRate !== null) {
+      setRecordFrameRate(newFrameRate);
+      window.localStorage.setItem(
+        "recordFrameRate",
+        JSON.stringify(newFrameRate)
+      );
+    }
+  };
+
   const handleRecordButtonClick = () => {
     setIsRecording((prev) => !prev);
   };
@@ -196,6 +217,8 @@ export default function ControlButtonGroup({ fullscreen }) {
       "pointColor",
       "chatFontSizeAdjustment",
       "autoRecordEnabled",
+      "recordQuality",
+      "recordFrameRate",
     ].reduce((obj, key) => {
       const value = window.localStorage.getItem(key);
       if (value) {
@@ -490,6 +513,8 @@ export default function ControlButtonGroup({ fullscreen }) {
     controllerExpanded,
     channels,
     autoRecordEnabled,
+    recordQuality,
+    recordFrameRate,
     getLocalStorageDataString,
   ]);
 
@@ -705,38 +730,6 @@ export default function ControlButtonGroup({ fullscreen }) {
               />
             </Box>
 
-            {/* 자동 녹화 설정 */}
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Typography sx={{ fontSize: "1.4rem" }}>
-                자동 녹화{" "}
-                <Box
-                  component="span"
-                  sx={{ color: "text.secondary", fontSize: "1.2rem" }}
-                >
-                  (1번 Zone)
-                </Box>
-              </Typography>
-              <Switch
-                checked={autoRecordEnabled}
-                onChange={handleToggleAutoRecord}
-                sx={{
-                  "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                    backgroundColor: "primary.main",
-                    opacity: 0.65,
-                  },
-                  "& .MuiSwitch-track": {
-                    backgroundColor: "rgba(0,0,0,0.5)",
-                  },
-                }}
-              />
-            </Box>
-
             {/* 화면 조작 모드 */}
             <Box
               sx={{
@@ -836,6 +829,120 @@ export default function ControlButtonGroup({ fullscreen }) {
                   }}
                 />
               </Box>
+            </Box>
+
+            <Divider />
+
+            {/* 녹화 설정 헤더 */}
+            <Typography sx={{ fontWeight: "bold", fontSize: "1.4rem" }}>
+              녹화 설정
+            </Typography>
+
+            {/* 자동 녹화 설정 */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography sx={{ fontSize: "1.4rem" }}>
+                자동 녹화{" "}
+                <Box
+                  component="span"
+                  sx={{ color: "text.secondary", fontSize: "1.2rem" }}
+                >
+                  (1번 Zone)
+                </Box>
+              </Typography>
+              <Switch
+                checked={autoRecordEnabled}
+                onChange={handleToggleAutoRecord}
+                sx={{
+                  "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                    backgroundColor: "primary.main",
+                    opacity: 0.65,
+                  },
+                  "& .MuiSwitch-track": {
+                    backgroundColor: "rgba(0,0,0,0.5)",
+                  },
+                }}
+              />
+            </Box>
+
+            {/* 녹화 화질 설정 */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography sx={{ fontSize: "1.4rem" }}>녹화 화질</Typography>
+              <ToggleButtonGroup
+                value={recordQuality}
+                exclusive
+                onChange={handleChangeRecordQuality}
+                size="small"
+                sx={{
+                  "& .MuiToggleButton-root.Mui-selected": {
+                    backgroundColor:
+                      pointColor === "default" ? "#5f5f5f" : "primary.main",
+                    color: "#fff",
+                    "&:hover": {
+                      backgroundColor:
+                        pointColor === "default" ? "#5f5f5f" : "primary.main",
+                      filter: "brightness(0.9)",
+                    },
+                  },
+                }}
+              >
+                <ToggleButton value="high">
+                  <Typography sx={{ fontSize: "1.2rem" }}>High</Typography>
+                </ToggleButton>
+                <ToggleButton value="medium">
+                  <Typography sx={{ fontSize: "1.2rem" }}>Mid</Typography>
+                </ToggleButton>
+                <ToggleButton value="low">
+                  <Typography sx={{ fontSize: "1.2rem" }}>Low</Typography>
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+
+            {/* 녹화 프레임 설정 */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography sx={{ fontSize: "1.4rem" }}>녹화 프레임</Typography>
+              <ToggleButtonGroup
+                value={recordFrameRate}
+                exclusive
+                onChange={handleChangeRecordFrameRate}
+                size="small"
+                sx={{
+                  "& .MuiToggleButton-root.Mui-selected": {
+                    backgroundColor:
+                      pointColor === "default" ? "#5f5f5f" : "primary.main",
+                    color: "#fff",
+                    "&:hover": {
+                      backgroundColor:
+                        pointColor === "default" ? "#5f5f5f" : "primary.main",
+                      filter: "brightness(0.9)",
+                    },
+                  },
+                }}
+              >
+                <ToggleButton value={60}>
+                  <Typography sx={{ fontSize: "1.2rem" }}>60</Typography>
+                </ToggleButton>
+                <ToggleButton value={30}>
+                  <Typography sx={{ fontSize: "1.2rem" }}>30</Typography>
+                </ToggleButton>
+              </ToggleButtonGroup>
             </Box>
 
             <Divider />
@@ -967,7 +1074,7 @@ export default function ControlButtonGroup({ fullscreen }) {
               <span>
                 <IconButton
                   onClick={handleRecordButtonClick}
-                  disabled={Object.keys(channels).length === 0 && !isRecording}
+                  disabled={Object.values(channels).filter(c => c.isVisible).length === 0 && !isRecording}
                   sx={{
                     "& .MuiSvgIcon-root": {
                       color: isRecording 
