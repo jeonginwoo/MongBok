@@ -704,6 +704,8 @@ export default function ControlButtonGroup({ fullscreen }) {
               </Stack>
             </Box>
 
+            <Divider />
+
             {/* 현재 시간 표시 */}
             <Box
               sx={{
@@ -838,11 +840,6 @@ export default function ControlButtonGroup({ fullscreen }) {
             </Box>
 
             <Divider />
-
-            {/* 녹화 설정 헤더 */}
-            <Typography sx={{ fontWeight: "bold", fontSize: "1.4rem" }}>
-              녹화 설정
-            </Typography>
 
             {/* 자동 녹화 설정 */}
             <Box
