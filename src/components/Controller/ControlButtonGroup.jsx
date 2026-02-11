@@ -180,6 +180,10 @@ export default function ControlButtonGroup({ fullscreen }) {
     });
   };
 
+  const handleRecordButtonClick = () => {
+    setIsRecording((prev) => !prev);
+  };
+
   const getLocalStorageDataString = useCallback(() => {
     const localStorageData = [
       "channels",
@@ -518,14 +522,13 @@ export default function ControlButtonGroup({ fullscreen }) {
         slotProps={tooltipSlotProps}
         title={
           <>
-            {controllerExpanded ? "사이드 접기 " : "사이드 펴기 "}(
+            {controllerExpanded ? "사이드 접기" : "사이드 펴기"}{" "}
             <Box
               component="span"
-              sx={{ color: "primary.main", fontWeight: "bold" }}
+              sx={{ color: pointColor === 'default' ? "#00bcd4" : "primary.main", fontWeight: "bold" }}
             >
-              S
+              (S)
             </Box>
-            )
           </>
         }
       >
@@ -592,7 +595,7 @@ export default function ControlButtonGroup({ fullscreen }) {
                 테마{" "}
                 <Box
                   component="span"
-                  sx={{ color: "primary.main", fontWeight: "bold" }}
+                  sx={{ color: pointColor === 'default' ? "#00bcd4" : "primary.main", fontWeight: "bold" }}
                 >
                   (M)
                 </Box>
@@ -682,7 +685,7 @@ export default function ControlButtonGroup({ fullscreen }) {
                 현재 시간 표시{" "}
                 <Box
                   component="span"
-                  sx={{ color: "primary.main", fontWeight: "bold" }}
+                  sx={{ color: pointColor === 'default' ? "#00bcd4" : "primary.main", fontWeight: "bold" }}
                 >
                   (T)
                 </Box>
@@ -746,7 +749,7 @@ export default function ControlButtonGroup({ fullscreen }) {
                 {pointerEventsEnabled ? "화면 조작 모드" : "화면 이동 모드"}{" "}
                 <Box
                   component="span"
-                  sx={{ color: "primary.main", fontWeight: "bold" }}
+                  sx={{ color: pointColor === 'default' ? "#00bcd4" : "primary.main", fontWeight: "bold" }}
                 >
                   (V)
                 </Box>
@@ -758,10 +761,10 @@ export default function ControlButtonGroup({ fullscreen }) {
                 aria-label="pointer events"
                 sx={{
                   "& .MuiToggleButton-root.Mui-selected": {
-                    backgroundColor: "primary.main",
+                    backgroundColor: pointColor === 'default' ? "#5f5f5f" : "primary.main",
                     color: "#fff",
                     "&:hover": {
-                      backgroundColor: "primary.main",
+                      backgroundColor: pointColor === 'default' ? "#5f5f5f" : "primary.main",
                       filter: "brightness(0.9)",
                     },
                   },
@@ -961,30 +964,35 @@ export default function ControlButtonGroup({ fullscreen }) {
               slotProps={tooltipSlotProps}
               title={isRecording ? "녹화중" : "녹화"}
             >
-              <IconButton
-                onClick={() => setIsRecording((prev) => !prev)}
-                sx={{
-                  "& .MuiSvgIcon-root": {
-                    color: isRecording ? "primary.main" : "inherit",
-                  },
-                }}
-              >
-                <FiberManualRecordIcon sx={iconStyle} />
-              </IconButton>
+              <span>
+                <IconButton
+                  onClick={handleRecordButtonClick}
+                  disabled={Object.keys(channels).length === 0 && !isRecording}
+                  sx={{
+                    "& .MuiSvgIcon-root": {
+                      color: isRecording 
+                        ? (pointColor === 'default' ? "red" : "primary.main")
+                        : "inherit",
+                    },
+                  }}
+                >
+                  <FiberManualRecordIcon sx={iconStyle} />
+                </IconButton>
+              </span>
             </Tooltip>
 
             <Tooltip
             slotProps={tooltipSlotProps}
             title={
               <>
-                채널 정보 갱신 (
+                채널 정보 갱신{" "}
                 <Box
                   component="span"
-                  sx={{ color: "primary.main", fontWeight: "bold" }}
+                  sx={{ color: pointColor === 'default' ? "#00bcd4" : "primary.main", fontWeight: "bold" }}
                 >
-                  R
+                  (R)
                 </Box>
-                ) {timeToNextRefresh}
+                {" "}{timeToNextRefresh}
               </>
             }
             >
@@ -1014,14 +1022,13 @@ export default function ControlButtonGroup({ fullscreen }) {
               slotProps={tooltipSlotProps}
               title={
                 <>
-                  전체화면 (
+                  전체화면{" "}
                   <Box
                     component="span"
-                    sx={{ color: "primary.main", fontWeight: "bold" }}
+                    sx={{ color: pointColor === 'default' ? "#00bcd4" : "primary.main", fontWeight: "bold" }}
                   >
-                    F
+                    (F)
                   </Box>
-                  )
                 </>
               }
             >

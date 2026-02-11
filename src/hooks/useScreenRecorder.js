@@ -25,6 +25,7 @@ export const useScreenRecorder = () => {
         const stream = await navigator.mediaDevices.getDisplayMedia({
           video: {
             displaySurface: "browser",
+            cursor: "never",
           },
           audio: {
             echoCancellation: false,
