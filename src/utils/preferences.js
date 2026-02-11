@@ -1,4 +1,4 @@
-import { canvas } from "@/data/layouts";
+import { canvas } from "@/data/canvas";
 import { palettes, POINT_COLORS } from "@/data/color";
 import { getLiveStatus } from "@/api/live";
 

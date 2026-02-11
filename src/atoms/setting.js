@@ -1,6 +1,6 @@
 import { atom } from "jotai";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
-import { canvas } from "@/data/layouts";
+import { canvas } from "@/data/canvas";
 import { getAllChannelsData } from "@/api/live";
 
 const storage = createJSONStorage(() =>

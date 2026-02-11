@@ -21,7 +21,7 @@ import { List, ListItem, Divider, Box, Typography } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ChannelInfo from "@/components/Info/ChannelInfo/ChannelListChannelInfo";
 
-import { canvas } from "@/data/layouts";
+import { canvas } from "@/data/canvas";
 import { updatePreferences, validateChannels } from "@/utils/preferences";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 import {

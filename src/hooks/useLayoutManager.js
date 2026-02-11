@@ -5,7 +5,7 @@ import {
   viewCountAtom,
   channelsAtom,
 } from "@/atoms/setting";
-import { canvas } from "@/data/layouts";
+import { canvas } from "@/data/canvas";
 import { updatePreferences, validateChannels } from "@/utils/preferences";
 
 export const getRatioConfig = (ratioKey) => {

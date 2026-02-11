@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import { getTheme } from "@/theme";
-import { canvas } from "@/data/layouts";
+import { canvas } from "@/data/canvas";
 import {
   DndContext,
   MouseSensor,

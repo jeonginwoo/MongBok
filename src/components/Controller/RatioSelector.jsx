@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Box, Button, Menu, MenuItem } from "@mui/material";
 import { useAtom } from "jotai";
 import { ratioAtom } from "@/atoms/setting";
-import { canvas } from "@/data/layouts";
+import { canvas } from "@/data/canvas";
 import {
   useLayoutManager,
   getRatioConfig,

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { Box, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { canvas } from "@/data/layouts";
+import { canvas } from "@/data/canvas";
 import RatioSelector from "./RatioSelector";
 
 import { useAtom, useAtomValue } from "jotai";
