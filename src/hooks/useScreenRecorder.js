@@ -1,13 +1,16 @@
 import { useRef, useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import { isRecordingAtom } from "@/atoms/ui";
-import { recordQualityAtom, recordFrameRateAtom } from "@/atoms/setting";
+import { recordQualityAtom, recordFrameRateAtom, recordSoundEnabledAtom, recordSoundTypeAtom } from "@/atoms/setting";
+import { playNotificationSound } from "@/utils/audio";
 import dayjs from "dayjs";
 
 export const useScreenRecorder = () => {
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
   const quality = useAtomValue(recordQualityAtom);
   const frameRate = useAtomValue(recordFrameRateAtom);
+  const recordSoundEnabled = useAtomValue(recordSoundEnabledAtom);
+  const recordSoundType = useAtomValue(recordSoundTypeAtom);
   const mediaRecorderRef = useRef(null);
   const streamRef = useRef(null);
   const chunksRef = useRef([]);
@@ -41,6 +44,11 @@ export const useScreenRecorder = () => {
           } catch (e) {
             console.warn("Region Capture not supported or failed:", e);
           }
+        }
+
+        // 팝업 알림음 재생
+        if (recordSoundEnabled) {
+          playNotificationSound(recordSoundType);
         }
 
         const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -129,6 +137,11 @@ export const useScreenRecorder = () => {
           streamRef.current = null;
           setIsRecording(false);
           mediaRecorderRef.current = null;
+
+          // 녹화 중지 알림음 재생
+          if (recordSoundEnabled) {
+            playNotificationSound(recordSoundType);
+          }
         };
 
         recorder.onstop = stopRecording;
@@ -168,7 +181,7 @@ export const useScreenRecorder = () => {
         mediaRecorderRef.current = null;
       }
     }
-  }, [isRecording, setIsRecording, quality, frameRate]);
+  }, [isRecording, setIsRecording, quality, frameRate, recordSoundEnabled, recordSoundType]);
 
   return contentRef;
 };

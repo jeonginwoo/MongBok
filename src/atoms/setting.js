@@ -119,3 +119,24 @@ export const recordFrameRateAtom = atomWithStorage(
   60,
   storage
 );
+
+// 녹화 알림음 ON/OFF
+export const recordSoundEnabledAtom = atomWithStorage(
+  "recordSoundEnabled",
+  false,
+  storage
+);
+
+// 녹화 알림음 타입 선택
+export const recordSoundTypeAtom = atomWithStorage(
+  "recordSoundType",
+  "ding",
+  storage
+);
+
+// 레거시 호환성을 위한 recordSoundAtom (deprecated)
+export const recordSoundAtom = atomWithStorage(
+  "recordSound",
+  "none",
+  storage
+);

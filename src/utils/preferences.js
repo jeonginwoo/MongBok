@@ -15,9 +15,31 @@ const ALLOWED_KEYS = [
   "autoRecordEnabled",
   "recordQuality",
   "recordFrameRate",
+  "recordSound",
 ];
 
 // ========== 개별 키 유효성 검사 함수 ==========
+
+export const validateRecordSoundType = (value) => {
+  const allowed = ["ding", "chime", "alert", "beep", "success", "fanfare", "blip", "swoosh", "pop"];
+  if (!allowed.includes(value)) {
+    return `유효하지 않은 녹화 알림음 타입 값 '${value}'. 허용되는 값은: ${allowed.join(
+      ", "
+    )} 입니다.`;
+  }
+  return true;
+};
+
+// 레거시 호환성
+export const validateRecordSound = (value) => {
+  const allowed = ["none", "ding", "chime", "alert", "beep", "success", "fanfare", "blip", "swoosh", "pop"];
+  if (!allowed.includes(value)) {
+    return `유효하지 않은 녹화 알림음 값 '${value}'. 허용되는 값은: ${allowed.join(
+      ", "
+    )} 입니다.`;
+  }
+  return true;
+};
 
 export const validateRecordQuality = (value) => {
   const allowed = ["high", "medium", "low"];
@@ -305,6 +327,18 @@ export const validatePreferences = async (dataToValidate) => {
 
         case "recordFrameRate":
           validationResult = validateRecordFrameRate(value);
+          break;
+
+        case "recordSoundEnabled":
+          validationResult = validateBoolean(value, "recordSoundEnabled");
+          break;
+
+        case "recordSoundType":
+          validationResult = validateRecordSoundType(value);
+          break;
+
+        case "recordSound":
+          validationResult = validateRecordSound(value);
           break;
 
         case "ratio":

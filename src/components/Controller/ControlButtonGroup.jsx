@@ -16,6 +16,10 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Slider,
+  Select,
+  MenuItem,
+  FormControl,
+  ListSubheader,
 } from "@mui/material";
 import {
   Mouse as MouseIcon,
@@ -52,9 +56,12 @@ import {
   autoRecordEnabledAtom,
   recordQualityAtom,
   recordFrameRateAtom,
+  recordSoundEnabledAtom,
+  recordSoundTypeAtom,
 } from "@/atoms/setting";
 import { snackbarAtom, isDraggingAtom, isRecordingAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
+import { playNotificationSound } from "@/utils/audio";
 import Editor from "react-simple-code-editor";
 import Prism from "prismjs";
 import "prismjs/components/prism-json";
@@ -147,6 +154,8 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
   const [recordQuality, setRecordQuality] = useAtom(recordQualityAtom);
   const [recordFrameRate, setRecordFrameRate] = useAtom(recordFrameRateAtom);
+  const [recordSoundEnabled, setRecordSoundEnabled] = useAtom(recordSoundEnabledAtom);
+  const [recordSoundType, setRecordSoundType] = useAtom(recordSoundTypeAtom);
   const prevZone1LiveRef = React.useRef(undefined);
 
   const activePointColor =
@@ -173,6 +182,36 @@ export default function ControlButtonGroup({ fullscreen }) {
 
     prevZone1LiveRef.current = isLive;
   }, [channels, autoRecordEnabled, setIsRecording, isRecording]);
+
+  const getLocalStorageDataString = useCallback(() => {
+    const localStorageData = [
+      "channels",
+      "layout",
+      "ratio",
+      "pointerEventsEnabled",
+      "showCurrentTime",
+      "controllerExpanded",
+      "themeMode",
+      "pointColor",
+      "chatFontSizeAdjustment",
+      "autoRecordEnabled",
+      "recordQuality",
+      "recordFrameRate",
+      "recordSoundEnabled",
+      "recordSoundType",
+    ].reduce((obj, key) => {
+      const value = window.localStorage.getItem(key);
+      if (value) {
+        try {
+          obj[key] = JSON.parse(value);
+        } catch (e) {
+          obj[key] = value;
+        }
+      }
+      return obj;
+    }, {});
+    return JSON.stringify(localStorageData, null, 2);
+  }, []);
 
   const handleToggleAutoRecord = () => {
     setAutoRecordEnabled((prev) => {
@@ -207,37 +246,29 @@ export default function ControlButtonGroup({ fullscreen }) {
     }
   };
 
+  const handleToggleRecordSound = () => {
+    setRecordSoundEnabled((prev) => {
+      const nextState = !prev;
+      window.localStorage.setItem("recordSoundEnabled", JSON.stringify(nextState));
+      setData(getLocalStorageDataString());
+      if (nextState) {
+        playNotificationSound(recordSoundType);
+      }
+      return nextState;
+    });
+  };
+
+  const handleChangeRecordSoundType = (event) => {
+    const newType = event.target.value;
+    setRecordSoundType(newType);
+    window.localStorage.setItem("recordSoundType", JSON.stringify(newType));
+    setData(getLocalStorageDataString());
+    playNotificationSound(newType);
+  };
+
   const handleRecordButtonClick = () => {
     setIsRecording((prev) => !prev);
   };
-
-  const getLocalStorageDataString = useCallback(() => {
-    const localStorageData = [
-      "channels",
-      "layout",
-      "ratio",
-      "pointerEventsEnabled",
-      "showCurrentTime",
-      "controllerExpanded",
-      "themeMode",
-      "pointColor",
-      "chatFontSizeAdjustment",
-      "autoRecordEnabled",
-      "recordQuality",
-      "recordFrameRate",
-    ].reduce((obj, key) => {
-      const value = window.localStorage.getItem(key);
-      if (value) {
-        try {
-          obj[key] = JSON.parse(value);
-        } catch (e) {
-          obj[key] = value;
-        }
-      }
-      return obj;
-    }, {});
-    return JSON.stringify(localStorageData, null, 2);
-  }, []);
 
   const handleOpenSettingsPopover = (event) => {
     setData(getLocalStorageDataString());
@@ -946,6 +977,89 @@ export default function ControlButtonGroup({ fullscreen }) {
                   <Typography sx={{ fontSize: "1.2rem" }}>30</Typography>
                 </ToggleButton>
               </ToggleButtonGroup>
+            </Box>
+
+            {/* 녹화 알림음 설정 */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography sx={{ fontSize: "1.4rem", whiteSpace: "nowrap" }}>
+                녹화 알림음
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                {/* 알림음 타입 선택 드롭다운 */}
+                <FormControl size="small" sx={{ minWidth: 100 }}>
+                  <Select
+                    value={recordSoundType}
+                    onChange={handleChangeRecordSoundType}
+                    disabled={!recordSoundEnabled}
+                    sx={{
+                      height: 30,
+                      fontSize: "1.2rem",
+                      color: pointColor === "default" ? "inherit" : "primary.main",
+                      ".MuiSelect-select": {
+                        paddingTop: "4px",
+                        paddingBottom: "4px",
+                      },
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor:
+                          pointColor === "default"
+                            ? "rgba(140, 140, 140, 0.5)"
+                            : "primary.main",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor:
+                          pointColor === "default"
+                            ? "text.primary"
+                            : "primary.main",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "primary.main",
+                      },
+                      "&.Mui-disabled": {
+                        opacity: 0.5,
+                      },
+                    }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          "& .MuiMenuItem-root": {
+                            fontSize: "1.2rem",
+                          },
+                        },
+                      },
+                    }}
+                  >
+                    <MenuItem value="ding">Ding</MenuItem>
+                    <MenuItem value="chime">Chime</MenuItem>
+                    <MenuItem value="alert">Alert</MenuItem>
+                    <MenuItem value="beep">Beep</MenuItem>
+                    <MenuItem value="success">Success</MenuItem>
+                    <MenuItem value="fanfare">Fanfare</MenuItem>
+                    <MenuItem value="blip">Blip</MenuItem>
+                    <MenuItem value="swoosh">Swoosh</MenuItem>
+                    <MenuItem value="pop">Pop</MenuItem>
+                  </Select>
+                </FormControl>
+
+                {/* ON/OFF 토글 */}
+                <Switch
+                  checked={recordSoundEnabled}
+                  onChange={handleToggleRecordSound}
+                  sx={{
+                    "& .MuiSwitch-switchBase.Mui-checked": {
+                      color: pointColor === "default" ? "primary.main" : activePointColor,
+                    },
+                    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                      backgroundColor: pointColor === "default" ? "primary.main" : activePointColor,
+                    },
+                  }}
+                />
+              </Box>
             </Box>
 
             <Divider />
