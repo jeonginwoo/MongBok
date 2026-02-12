@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import { isRecordingAtom } from "@/atoms/ui";
-import { recordQualityAtom, recordFrameRateAtom, recordSoundEnabledAtom, recordSoundTypeAtom } from "@/atoms/setting";
+import { recordQualityAtom, recordFrameRateAtom, recordSoundEnabledAtom, recordSoundTypeAtom, recordSoundVolumeAtom } from "@/atoms/setting";
 import { playNotificationSound } from "@/utils/audio";
 import dayjs from "dayjs";
 
@@ -11,6 +11,7 @@ export const useScreenRecorder = () => {
   const frameRate = useAtomValue(recordFrameRateAtom);
   const recordSoundEnabled = useAtomValue(recordSoundEnabledAtom);
   const recordSoundType = useAtomValue(recordSoundTypeAtom);
+  const recordSoundVolume = useAtomValue(recordSoundVolumeAtom);
   const mediaRecorderRef = useRef(null);
   const streamRef = useRef(null);
   const chunksRef = useRef([]);
@@ -48,7 +49,7 @@ export const useScreenRecorder = () => {
 
         // 팝업 알림음 재생
         if (recordSoundEnabled) {
-          playNotificationSound(recordSoundType);
+          playNotificationSound(recordSoundType, recordSoundVolume);
         }
 
         const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -140,7 +141,7 @@ export const useScreenRecorder = () => {
 
           // 녹화 중지 알림음 재생
           if (recordSoundEnabled) {
-            playNotificationSound(recordSoundType);
+            playNotificationSound(recordSoundType, recordSoundVolume);
           }
         };
 
@@ -181,7 +182,7 @@ export const useScreenRecorder = () => {
         mediaRecorderRef.current = null;
       }
     }
-  }, [isRecording, setIsRecording, quality, frameRate, recordSoundEnabled, recordSoundType]);
+  }, [isRecording, setIsRecording, quality, frameRate, recordSoundEnabled, recordSoundType, recordSoundVolume]);
 
   return contentRef;
 };

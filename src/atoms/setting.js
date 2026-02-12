@@ -134,6 +134,13 @@ export const recordSoundTypeAtom = atomWithStorage(
   storage
 );
 
+// 녹화 알림음 볼륨 (0-200)
+export const recordSoundVolumeAtom = atomWithStorage(
+  "recordSoundVolume",
+  100,
+  storage
+);
+
 // 레거시 호환성을 위한 recordSoundAtom (deprecated)
 export const recordSoundAtom = atomWithStorage(
   "recordSound",

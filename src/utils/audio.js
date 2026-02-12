@@ -1,4 +1,4 @@
-export const playNotificationSound = (type) => {
+export const playNotificationSound = (type, volume = 50) => {
   if (!type || type === "none") return;
 
   try {
@@ -13,12 +13,13 @@ export const playNotificationSound = (type) => {
     gain.connect(ctx.destination);
 
     const currentTime = ctx.currentTime;
+    const volumeMultiplier = volume / 100;
 
     if (type === "ding") {
       // 띵~ (C5)
       osc.type = "sine";
       osc.frequency.setValueAtTime(523.25, currentTime);
-      gain.gain.setValueAtTime(0.1, currentTime);
+      gain.gain.setValueAtTime(0.1 * volumeMultiplier, currentTime);
       gain.gain.exponentialRampToValueAtTime(0.00001, currentTime + 0.5);
       osc.start(currentTime);
       osc.stop(currentTime + 0.5);
@@ -27,7 +28,7 @@ export const playNotificationSound = (type) => {
       osc.type = "sine";
       osc.frequency.setValueAtTime(659.25, currentTime);
       osc.frequency.setValueAtTime(783.99, currentTime + 0.1);
-      gain.gain.setValueAtTime(0.1, currentTime);
+      gain.gain.setValueAtTime(0.1 * volumeMultiplier, currentTime);
       gain.gain.exponentialRampToValueAtTime(0.00001, currentTime + 0.6);
       osc.start(currentTime);
       osc.stop(currentTime + 0.6);
@@ -35,7 +36,7 @@ export const playNotificationSound = (type) => {
       // 빰! (A4 sawtooth)
       osc.type = "sawtooth";
       osc.frequency.setValueAtTime(440.00, currentTime);
-      gain.gain.setValueAtTime(0.05, currentTime);
+      gain.gain.setValueAtTime(0.05 * volumeMultiplier, currentTime);
       gain.gain.exponentialRampToValueAtTime(0.00001, currentTime + 0.3);
       osc.start(currentTime);
       osc.stop(currentTime + 0.3);
@@ -43,7 +44,7 @@ export const playNotificationSound = (type) => {
       // 삐~ (A5)
       osc.type = "square";
       osc.frequency.setValueAtTime(880.00, currentTime);
-      gain.gain.setValueAtTime(0.08, currentTime);
+      gain.gain.setValueAtTime(0.08 * volumeMultiplier, currentTime);
       gain.gain.exponentialRampToValueAtTime(0.00001, currentTime + 0.2);
       osc.start(currentTime);
       osc.stop(currentTime + 0.2);
@@ -53,7 +54,7 @@ export const playNotificationSound = (type) => {
       osc.frequency.setValueAtTime(523.25, currentTime);
       osc.frequency.setValueAtTime(659.25, currentTime + 0.08);
       osc.frequency.setValueAtTime(783.99, currentTime + 0.16);
-      gain.gain.setValueAtTime(0.1, currentTime);
+      gain.gain.setValueAtTime(0.1 * volumeMultiplier, currentTime);
       gain.gain.exponentialRampToValueAtTime(0.00001, currentTime + 0.5);
       osc.start(currentTime);
       osc.stop(currentTime + 0.5);
@@ -63,7 +64,7 @@ export const playNotificationSound = (type) => {
       osc.frequency.setValueAtTime(523.25, currentTime);
       osc.frequency.setValueAtTime(783.99, currentTime + 0.12);
       osc.frequency.setValueAtTime(1046.50, currentTime + 0.24);
-      gain.gain.setValueAtTime(0.12, currentTime);
+      gain.gain.setValueAtTime(0.12 * volumeMultiplier, currentTime);
       gain.gain.exponentialRampToValueAtTime(0.00001, currentTime + 0.7);
       osc.start(currentTime);
       osc.stop(currentTime + 0.7);
@@ -71,7 +72,7 @@ export const playNotificationSound = (type) => {
       // 블립! (D6 짧게)
       osc.type = "sine";
       osc.frequency.setValueAtTime(1174.66, currentTime);
-      gain.gain.setValueAtTime(0.09, currentTime);
+      gain.gain.setValueAtTime(0.09 * volumeMultiplier, currentTime);
       gain.gain.exponentialRampToValueAtTime(0.00001, currentTime + 0.15);
       osc.start(currentTime);
       osc.stop(currentTime + 0.15);
@@ -80,7 +81,7 @@ export const playNotificationSound = (type) => {
       osc.type = "sine";
       osc.frequency.setValueAtTime(800, currentTime);
       osc.frequency.exponentialRampToValueAtTime(400, currentTime + 0.3);
-      gain.gain.setValueAtTime(0.08, currentTime);
+      gain.gain.setValueAtTime(0.08 * volumeMultiplier, currentTime);
       gain.gain.exponentialRampToValueAtTime(0.00001, currentTime + 0.4);
       osc.start(currentTime);
       osc.stop(currentTime + 0.4);
@@ -88,7 +89,7 @@ export const playNotificationSound = (type) => {
       // 팝! (F5 짧고 강하게)
       osc.type = "triangle";
       osc.frequency.setValueAtTime(698.46, currentTime);
-      gain.gain.setValueAtTime(0.15, currentTime);
+      gain.gain.setValueAtTime(0.15 * volumeMultiplier, currentTime);
       gain.gain.exponentialRampToValueAtTime(0.00001, currentTime + 0.12);
       osc.start(currentTime);
       osc.stop(currentTime + 0.12);

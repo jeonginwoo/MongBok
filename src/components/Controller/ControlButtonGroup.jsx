@@ -58,6 +58,7 @@ import {
   recordFrameRateAtom,
   recordSoundEnabledAtom,
   recordSoundTypeAtom,
+  recordSoundVolumeAtom,
 } from "@/atoms/setting";
 import { snackbarAtom, isDraggingAtom, isRecordingAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
@@ -78,16 +79,17 @@ const tooltipSlotProps = {
 };
 
 const sliderMarks = Array.from({ length: 16 }, (_, i) => ({ value: i - 5 }));
+const volumeSliderMarks = Array.from({ length: 9 }, (_, i) => ({ value: i * 25 }));
 
-const CustomMark = ({ style, ownerState, markActive, ...props }) => {
+const CustomMark = ({ style, ownerState, markActive, marks, showPercent, ...props }) => {
   const index = props["data-index"];
-  const mark = sliderMarks[index];
+  const mark = marks ? marks[index] : sliderMarks[index];
 
   if (!mark) return <span style={style} {...props} />;
 
   return (
     <Tooltip
-      title={mark.value > 0 ? `+${mark.value}` : mark.value}
+      title={showPercent ? `${mark.value}%` : (mark.value > 0 ? `+${mark.value}` : mark.value)}
       placement="top"
       arrow
       slotProps={tooltipSlotProps}
@@ -148,6 +150,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [saveError, setSaveError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSliderHovered, setIsSliderHovered] = useState(false);
+  const [isVolumeSliderHovered, setIsVolumeSliderHovered] = useState(false);
   const [timeToNextRefresh, setTimeToNextRefresh] = useState(60);
   const setSnackbar = useSetAtom(snackbarAtom);
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
@@ -156,6 +159,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [recordFrameRate, setRecordFrameRate] = useAtom(recordFrameRateAtom);
   const [recordSoundEnabled, setRecordSoundEnabled] = useAtom(recordSoundEnabledAtom);
   const [recordSoundType, setRecordSoundType] = useAtom(recordSoundTypeAtom);
+  const [recordSoundVolume, setRecordSoundVolume] = useAtom(recordSoundVolumeAtom);
   const prevZone1LiveRef = React.useRef(undefined);
 
   const activePointColor =
@@ -199,6 +203,7 @@ export default function ControlButtonGroup({ fullscreen }) {
       "recordFrameRate",
       "recordSoundEnabled",
       "recordSoundType",
+      "recordSoundVolume",
     ].reduce((obj, key) => {
       const value = window.localStorage.getItem(key);
       if (value) {
@@ -252,7 +257,7 @@ export default function ControlButtonGroup({ fullscreen }) {
       window.localStorage.setItem("recordSoundEnabled", JSON.stringify(nextState));
       setData(getLocalStorageDataString());
       if (nextState) {
-        playNotificationSound(recordSoundType);
+        playNotificationSound(recordSoundType, recordSoundVolume);
       }
       return nextState;
     });
@@ -263,7 +268,13 @@ export default function ControlButtonGroup({ fullscreen }) {
     setRecordSoundType(newType);
     window.localStorage.setItem("recordSoundType", JSON.stringify(newType));
     setData(getLocalStorageDataString());
-    playNotificationSound(newType);
+    playNotificationSound(newType, recordSoundVolume);
+  };
+
+  const handleChangeRecordSoundVolume = (event, newVolume) => {
+    setRecordSoundVolume(newVolume);
+    window.localStorage.setItem("recordSoundVolume", JSON.stringify(newVolume));
+    setData(getLocalStorageDataString());
   };
 
   const handleRecordButtonClick = () => {
@@ -306,7 +317,7 @@ export default function ControlButtonGroup({ fullscreen }) {
         return;
       }
 
-      const parsedData = JSON.parse(data);
+      const parsedData = data.trim() === "" ? {} : JSON.parse(data);
 
       applyPreferences(parsedData);
 
@@ -552,6 +563,9 @@ export default function ControlButtonGroup({ fullscreen }) {
     autoRecordEnabled,
     recordQuality,
     recordFrameRate,
+    recordSoundEnabled,
+    recordSoundType,
+    recordSoundVolume,
     getLocalStorageDataString,
   ]);
 
@@ -846,7 +860,7 @@ export default function ControlButtonGroup({ fullscreen }) {
                   step={1}
                   valueLabelDisplay={isSliderHovered ? "on" : "auto"}
                   marks={sliderMarks}
-                  slots={{ mark: CustomMark }}
+                  slots={{ mark: (props) => <CustomMark {...props} marks={sliderMarks} /> }}
                   onChange={handleChangeChatFontSize}
                   slotProps={{
                     thumb: {
@@ -1061,6 +1075,51 @@ export default function ControlButtonGroup({ fullscreen }) {
                 />
               </Box>
             </Box>
+
+            {/* 알림음 볼륨 조절 - ON일 때만 표시 */}
+            {recordSoundEnabled && (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography sx={{ fontSize: "1.4rem" }}>
+                  알림음 크기
+                  <Box
+                    component="span"
+                    sx={{ color: "text.secondary", fontSize: "1.2rem", ml: 0.5 }}
+                  >
+                    ({recordSoundVolume}%)
+                  </Box>
+                </Typography>
+                <Box
+                  sx={{ width: 170, px: 1 }}
+                  onMouseEnter={() => setIsVolumeSliderHovered(true)}
+                  onMouseLeave={() => setIsVolumeSliderHovered(false)}
+                >
+                  <Slider
+                    size="small"
+                    value={recordSoundVolume}
+                    min={0}
+                    max={200}
+                    step={5}
+                    valueLabelDisplay={isVolumeSliderHovered ? "on" : "auto"}
+                    marks={volumeSliderMarks}
+                    slots={{ mark: (props) => <CustomMark {...props} marks={volumeSliderMarks} showPercent /> }}
+                    onChange={handleChangeRecordSoundVolume}
+                    onChangeCommitted={(e, value) => playNotificationSound(recordSoundType, value)}
+                    sx={{
+                      color: "primary.main",
+                      "& .MuiSlider-mark": {
+                        backgroundColor: "transparent",
+                      },
+                    }}
+                  />
+                </Box>
+              </Box>
+            )}
 
             <Divider />
 

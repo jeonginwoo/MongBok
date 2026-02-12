@@ -16,6 +16,9 @@ const ALLOWED_KEYS = [
   "recordQuality",
   "recordFrameRate",
   "recordSound",
+  "recordSoundEnabled",
+  "recordSoundType",
+  "recordSoundVolume",
 ];
 
 // ========== 개별 키 유효성 검사 함수 ==========
@@ -26,6 +29,14 @@ export const validateRecordSoundType = (value) => {
     return `유효하지 않은 녹화 알림음 타입 값 '${value}'. 허용되는 값은: ${allowed.join(
       ", "
     )} 입니다.`;
+  }
+  return true;
+};
+
+export const validateRecordSoundVolume = (value) => {
+  const num = Number(value);
+  if (isNaN(num) || num < 0 || num > 200) {
+    return `유효하지 않은 녹화 알림음 볼륨 값 '${value}'. 0에서 200 사이의 값이어야 합니다.`;
   }
   return true;
 };
@@ -278,7 +289,13 @@ export const validatePreferences = async (dataToValidate) => {
   try {
     let parsedData = dataToValidate;
     if (typeof dataToValidate === "string") {
-      parsedData = JSON.parse(dataToValidate);
+      // 빈 문자열이거나 공백만 있는 경우 빈 객체로 처리
+      const trimmed = dataToValidate.trim();
+      if (trimmed === "") {
+        parsedData = {};
+      } else {
+        parsedData = JSON.parse(dataToValidate);
+      }
     }
 
     if (
@@ -335,6 +352,10 @@ export const validatePreferences = async (dataToValidate) => {
 
         case "recordSoundType":
           validationResult = validateRecordSoundType(value);
+          break;
+
+        case "recordSoundVolume":
+          validationResult = validateRecordSoundVolume(value);
           break;
 
         case "recordSound":
