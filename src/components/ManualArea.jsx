@@ -234,14 +234,14 @@ export default function ManualArea() {
               secondary="현재 브라우저에 저장된 설정(채널 목록, 레이아웃 등)을 텍스트 형태로 복사하거나, 다른 기기에서 복사한 설정을 붙여넣어 동기화할 수 있습니다."
             />
             <ManualListItem
-              icon={<FiberManualRecordIcon sx={{ fontSize: '2rem' }} />}
-              primary="방송 화면 녹화"
-              secondary="컨트롤러의 녹화 버튼(●)을 클릭하여 현재 시청 중인 방송 화면(Canvas 영역)을 녹화할 수 있습니다. 녹화 시작 시 브라우저 팝업에서 '이 탭 (Current Tab)'을 선택해야 사이드바 등을 제외한 순수 방송 화면만 깔끔하게 녹화됩니다. 설정 메뉴에서 '자동 녹화 (1번 Zone)' 기능을 켜면, 가장 큰 화면(1번 구역)의 방송 상태에 따라 자동으로 녹화가 시작/종료됩니다."
-            />
-            <ManualListItem
               icon={<RefreshIcon sx={{ fontSize: '2rem' }} />}
               primary="채널 정보 새로고침 (단축키: R)"
               secondary="모든 채널의 라이브 상태, 시청자 수 등의 정보를 즉시 새로고침합니다. (60초마다 자동 갱신되며, 방송 시작 감지 시 자동으로 플레이어를 불러옵니다.)"
+            />
+            <ManualListItem
+              icon={<FiberManualRecordIcon sx={{ fontSize: '2rem' }} />}
+              primary="방송 화면 녹화"
+              secondary="컨트롤러의 녹화 버튼(●)을 클릭하여 현재 시청 중인 방송 화면(Canvas 영역)을 녹화할 수 있습니다. 녹화 시작 시 브라우저 팝업에서 '이 탭 (Current Tab)'을 선택해야 사이드바 등을 제외한 순수 방송 화면만 깔끔하게 녹화됩니다. 설정 메뉴에서 '자동 녹화 (1번 Zone)' 기능을 켜면, 가장 큰 화면(1번 구역)의 방송 상태에 따라 자동으로 녹화가 시작/종료됩니다."
             />
             <ManualListItem
               icon={<FullscreenIcon sx={{ fontSize: '2rem' }} />}

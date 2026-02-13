@@ -1,11 +1,27 @@
+let audioCtx = null;
+
+const getAudioContext = () => {
+    if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+            audioCtx = new AudioContext();
+        }
+    }
+    return audioCtx;
+};
+
 export const playNotificationSound = (type, volume = 50) => {
   if (!type || type === "none") return;
 
   try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
 
-    const ctx = new AudioContext();
+    // 사용자 인터랙션 이후 오디오 컨텍스트가 suspended 상태일 수 있으므로 resume 시도
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(e => console.error("Audio resume failed", e));
+    }
+
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
