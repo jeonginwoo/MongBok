@@ -8,7 +8,7 @@ import ChannelInfo from "@/components/Info/ChannelInfo/ViewAreaChannelInfo";
 import ChatView from "@/components/View/Chat/ChatView";
 
 import { useAtomValue } from "jotai";
-import { controllerExpandedAtom, chatFontSizeAdjustmentAtom, CHAT_FONT_SIZE_STEP } from "@/atoms/setting";
+import { controllerExpandedAtom, chatFontSizeAdjustmentAtom, CHAT_FONT_SIZE_STEP, pointerEventsEnabledAtom } from "@/atoms/setting";
 import { fitStyleAtom } from "@/atoms/ui";
 
 import useChzzkChat from "@/hooks/useChzzkChat";
@@ -20,6 +20,7 @@ export default function DraggableChat({ channel, zone }) {
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
   const fitStyle = useAtomValue(fitStyleAtom);
   const chatFontSizeAdjustment = useAtomValue(chatFontSizeAdjustmentAtom);
+  const pointerEventsEnabled = useAtomValue(pointerEventsEnabledAtom);
 
   const draggableId = `${channel.id}-chat`;
   const { attributes, listeners, setNodeRef, transform, isDragging } =
@@ -46,6 +47,8 @@ export default function DraggableChat({ channel, zone }) {
       : [];
 
   const BASE_WIDTH = 360;
+
+  const layoutKey = `${zone?.style?.width}-${zone?.style?.height}-${controllerExpanded}-${JSON.stringify(fitStyle)}`;
 
   useEffect(() => {
     const updateZoom = () => {
@@ -91,17 +94,17 @@ export default function DraggableChat({ channel, zone }) {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    cursor: "grab",
+    cursor: !pointerEventsEnabled ? "grab" : undefined,
     transition: isDragging ? "none" : "0.5s ease",
     boxSizing: "border-box",
     overflow: "hidden",
-    touchAction: "none",
+    touchAction: !pointerEventsEnabled ? "none" : "auto",
     ...zone?.style,
     zIndex: isDragging ? 300 : 100,
   });
 
   return (
-    <Box ref={setNodeRef} {...listeners} {...attributes} sx={style}>
+    <Box ref={setNodeRef} {...attributes} {...(!pointerEventsEnabled ? listeners : {})} sx={style}>
       <Box
         ref={containerRef}
         sx={{
@@ -110,27 +113,38 @@ export default function DraggableChat({ channel, zone }) {
           height: "100%",
           zoom: zoom,
           transformOrigin: "top left",
-          overflow: "hidden",
           fontSize: `${1 + chatFontSizeAdjustment * CHAT_FONT_SIZE_STEP}rem`,
         }}
       >
         <Box
+          {...(pointerEventsEnabled ? listeners : {})}
           sx={{
             position: "absolute",
             left: 0,
+            top: 0,
             width: "100%",
             maxHeight: "10rem",
             aspectRatio: "100/30",
             background: (theme) => theme.palette.background.gradient,
             p: "3%",
             zIndex: 10,
+            cursor: pointerEventsEnabled ? "grab" : undefined,
+            pointerEvents: pointerEventsEnabled ? "auto" : "none",
           }}
         >
-          <Box>
+          <Box sx={{ pointerEvents: "none" }}>
             <ChannelInfo channel={channel} />
           </Box>
         </Box>
-        <ChatView chatList={chatList} />
+        <Box
+          sx={{
+            width: "100%",
+            height: "100%",
+            pointerEvents: pointerEventsEnabled ? "auto" : "none",
+          }}
+        >
+          <ChatView chatList={chatList} layoutKey={layoutKey} />
+        </Box>
       </Box>
     </Box>
   );
