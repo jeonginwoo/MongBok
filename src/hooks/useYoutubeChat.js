@@ -53,11 +53,6 @@ export default function useYoutubeChat(channelId) {
       return null;
     }
 
-    // 디버깅: 실제 데이터 구조 확인
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[YouTube Chat] Raw data:', JSON.stringify(chatItem, null, 2));
-    }
-
     const userId = chatItem.author.channelId || chatItem.id;
     const colorIndex = userId
       .split("")
@@ -173,7 +168,7 @@ export default function useYoutubeChat(channelId) {
     };
   }, []);
 
-  // SSE로 채팅 수신 (서버 사이드에서 youtube-chat 실행)
+  // WebSocket으로 채팅 수신 (별도 서버 사용)
   useEffect(() => {
     if (!liveId) {
       return;
@@ -183,47 +178,69 @@ export default function useYoutubeChat(channelId) {
     messageCounterRef.current = 0;
     pendingChatListRef.current = [];
 
-    console.log(`🔄 [YouTube] SSE 연결 시작: liveId=${liveId}`);
+    const wsUrl = process.env.NEXT_PUBLIC_YOUTUBE_CHAT_WS_URL || 'ws://localhost:8080';
 
-    // EventSource로 서버에서 채팅 스트림 받기
-    const eventSource = new EventSource(`/api/youtube/chat/${liveId}`);
+    let ws = null;
+    let reconnectTimeout = null;
+    let isIntentionallyClosed = false;
 
-    eventSource.onopen = () => {
-      console.log("✅ [YouTube] SSE 연결 성공");
-    };
-
-    eventSource.onmessage = (event) => {
+    const connect = () => {
       try {
-        const message = JSON.parse(event.data);
-        
-        if (message.type === "start") {
-          console.log("✅ [YouTube] 채팅 시작:", message.id);
-        } else if (message.type === "chat") {
-          const chat = convertChat(message.data);
-          if (chat) {
-            pendingChatListRef.current = [
-              ...pendingChatListRef.current,
-              chat,
-            ].slice(-1 * INTERNAL_MAX_LENGTH);
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          console.log("✅ [YouTube] 채팅 연결 성공");
+          ws.send(JSON.stringify({ type: 'start', liveId }));
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            
+            if (message.type === "chat") {
+              const chat = convertChat(message.data);
+              if (chat) {
+                pendingChatListRef.current = [
+                  ...pendingChatListRef.current,
+                  chat,
+                ].slice(-1 * INTERNAL_MAX_LENGTH);
+              }
+            } else if (message.type === "error") {
+              console.error("❌ [YouTube] 채팅 에러:", message.error);
+            }
+          } catch (error) {
+            console.error("❌ [YouTube] 메시지 파싱 실패:", error);
           }
-        } else if (message.type === "error") {
-          console.error("❌ [YouTube] 채팅 에러:", message.error);
-        } else if (message.type === "end") {
-          console.log("⏹️ [YouTube] 채팅 종료:", message.reason);
-        }
+        };
+
+        ws.onerror = (error) => {
+          console.error("❌ [YouTube] 연결 에러:", error);
+        };
+
+        ws.onclose = () => {
+          // 의도적인 종료가 아니고 liveId가 여전히 유효하면 재연결 시도
+          if (!isIntentionallyClosed && liveId) {
+            reconnectTimeout = setTimeout(connect, 5000);
+          }
+        };
       } catch (error) {
-        console.error("❌ [YouTube] 메시지 파싱 실패:", error);
+        console.error("❌ [YouTube] 연결 실패:", error);
       }
     };
 
-    eventSource.onerror = (error) => {
-      console.error("❌ [YouTube] SSE 연결 에러:", error);
-      eventSource.close();
-    };
+    connect();
 
     return () => {
-      console.log("🔌 [YouTube] SSE 연결 종료");
-      eventSource.close();
+      isIntentionallyClosed = true;
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+      if (ws) {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'stop' }));
+        }
+        ws.close();
+      }
     };
   }, [liveId, convertChat]);
 

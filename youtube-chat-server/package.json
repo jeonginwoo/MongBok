@@ -1,0 +1,21 @@
+{
+  "name": "youtube-chat-server",
+  "version": "1.0.0",
+  "description": "WebSocket server for YouTube live chat streaming",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["youtube", "chat", "websocket"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "express": "^4.18.2",
+    "ws": "^8.16.0",
+    "youtube-chat": "^2.2.0",
+    "cors": "^2.8.5"
+  }
+}
