@@ -147,3 +147,10 @@ export const recordSoundAtom = atomWithStorage(
   "none",
   storage
 );
+
+// 검색 시 선택된 플랫폼 (단일 선택, 빈 문자열이면 모든 플랫폼 검색)
+export const selectedSearchPlatformAtom = atomWithStorage(
+  "selectedSearchPlatform",
+  "",
+  storage
+);

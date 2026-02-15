@@ -171,14 +171,14 @@ export default function useSoopChat(channelId) {
         nickname: soopMessage[6],
         badges: [
           personalSubscriptionBadge,
-          isManager ? "/afreecatv/ic_manager.svg" : null,
-          !isManager && isTopFan ? "/afreecatv/ic_hot.svg" : null,
+          isManager ? "/soop/ic_manager.svg" : null,
+          !isManager && isTopFan ? "/soop/ic_hot.svg" : null,
           !isManager && subscriptionMonths !== -1 && !personalSubscriptionBadge
             ? isTier1Follower
-              ? "/afreecatv/ic_gudok.svg"
-              : "/afreecatv/ic_gudok_tier_2.svg"
+              ? "/soop/ic_gudok.svg"
+              : "/soop/ic_gudok_tier_2.svg"
             : null,
-          !isManager && !isTopFan && isFan ? "/afreecatv/ic_fanclub.svg" : null,
+          !isManager && !isTopFan && isFan ? "/soop/ic_fanclub.svg" : null,
         ].filter(Boolean),
         color,
         emojis: combinedEmoticons,
@@ -253,17 +253,17 @@ export default function useSoopChat(channelId) {
         nickname: soopMessage[7],
         badges: [
           personalSubscriptionBadge,
-          isManager ? "/afreecatv/ic_manager.svg" : null,
-          !isManager && isTopFan ? "/afreecatv/ic_hot.svg" : null,
+          isManager ? "/soop/ic_manager.svg" : null,
+          !isManager && isTopFan ? "/soop/ic_hot.svg" : null,
           !isManager &&
           subscriptionMonths !== -1 &&
           !personalSubscriptionBadge
             ? isTier1Follower
-              ? "/afreecatv/ic_gudok.svg"
-              : "/afreecatv/ic_gudok_tier_2.svg"
+              ? "/soop/ic_gudok.svg"
+              : "/soop/ic_gudok_tier_2.svg"
             : null,
           !isManager && !isTopFan && isFan
-            ? "/afreecatv/ic_fanclub.svg"
+            ? "/soop/ic_fanclub.svg"
             : null,
         ].filter(Boolean),
         color,

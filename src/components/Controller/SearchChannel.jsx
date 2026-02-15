@@ -7,16 +7,23 @@ import {
   Paper,
   CircularProgress,
   Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+  InputAdornment,
+  Tooltip,
 } from "@mui/material";
+import Image from "next/image";
 
 import AddIcon from "@mui/icons-material/Add";
+import AppsIcon from "@mui/icons-material/Apps";
 import SearchChannelInfo from "@/components/Info/ChannelInfo/SearchChannelInfo";
 import { searchChannels } from "@/api/search";
 import { updatePreferences, validateChannels } from "@/utils/preferences";
 import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE } from "@/data/config";
 
 import { useAtom, useSetAtom } from "jotai";
-import { channelsAtom } from "@/atoms/setting";
+import { channelsAtom, selectedSearchPlatformAtom } from "@/atoms/setting";
 import { snackbarAtom } from "@/atoms/ui";
 
 const enabledPlatforms = [];
@@ -24,17 +31,33 @@ if (ENABLE_CHZZK) enabledPlatforms.push("chzzk");
 if (ENABLE_SOOP) enabledPlatforms.push("soop");
 if (ENABLE_YOUTUBE) enabledPlatforms.push("youtube");
 
+const platformLogos = {
+  chzzk: "/chzzk/chzzk_logo.png",
+  soop: "/soop/soop_logo.jpeg",
+  youtube: "/youtube/youtube_logo.png",
+};
+
+const platformNames = {
+  chzzk: "CHZZK",
+  soop: "SOOP",
+  youtube: "YouTube",
+};
+
 export default function SearchChannel() {
   const maxChannels = 30;
 
   const [channels, setChannels] = useAtom(channelsAtom);
+  const [selectedPlatform, setSelectedPlatform] = useAtom(selectedSearchPlatformAtom);
   const setSnackbar = useSetAtom(snackbarAtom);
 
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showList, setShowList] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const [results, setResults] = useState({ chzzk: [], soop: [], youtube: [] });
+  const [loadingPlatforms, setLoadingPlatforms] = useState({ chzzk: false, soop: false, youtube: false });
+  const [searchedPlatforms, setSearchedPlatforms] = useState({ chzzk: false, soop: false, youtube: false });
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -52,26 +75,67 @@ export default function SearchChannel() {
   const handleSearch = useCallback(async () => {
     if (!keyword.trim()) {
       setResults({ chzzk: [], soop: [], youtube: [] });
+      setLoadingPlatforms({ chzzk: false, soop: false, youtube: false });
+      setSearchedPlatforms({ chzzk: false, soop: false, youtube: false });
       setShowList(false);
       return;
     }
     setLoading(true);
     try {
-        const platforms = [];
-        if (ENABLE_CHZZK) platforms.push("chzzk");
-        if (ENABLE_SOOP) platforms.push("soop");
-        if (ENABLE_YOUTUBE) platforms.push("youtube");
+        // 선택된 플랫폼이 있으면 해당 플랫폼만, 없으면 모든 활성화된 플랫폼 검색
+        const platformsToSearch = selectedPlatform && enabledPlatforms.includes(selectedPlatform)
+          ? [selectedPlatform]
+          : enabledPlatforms;
 
-        const promises = platforms.map((p) => searchChannels(keyword, p));
-        const results = await Promise.all(promises);
+        // 결과를 초기화하고 검색 시작
+        setResults({ chzzk: [], soop: [], youtube: [] });
+        setSearchedPlatforms({ chzzk: false, soop: false, youtube: false });
+        
+        // 검색할 플랫폼들을 로딩 중으로 표시
+        const loadingState = { chzzk: false, soop: false, youtube: false };
+        platformsToSearch.forEach(platform => {
+          loadingState[platform] = true;
+        });
+        setLoadingPlatforms(loadingState);
+        setShowList(true);
 
-        const newResults = { chzzk: [], soop: [], youtube: [] };
-        platforms.forEach((p, i) => {
-            newResults[p] = results[i];
+        // 각 플랫폼을 개별적으로 검색하여 완료되는 대로 업데이트
+        const searchPromises = platformsToSearch.map(async (platform) => {
+          try {
+            const result = await searchChannels(keyword, platform);
+            setResults((prev) => ({
+              ...prev,
+              [platform]: result,
+            }));
+            setLoadingPlatforms((prev) => ({
+              ...prev,
+              [platform]: false,
+            }));
+            setSearchedPlatforms((prev) => ({
+              ...prev,
+              [platform]: true,
+            }));
+            return { platform, success: true };
+          } catch (error) {
+            console.error(`${platform} 검색 실패:`, error);
+            setResults((prev) => ({
+              ...prev,
+              [platform]: [],
+            }));
+            setLoadingPlatforms((prev) => ({
+              ...prev,
+              [platform]: false,
+            }));
+            setSearchedPlatforms((prev) => ({
+              ...prev,
+              [platform]: true,
+            }));
+            return { platform, success: false };
+          }
         });
 
-      setResults(newResults);
-      setShowList(true);
+        // 모든 검색이 완료될 때까지 대기
+        await Promise.allSettled(searchPromises);
     } catch (e) {
       console.error("검색 실패:", e);
       setSnackbar({
@@ -79,10 +143,25 @@ export default function SearchChannel() {
         message: "채널 검색 중 오류가 발생했습니다.",
         severity: "error",
       });
+      setLoadingPlatforms({ chzzk: false, soop: false, youtube: false });
     } finally {
       setLoading(false);
     }
-  }, [keyword, setSnackbar]);
+  }, [keyword, selectedPlatform, setSnackbar]);
+
+  const handlePlatformMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePlatformMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const selectPlatform = (platform) => {
+    setSelectedPlatform(platform);
+    updatePreferences({ selectedSearchPlatform: platform });
+    handlePlatformMenuClose();
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -179,11 +258,143 @@ export default function SearchChannel() {
           },
         }}
         InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Tooltip title="플랫폼 선택">
+                <IconButton
+                  onClick={handlePlatformMenuOpen}
+                  size="small"
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    padding: 0,
+                    overflow: "hidden",
+                    backgroundColor: "background.level2",
+                    "&:hover": {
+                      backgroundColor: "background.level3",
+                    },
+                  }}
+                >
+                  {selectedPlatform && platformLogos[selectedPlatform] ? (
+                    <Box
+                      sx={{
+                        width: 24,
+                        height: 24,
+                        position: "relative",
+                        borderRadius: "50%",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Image
+                        src={platformLogos[selectedPlatform]}
+                        alt={platformNames[selectedPlatform]}
+                        fill
+                        style={{ objectFit: "cover" }}
+                      />
+                    </Box>
+                  ) : (
+                    <AppsIcon sx={{ fontSize: 16, color: "text.primary" }} />
+                  )}
+                </IconButton>
+              </Tooltip>
+            </InputAdornment>
+          ),
           endAdornment: loading ? (
             <CircularProgress size={20} sx={{ color: "text.quaternary" }} />
           ) : null,
         }}
       />
+
+      {/* 플랫폼 선택 메뉴 */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handlePlatformMenuClose}
+        PaperProps={{
+          sx: {
+            backgroundColor: "background.level2",
+            borderRadius: "0.8rem",
+            padding: "0.4rem",
+            minWidth: "16rem",
+          },
+        }}
+      >
+        <MenuItem
+          onClick={() => selectPlatform("")}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            padding: "0.8rem 1.2rem",
+            borderRadius: "0.6rem",
+            backgroundColor: !selectedPlatform ? "primary.main" : "transparent",
+            "&:hover": {
+              backgroundColor: !selectedPlatform
+                ? "primary.dark"
+                : "background.level3",
+            },
+          }}
+        >
+          <Box
+            sx={{
+              width: 24,
+              height: 24,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "background.level3",
+            }}
+          >
+            <AppsIcon sx={{ fontSize: 16, color: "text.primary" }} />
+          </Box>
+          <Typography sx={{ fontSize: "1.3rem", color: "text.primary" }}>
+            전체 플랫폼
+          </Typography>
+        </MenuItem>
+        {enabledPlatforms.map((platform) => (
+          <MenuItem
+            key={platform}
+            onClick={() => selectPlatform(platform)}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+              padding: "0.8rem 1.2rem",
+              borderRadius: "0.6rem",
+              backgroundColor: selectedPlatform === platform
+                ? "primary.main"
+                : "transparent",
+              "&:hover": {
+                backgroundColor: selectedPlatform === platform
+                  ? "primary.dark"
+                  : "background.level3",
+              },
+            }}
+          >
+            <Box
+              sx={{
+                width: 24,
+                height: 24,
+                position: "relative",
+                borderRadius: "50%",
+                overflow: "hidden",
+              }}
+            >
+              <Image
+                src={platformLogos[platform]}
+                alt={platformNames[platform]}
+                fill
+                style={{ objectFit: "cover" }}
+              />
+            </Box>
+            <Typography sx={{ fontSize: "1.3rem", color: "text.primary" }}>
+              {platformNames[platform]}
+            </Typography>
+          </MenuItem>
+        ))}
+      </Menu>
 
       <Typography
         sx={{
@@ -211,68 +422,185 @@ export default function SearchChannel() {
             borderRadius: "0.6rem",
             boxShadow: `.0rem 0.4rem 1.0rem ${theme.palette.background.overlay}`,
             display: "flex",
-            gap: 2,
+            flexDirection: "column",
+            gap: 1.5,
           })}
         >
-          {enabledPlatforms.map((platform) => (
-            <Box
-              key={platform}
-              sx={{
-                width: "22.0rem",
-                backgroundColor: "background.level2",
-                borderRadius: "0.6rem",
-                padding: "0.8rem",
-              }}
-            >
-              <Typography sx={{ color: "text.secondary", fontSize: "1.3rem", mb: 1 }}>
-                {platform.toUpperCase()}
-              </Typography>
+          {/* 플랫폼 선택 아이콘 바 */}
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              paddingBottom: "0.8rem",
+              borderBottom: "1px solid",
+              borderColor: "border.primary",
+            }}
+          >
+            {/* 전체 플랫폼 선택 */}
+            <Tooltip title="전체 플랫폼">
+              <IconButton
+                onClick={() => {
+                  setSelectedPlatform("");
+                  updatePreferences({ selectedSearchPlatform: "" });
+                }}
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  padding: 0,
+                  overflow: "hidden",
+                  border: "2px solid",
+                  borderColor:
+                    !selectedPlatform
+                      ? "primary.main"
+                      : "transparent",
+                  backgroundColor:
+                    !selectedPlatform
+                      ? "background.level3"
+                      : "background.level2",
+                  "&:hover": {
+                    backgroundColor: "background.level3",
+                    borderColor:
+                      !selectedPlatform
+                        ? "primary.main"
+                        : "border.secondary",
+                  },
+                }}
+              >
+                <AppsIcon sx={{ fontSize: 20, color: "text.primary" }} />
+              </IconButton>
+            </Tooltip>
 
-              {results[platform]?.length > 0 ? (
-                results[platform].map((ch) => (
+            {enabledPlatforms.map((platform) => (
+              <Tooltip key={platform} title={platformNames[platform]}>
+                <IconButton
+                  onClick={() => {
+                    setSelectedPlatform(platform);
+                    updatePreferences({ selectedSearchPlatform: platform });
+                  }}
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    padding: 0,
+                    overflow: "hidden",
+                    border: "2px solid",
+                    borderColor:
+                      selectedPlatform === platform
+                        ? "primary.main"
+                        : "transparent",
+                    backgroundColor:
+                      selectedPlatform === platform
+                        ? "background.level3"
+                        : "background.level2",
+                    "&:hover": {
+                      backgroundColor: "background.level3",
+                      borderColor:
+                        selectedPlatform === platform
+                          ? "primary.main"
+                          : "border.secondary",
+                    },
+                  }}
+                >
                   <Box
-                    key={`${ch.platform}-${ch.id}`}
                     sx={{
+                      width: 36,
+                      height: 36,
                       position: "relative",
-                      padding: "0.6rem 0.4rem",
-                      cursor: "pointer",
-                      borderRadius: "0.4rem",
-                      overflow: "hidden",
-                      "&:hover .hoverOverlay": { opacity: 1 },
-                      "&:hover .content": { opacity: 0.2 },
                     }}
-                    onClick={() => addChannel(ch)}
                   >
+                    <Image
+                      src={platformLogos[platform]}
+                      alt={platformNames[platform]}
+                      fill
+                      style={{ objectFit: "cover" }}
+                    />
+                  </Box>
+                </IconButton>
+              </Tooltip>
+            ))}
+          </Box>
+
+          {/* 검색 결과 표시 영역 */}
+          <Box sx={{ display: "flex", gap: 2 }}>
+            {enabledPlatforms.map((platform) => {
+              // 선택된 플랫폼이 있을 때는 선택된 것만 표시
+              if (selectedPlatform && selectedPlatform !== platform) {
+                return null;
+              }
+
+              return (
+                <Box
+                  key={platform}
+                  sx={{
+                    width: "22.0rem",
+                    backgroundColor: "background.level2",
+                    borderRadius: "0.6rem",
+                    padding: "0.8rem",
+                  }}
+                >
+                  {loadingPlatforms[platform] ? (
                     <Box
-                      className="content"
-                      sx={{ transition: "opacity 0.2s" }}
-                    >
-                      <SearchChannelInfo searchChannel={ch} />
-                    </Box>
-                    <Box
-                      className="hoverOverlay"
                       sx={{
-                        position: "absolute",
-                        inset: 0,
                         display: "flex",
-                        alignItems: "center",
                         justifyContent: "center",
-                        backgroundColor: "background.overlay",
-                        opacity: 0,
-                        pointerEvents: "none",
+                        alignItems: "center",
+                        minHeight: "10rem",
                       }}
                     >
-                      <AddIcon sx={{ fontSize: 36, color: "text.primary" }} />
+                      <CircularProgress size={24} sx={{ color: "text.quaternary" }} />
                     </Box>
-                  </Box>
-                ))
-              ) : (
-                <Typography sx={{ color: "text.placeholder", fontSize: "1.3rem" }}>
-                  결과 없음
-                </Typography>
-              )}
-            </Box>
-          ))}
+                  ) : results[platform]?.length > 0 ? (
+                    results[platform].map((ch) => (
+                      <Box
+                        key={`${ch.platform}-${ch.id}`}
+                        sx={{
+                          position: "relative",
+                          padding: "0.6rem 0.4rem",
+                          cursor: "pointer",
+                          borderRadius: "0.4rem",
+                          overflow: "hidden",
+                          "&:hover .hoverOverlay": { opacity: 1 },
+                          "&:hover .content": { opacity: 0.2 },
+                        }}
+                        onClick={() => addChannel(ch)}
+                      >
+                        <Box
+                          className="content"
+                          sx={{ transition: "opacity 0.2s" }}
+                        >
+                          <SearchChannelInfo searchChannel={ch} />
+                        </Box>
+                        <Box
+                          className="hoverOverlay"
+                          sx={{
+                            position: "absolute",
+                            inset: 0,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: "background.overlay",
+                            opacity: 0,
+                            pointerEvents: "none",
+                          }}
+                        >
+                          <AddIcon sx={{ fontSize: 36, color: "text.primary" }} />
+                        </Box>
+                      </Box>
+                    ))
+                  ) : searchedPlatforms[platform] ? (
+                    <Typography
+                      sx={{ color: "text.placeholder", fontSize: "1.3rem" }}
+                    >
+                      결과 없음
+                    </Typography>
+                  ) : null}
+                </Box>
+              );
+            })}
+          </Box>
         </Paper>
       )}
     </Box>
