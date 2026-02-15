@@ -129,8 +129,9 @@ export default function ManualArea() {
           <Typography sx={{ lineHeight: 1.6, fontSize: "1.3rem" }}>
             스퓨즈(S-Fuz)는 여러 스트리밍 플랫폼의 방송을 한 화면에서 동시에
             시청할 수 있는 서비스입니다. 현재{" "}
-            <strong style={{ color: PLATFORM_COLORS.chzzk.main }}>치지직</strong>과{" "}
-            <strong style={{ color: PLATFORM_COLORS.soop.main }}>숲</strong>{" "}
+            <strong style={{ color: PLATFORM_COLORS.chzzk.main }}>치지직</strong>,{" "}
+            <strong style={{ color: PLATFORM_COLORS.soop.main }}>숲</strong>,{" "}
+            <strong style={{ color: PLATFORM_COLORS.youtube.main }}>유튜브</strong>{" "}
             플랫폼을 지원하며, 다음과 같은 주요 기능을 제공합니다.
           </Typography>
           <List>

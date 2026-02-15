@@ -14,8 +14,8 @@ const roboto = Roboto({
 export const metadata = {
   metadataBase: new URL('https://hapche.vercel.app'),
   title: '스퓨즈(S-Fuz) - 멀티 스트림, 멀티 뷰어',
-  description: '스퓨즈(S-Fuz)는 여러 플랫폼의 방송을 한 화면에서 동시에 시청할 수 있는 멀티 스트림, 멀티 뷰어 서비스입니다. 숲, 치지직 등 다양한 스트리밍 플랫폼을 지원하여 여러 방송을 편리하게 시청하세요.',
-  keywords: ['멀티 스트림', '멀티 뷰', '숲', '치지직', '동시 시청', '스퓨즈', 'S-Fuz', 'SFuz'],
+  description: '스퓨즈(S-Fuz)는 여러 플랫폼의 방송을 한 화면에서 동시에 시청할 수 있는 멀티 스트림, 멀티 뷰어 서비스입니다. 치지직, 숲, 유튜브 등 다양한 스트리밍 플랫폼을 지원하여 여러 방송을 편리하게 시청하세요.',
+  keywords: ['멀티 스트림', '멀티 뷰', '치지직', '숲', '유튜브', 'YouTube', '동시 시청', '스퓨즈', 'S-Fuz', 'SFuz'],
   openGraph: {
     title: '스퓨즈(S-Fuz) - 멀티 스트림, 멀티 뷰어',
     description: '여러 플랫폼의 방송을 한 화면에서 동시에 시청할 수 있는 멀티 스트림, 멀티 뷰어 서비스입니다.',

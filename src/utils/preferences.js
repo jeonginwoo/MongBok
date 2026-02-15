@@ -19,6 +19,7 @@ const ALLOWED_KEYS = [
   "recordSoundEnabled",
   "recordSoundType",
   "recordSoundVolume",
+  "selectedSearchPlatform",
 ];
 
 // ========== 개별 키 유효성 검사 함수 ==========
@@ -174,9 +175,9 @@ export const validateChannels = async (value) => {
         }
 
         const { platform, zoneId } = channelData;
-        if (!["chzzk", "soop"].includes(platform)) {
+        if (!["chzzk", "soop", "youtube"].includes(platform)) {
           return Promise.reject({
-            error: `Validation Error: Invalid platform '${platform}' for channel '${channelId}'. Must be 'chzzk' or 'soop'.`,
+            error: `Validation Error: Invalid platform '${platform}' for channel '${channelId}'. Must be 'chzzk', 'soop', or 'youtube'.`,
           });
         }
 

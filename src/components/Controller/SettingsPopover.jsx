@@ -109,6 +109,7 @@ export default function SettingsPopover({ anchorEl, onClose }) {
       "recordSoundEnabled",
       "recordSoundType",
       "recordSoundVolume",
+      "selectedSearchPlatform",
     ].reduce((obj, key) => {
       const value = window.localStorage.getItem(key);
       if (value) {

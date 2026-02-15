@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getYoutubeInstance } from "@/utils/youtube";
 
 export async function GET(request, context) {
   try {
@@ -12,11 +13,8 @@ export async function GET(request, context) {
       );
     }
 
-    // 동적 import로 youtubei.js 로드 (서버용)
-    const { Innertube } = await import("youtubei.js");
-
-    // Innertube 인스턴스 생성
-    const youtube = await Innertube.create();
+    // 캐시된 Innertube 인스턴스 사용
+    const youtube = await getYoutubeInstance();
 
     // 채널 정보 가져오기
     const channel = await youtube.getChannel(channelId).catch((err) => {
