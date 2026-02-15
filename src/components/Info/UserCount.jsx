@@ -14,7 +14,7 @@ function UserCount({ channel, isTag = false }) {
         alignItems: "center",
         color: color,
         gap: "0.3em",
-        fontSize: "1.2em",
+        fontSize: isTag ? "inherit" : "1.2em",
         lineHeight: 1,
         fontWeight: "bold",
       }}

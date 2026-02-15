@@ -13,7 +13,7 @@ const r10_16 = (10 / 16) / (16 / 9);
 const r20_9a11 = 100;
 
 // val of canvas[ratio2].layouts[2][layout1]
-const r20_9a21 = r20_9a11;
+const r20_9a21 = 100;
 const r20_9b21 = 28.8;
 
 // val of canvas[ratio2].layouts[3][layout1]
@@ -29,7 +29,7 @@ const r20_9a41 = 71.2;
 const r16_9a11 = 84;
 
 // val of canvas[ratio2].layouts[2][layout1]
-const r16_9a21 = r16_9a11;
+const r16_9a21 = 84;
 const r16_9b21 = 28.8;
 
 // val of canvas[ratio2].layouts[3][layout1]
@@ -51,7 +51,7 @@ const r16_10a21 = 28.8;
 const r16_10a31 = 69;
 
 // val of canvas[ratio3].layouts[4][layout1]
-const r16_10a41 = 71.2;
+const r16_10a41 = 84;
 
 export const canvas = {
   "20:9": {
@@ -285,6 +285,15 @@ export const canvas = {
               2: { id: 2, type: "chat", style: { top: `50%`, left: `50%`, width: `50%`, height: `50%` } },
             },
           },
+          layout4: {
+            view: {
+              1: { id: 1, type: "view", style: { top: `${(100 - r16_9a11) / 2}%`, left: `0%`, width: `${r16_9a11}%`, height: `${r16_9a11}%` } },
+            },
+            chat: {
+              1: { id: 1, type: "chat", style: { top: `0%`, left: `${r16_9a11}%`, width: `${(100 - r16_9a11)}%`, height: `${200 / 3}%` } },
+              2: { id: 2, type: "chat", style: { top: `${200 / 3}%`, left: `${r16_9a11}%`, width: `${(100 - r16_9a11)}%`, height: `${100 / 3}%` } },
+            },
+          },
         },
         3: {
           layout1: {
@@ -333,6 +342,16 @@ export const canvas = {
               1: { id: 1, type: "chat", style: { top: `50%`, left: `50%`, width: `${(50 / 3)}%`, height: `50%` } },
               2: { id: 2, type: "chat", style: { top: `50%`, left: `${50 + (50 / 3)}%`, width: `${(50 / 3)}%`, height: `50%` } },
               3: { id: 3, type: "chat", style: { top: `50%`, left: `${50 + (50 / 3) * 2}%`, width: `${(50 / 3)}%`, height: `50%` } },
+            },
+          },
+          layout5: {
+            view: {
+              1: { id: 1, type: "view", style: { top: `${(100 - r16_9a11) / 2}%`, left: `0%`, width: `${r16_9a11}%`, height: `${r16_9a11}%` } },
+            },
+            chat: {
+              1: { id: 1, type: "chat", style: { top: `0%`, left: `${r16_9a11}%`, width: `${(100 - r16_9a11)}%`, height: `${100 / 3}%` } },
+              2: { id: 2, type: "chat", style: { top: `${100 / 3}%`, left: `${r16_9a11}%`, width: `${(100 - r16_9a11)}%`, height: `${100 / 3}%` } },
+              3: { id: 3, type: "chat", style: { top: `${200 / 3}%`, left: `${r16_9a11}%`, width: `${(100 - r16_9a11)}%`, height: `${100 / 3}%` } },
             },
           },
         },
@@ -437,10 +456,10 @@ export const canvas = {
         1: {
           layout1: {
             view: {
-              1: { id: 1, type: "view", style: { top: `${(100 - r16_9a11 * r16_10) / 2}%`, left: `0%`, width: `${r16_9a11}%`, height: `${r16_9a11 * r16_10}%` } },
+              1: { id: 1, type: "view", style: { top: `${(100 - r16_10a11 * r16_10) / 2}%`, left: `0%`, width: `${r16_10a11}%`, height: `${r16_10a11 * r16_10}%` } },
             },
             chat: {
-              1: { id: 1, type: "chat", style: { top: `0%`, left: `${r16_9a11}%`, width: `${(100 - r16_9a11)}%`, height: `100%` } },
+              1: { id: 1, type: "chat", style: { top: `0%`, left: `${r16_10a11}%`, width: `${(100 - r16_10a11)}%`, height: `100%` } },
             },
           },
           layout2: {
@@ -473,6 +492,15 @@ export const canvas = {
               2: { id: 2, type: "chat", style: { top: `${50 * r16_10}%`, left: `50%`, width: `50%`, height: `${100 - 50 * r16_10}%` } },
             },
           },
+          layout3: {
+            view: {
+              1: { id: 1, type: "view", style: { top: `${(100 - r16_10a11 * r16_10) / 2}%`, left: `0%`, width: `${r16_10a11}%`, height: `${r16_10a11 * r16_10}%` } },
+            },
+            chat: {
+              1: { id: 1, type: "chat", style: { top: `0%`, left: `${r16_10a11}%`, width: `${(100 - r16_10a11)}%`, height: `${200 / 3}%` } },
+              2: { id: 2, type: "chat", style: { top: `${200 / 3}%`, left: `${r16_10a11}%`, width: `${(100 - r16_10a11)}%`, height: `${100 / 3}%` } },
+            },
+          },
         },
         3: {
           layout1: {
@@ -497,6 +525,16 @@ export const canvas = {
               1: { id: 1, type: "chat", style: { top: `${(100 / 3) * r16_10}%`, left: `0%`, width: `${(100 / 3)}%`, height: `${(100 - (100 / 3) * r16_10)}%` } },
               2: { id: 2, type: "chat", style: { top: `${(100 / 3) * r16_10}%`, left: `${(100 / 3)}%`, width: `${(100 / 3)}%`, height: `${(100 - (100 / 3) * r16_10)}%` } },
               3: { id: 3, type: "chat", style: { top: `${(100 / 3) * r16_10}%`, left: `${(100 / 3) * 2}%`, width: `${(100 / 3)}%`, height: `${(100 - (100 / 3) * r16_10)}%` } },
+            },
+          },
+          layout3: {
+            view: {
+              1: { id: 1, type: "view", style: { top: `${(100 - r16_10a11 * r16_10) / 2}%`, left: `0%`, width: `${r16_10a11}%`, height: `${r16_10a11 * r16_10}%` } },
+            },
+            chat: {
+              1: { id: 1, type: "chat", style: { top: `0%`, left: `${r16_10a11}%`, width: `${(100 - r16_10a11)}%`, height: `${100 / 3}%` } },
+              2: { id: 2, type: "chat", style: { top: `${100 / 3}%`, left: `${r16_10a11}%`, width: `${(100 - r16_10a11)}%`, height: `${100 / 3}%` } },
+              3: { id: 3, type: "chat", style: { top: `${200 / 3}%`, left: `${r16_10a11}%`, width: `${(100 - r16_10a11)}%`, height: `${100 / 3}%` } },
             },
           },
         },

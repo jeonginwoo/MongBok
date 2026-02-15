@@ -46,7 +46,7 @@ export default function ChannelInfo({ channel, isDragging = false }) {
         <LiveTags channel={channel} isTag={true} />
         {channel.isLive ? (
           <>
-            <UserCount channel={channel} isTag={true}v />
+            <UserCount channel={channel} isTag={true} />
             <LiveTime channel={channel} isTag={true} />
           </>
         ) : (
