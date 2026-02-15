@@ -13,7 +13,7 @@ import AddIcon from "@mui/icons-material/Add";
 import SearchChannelInfo from "@/components/Info/ChannelInfo/SearchChannelInfo";
 import { searchChannels } from "@/api/search";
 import { updatePreferences, validateChannels } from "@/utils/preferences";
-import { ENABLE_CHZZK, ENABLE_SOOP } from "@/data/config";
+import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE } from "@/data/config";
 
 import { useAtom, useSetAtom } from "jotai";
 import { channelsAtom } from "@/atoms/setting";
@@ -22,6 +22,7 @@ import { snackbarAtom } from "@/atoms/ui";
 const enabledPlatforms = [];
 if (ENABLE_CHZZK) enabledPlatforms.push("chzzk");
 if (ENABLE_SOOP) enabledPlatforms.push("soop");
+if (ENABLE_YOUTUBE) enabledPlatforms.push("youtube");
 
 export default function SearchChannel() {
   const maxChannels = 30;
@@ -33,7 +34,7 @@ export default function SearchChannel() {
   const [loading, setLoading] = useState(false);
   const [showList, setShowList] = useState(false);
 
-  const [results, setResults] = useState({ chzzk: [], soop: [] });
+  const [results, setResults] = useState({ chzzk: [], soop: [], youtube: [] });
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -50,7 +51,7 @@ export default function SearchChannel() {
 
   const handleSearch = useCallback(async () => {
     if (!keyword.trim()) {
-      setResults({ chzzk: [], soop: [] });
+      setResults({ chzzk: [], soop: [], youtube: [] });
       setShowList(false);
       return;
     }
@@ -59,11 +60,12 @@ export default function SearchChannel() {
         const platforms = [];
         if (ENABLE_CHZZK) platforms.push("chzzk");
         if (ENABLE_SOOP) platforms.push("soop");
+        if (ENABLE_YOUTUBE) platforms.push("youtube");
 
         const promises = platforms.map((p) => searchChannels(keyword, p));
         const results = await Promise.all(promises);
 
-        const newResults = { chzzk: [], soop: [] };
+        const newResults = { chzzk: [], soop: [], youtube: [] };
         platforms.forEach((p, i) => {
             newResults[p] = results[i];
         });
@@ -98,7 +100,7 @@ export default function SearchChannel() {
     if (keyword.trim()) {
       debounceTimeout.current = setTimeout(handleSearch, 500);
     } else {
-      setResults({ chzzk: [], soop: [] });
+      setResults({ chzzk: [], soop: [], youtube: [] });
       setShowList(false);
     }
 
@@ -154,7 +156,7 @@ export default function SearchChannel() {
     });
 
     setKeyword("");
-    setResults({ chzzk: [], soop: [] });
+    setResults({ chzzk: [], soop: [], youtube: [] });
     setShowList(false);
   };
 

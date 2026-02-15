@@ -9,6 +9,11 @@ export const PLATFORM_COLORS = {
     profile: "linear-gradient(140deg, rgba(3, 135, 255, 1) 0%, rgba(50, 246, 224, 1) 100%)",
     shadow: "rgba(71, 160, 255, 0.4)",
   },
+  youtube: {
+    main: "rgba(255, 0, 0, 1)",
+    profile: "linear-gradient(140deg, rgba(255, 0, 0, 1) 0%, rgba(204, 0, 0, 1) 100%)",
+    shadow: "rgba(255, 0, 0, 0.4)",
+  },
 };
 
 export const CHEESE_COLORS = {

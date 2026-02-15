@@ -81,6 +81,8 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
       ? `https://chzzk.naver.com/live/${channelId}`
       : channel.platform === "soop"
       ? `https://play.sooplive.co.kr/${channelId}/embed`
+      : channel.platform === "youtube"
+      ? `https://www.youtube.com/embed/live_stream?channel=${channelId}`
       : "";
 
   return (

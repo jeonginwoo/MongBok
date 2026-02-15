@@ -37,6 +37,7 @@ export default function useSoopChat(channelId) {
   const [channelInfo, setChannelInfo] = useState(null);
   const isUnloadingRef = useRef(false);
   const [webSocketBuster, setWebSocketBuster] = useState(0);
+  const messageCounterRef = useRef(0); // 메시지 카운터로 고유 ID 생성
 
   const { emoticons: customEmoticons } = useSoopEmoticons(channelId);
 
@@ -160,8 +161,11 @@ export default function useSoopChat(channelId) {
 
       const match = emojiRegex ? message.match(emojiRegex) : null;
 
+      messageCounterRef.current += 1;
+      const uniqueId = `${userId}-${new Date().getTime()}-${messageCounterRef.current}`;
+
       return {
-        uid: `${userId}-${new Date().getTime()}`,
+        uid: uniqueId,
         time: new Date().getTime(),
         userId,
         nickname: soopMessage[6],
@@ -239,8 +243,11 @@ export default function useSoopChat(channelId) {
             .reduce((a, b) => a + b, 0) % afreecaNicknameColors.length
         ];
 
+      messageCounterRef.current += 1;
+      const uniqueStickerlyId = `${userId}-${new Date().getTime()}-sticker-${messageCounterRef.current}`;
+
       return {
-        uid: `${userId}-${new Date().getTime()}-sticker`,
+        uid: uniqueStickerlyId,
         time: new Date().getTime(),
         userId,
         nickname: soopMessage[7],

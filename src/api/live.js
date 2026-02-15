@@ -2,6 +2,7 @@ import {
   chzzk_client,
   soop_channel_client,
   soop_live_client,
+  youtube_channel_client,
 } from "@/api/client";
 
 // ✅ 치지직 라이브 상태 조회
@@ -108,6 +109,35 @@ const getSoopLiveStatus = async (channelId) => {
   }
 };
 
+// ✅ 유튜브 라이브 상태 조회
+const getYoutubeLiveStatus = async (channelId) => {
+  try {
+    const response = await youtube_channel_client.get(`/${channelId}`);
+    const data = response.data;
+
+    if (!data.channel) {
+      throw new Error("Channel not found");
+    }
+
+    const { channel, liveVideo, isLive, viewerCount } = data;
+
+    return {
+      name: channel.name ?? "",
+      imageUrl: channel.iconURL ?? "",
+      liveTitle: liveVideo?.title ?? "",
+      openDate: liveVideo?.startTime ?? null,
+      closeDate: null,
+      isLive: isLive ?? false,
+      userCount: viewerCount ?? 0,
+      liveCategory: null,
+      tags: [],
+    };
+  } catch (error) {
+    console.error("❌ [YouTube] 라이브 상태 가져오기 실패:", error);
+    throw error;
+  }
+};
+
 // ✅ 라이브 상태 조회
 export const getLiveStatus = async (channelId, platform) => {
   let liveStatus = null;
@@ -115,6 +145,8 @@ export const getLiveStatus = async (channelId, platform) => {
     liveStatus = await getChzzkLiveStatus(channelId);
   } else if (platform === "soop") {
     liveStatus = await getSoopLiveStatus(channelId);
+  } else if (platform === "youtube") {
+    liveStatus = await getYoutubeLiveStatus(channelId);
   } else {
     console.warn(`⚠️ 지원하지 않는 플랫폼: ${platform}`);
     return;

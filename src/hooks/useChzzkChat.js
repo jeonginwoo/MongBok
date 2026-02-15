@@ -106,6 +106,7 @@ export default function useChzzkChat(channelId) {
   const pendingChatListRef = useRef([]);
   const isUnloadingRef = useRef(false);
   const [webSocketBuster, setWebSocketBuster] = useState(0);
+  const messageCounterRef = useRef(0); // 메시지 카운터로 고유 ID 생성
 
   const liveStatus = useChzzkLiveStatus(channelId);
   const chatChannelId = liveStatus?.chatChannelId;
@@ -144,8 +145,12 @@ export default function useChzzkChat(channelId) {
 
     const messageColor = (isOwner || isManager) ? color : undefined;
 
+    // 고유한 ID 생성 (userId + msgTime + counter)
+    messageCounterRef.current += 1;
+    const uniqueId = `${profile.userIdHash}-${chzzkChat.msgTime}-${messageCounterRef.current}`;
+
     const chatObject = {
-      uid: `${profile.userIdHash}-${chzzkChat.msgTime}`,
+      uid: uniqueId,
       time: chzzkChat.msgTime,
       userId: profile.userIdHash,
       nickname,

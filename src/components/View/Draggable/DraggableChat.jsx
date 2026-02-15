@@ -10,10 +10,11 @@ import ChatView from "@/components/View/Chat/ChatView";
 import { useAtomValue } from "jotai";
 import { controllerExpandedAtom, chatFontSizeAdjustmentAtom, CHAT_FONT_SIZE_STEP, pointerEventsEnabledAtom } from "@/atoms/setting";
 import { fitStyleAtom } from "@/atoms/ui";
-import { ENABLE_CHZZK, ENABLE_SOOP } from "@/data/config";
+import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE } from "@/data/config";
 
 import useChzzkChat from "@/hooks/useChzzkChat";
 import useSoopChat from "@/hooks/useSoopChat";
+import useYoutubeChat from "@/hooks/useYoutubeChat";
 
 export default function DraggableChat({ channel, zone }) {
   if (!channel) return null;
@@ -39,12 +40,17 @@ export default function DraggableChat({ channel, zone }) {
   const soopChatList = useSoopChat(
     (ENABLE_SOOP && channel.platform === "soop") ? channelId : null
   );
+  const youtubeChatList = useYoutubeChat(
+    (ENABLE_YOUTUBE && channel.platform === "youtube") ? channelId : null
+  );
 
   const chatList =
     (ENABLE_CHZZK && channel.platform === "chzzk")
       ? chzzkChatList
       : (ENABLE_SOOP && channel.platform === "soop")
       ? soopChatList
+      : (ENABLE_YOUTUBE && channel.platform === "youtube")
+      ? youtubeChatList
       : [];
 
   const BASE_WIDTH = 360;
