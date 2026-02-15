@@ -13,10 +13,15 @@ import AddIcon from "@mui/icons-material/Add";
 import SearchChannelInfo from "@/components/Info/ChannelInfo/SearchChannelInfo";
 import { searchChannels } from "@/api/search";
 import { updatePreferences, validateChannels } from "@/utils/preferences";
+import { ENABLE_CHZZK, ENABLE_SOOP } from "@/data/config";
 
 import { useAtom, useSetAtom } from "jotai";
 import { channelsAtom } from "@/atoms/setting";
 import { snackbarAtom } from "@/atoms/ui";
+
+const enabledPlatforms = [];
+if (ENABLE_CHZZK) enabledPlatforms.push("chzzk");
+if (ENABLE_SOOP) enabledPlatforms.push("soop");
 
 export default function SearchChannel() {
   const maxChannels = 30;
@@ -51,11 +56,19 @@ export default function SearchChannel() {
     }
     setLoading(true);
     try {
-      const platforms = ["chzzk", "soop"];
-      const promises = platforms.map((p) => searchChannels(keyword, p));
-      const [chzzkRes, soopRes] = await Promise.all(promises);
+        const platforms = [];
+        if (ENABLE_CHZZK) platforms.push("chzzk");
+        if (ENABLE_SOOP) platforms.push("soop");
 
-      setResults({ chzzk: chzzkRes, soop: soopRes });
+        const promises = platforms.map((p) => searchChannels(keyword, p));
+        const results = await Promise.all(promises);
+
+        const newResults = { chzzk: [], soop: [] };
+        platforms.forEach((p, i) => {
+            newResults[p] = results[i];
+        });
+
+      setResults(newResults);
       setShowList(true);
     } catch (e) {
       console.error("검색 실패:", e);
@@ -199,7 +212,7 @@ export default function SearchChannel() {
             gap: 2,
           })}
         >
-          {["chzzk", "soop"].map((platform) => (
+          {enabledPlatforms.map((platform) => (
             <Box
               key={platform}
               sx={{

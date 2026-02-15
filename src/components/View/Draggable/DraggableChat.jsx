@@ -10,6 +10,7 @@ import ChatView from "@/components/View/Chat/ChatView";
 import { useAtomValue } from "jotai";
 import { controllerExpandedAtom, chatFontSizeAdjustmentAtom, CHAT_FONT_SIZE_STEP, pointerEventsEnabledAtom } from "@/atoms/setting";
 import { fitStyleAtom } from "@/atoms/ui";
+import { ENABLE_CHZZK, ENABLE_SOOP } from "@/data/config";
 
 import useChzzkChat from "@/hooks/useChzzkChat";
 import useSoopChat from "@/hooks/useSoopChat";
@@ -33,16 +34,16 @@ export default function DraggableChat({ channel, zone }) {
   const channelId = channel.id;
 
   const chzzkChatList = useChzzkChat(
-    channel.platform === "chzzk" ? channelId : null
+    (ENABLE_CHZZK && channel.platform === "chzzk") ? channelId : null
   );
   const soopChatList = useSoopChat(
-    channel.platform === "soop" ? channelId : null
+    (ENABLE_SOOP && channel.platform === "soop") ? channelId : null
   );
 
   const chatList =
-    channel.platform === "chzzk"
+    (ENABLE_CHZZK && channel.platform === "chzzk")
       ? chzzkChatList
-      : channel.platform === "soop"
+      : (ENABLE_SOOP && channel.platform === "soop")
       ? soopChatList
       : [];
 
