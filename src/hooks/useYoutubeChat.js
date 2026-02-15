@@ -15,7 +15,6 @@ export default function useYoutubeChat(channelId) {
   const [liveId, setLiveId] = useState(null);
   const pendingChatListRef = useRef([]);
   const animationFrameRef = useRef(null);
-  const eventSourceRef = useRef(null);
   const messageCounterRef = useRef(0); // 메시지 카운터로 고유 ID 생성
 
   // 채널의 현재 라이브 videoId 가져오기
@@ -47,50 +46,6 @@ export default function useYoutubeChat(channelId) {
     
     return () => clearInterval(interval);
   }, [channelId]);
-
-  // SSE로 채팅 수신
-  useEffect(() => {
-    if (!liveId) {
-      return;
-    }
-    
-    // 새로운 라이브 스트림이 시작되면 카운터 리셋
-    messageCounterRef.current = 0;
-    pendingChatListRef.current = [];
-
-    // EventSource로 서버에서 채팅 스트림 받기
-    const eventSource = new EventSource(`/api/youtube/chat/${liveId}`);
-    eventSourceRef.current = eventSource;
-
-    eventSource.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-        
-        if (message.type === "chat") {
-          const chat = convertChat(message.data);
-          if (chat) {
-            pendingChatListRef.current = [
-              ...pendingChatListRef.current,
-              chat,
-            ].slice(-1 * INTERNAL_MAX_LENGTH);
-          }
-        } else if (message.type === "error") {
-          console.error("❌ [YouTube] 채팅 에러:", message.error);
-        }
-      } catch (error) {
-        console.error("❌ [YouTube] 메시지 파싱 실패:", error);
-      }
-    };
-
-    eventSource.onerror = (error) => {
-      console.error("❌ [YouTube] SSE 연결 에러:", error);
-      eventSource.close();
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, [liveId]);
 
   // 채팅 메시지 변환
   const convertChat = useCallback((chatItem) => {
@@ -217,6 +172,60 @@ export default function useYoutubeChat(channelId) {
       message: parsedMessage,
     };
   }, []);
+
+  // SSE로 채팅 수신 (서버 사이드에서 youtube-chat 실행)
+  useEffect(() => {
+    if (!liveId) {
+      return;
+    }
+    
+    // 새로운 라이브 스트림이 시작되면 카운터 리셋
+    messageCounterRef.current = 0;
+    pendingChatListRef.current = [];
+
+    console.log(`🔄 [YouTube] SSE 연결 시작: liveId=${liveId}`);
+
+    // EventSource로 서버에서 채팅 스트림 받기
+    const eventSource = new EventSource(`/api/youtube/chat/${liveId}`);
+
+    eventSource.onopen = () => {
+      console.log("✅ [YouTube] SSE 연결 성공");
+    };
+
+    eventSource.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        
+        if (message.type === "start") {
+          console.log("✅ [YouTube] 채팅 시작:", message.id);
+        } else if (message.type === "chat") {
+          const chat = convertChat(message.data);
+          if (chat) {
+            pendingChatListRef.current = [
+              ...pendingChatListRef.current,
+              chat,
+            ].slice(-1 * INTERNAL_MAX_LENGTH);
+          }
+        } else if (message.type === "error") {
+          console.error("❌ [YouTube] 채팅 에러:", message.error);
+        } else if (message.type === "end") {
+          console.log("⏹️ [YouTube] 채팅 종료:", message.reason);
+        }
+      } catch (error) {
+        console.error("❌ [YouTube] 메시지 파싱 실패:", error);
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error("❌ [YouTube] SSE 연결 에러:", error);
+      eventSource.close();
+    };
+
+    return () => {
+      console.log("🔌 [YouTube] SSE 연결 종료");
+      eventSource.close();
+    };
+  }, [liveId, convertChat]);
 
   // 채팅 리스트 업데이트 (애니메이션 프레임 사용)
   useEffect(() => {
