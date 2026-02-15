@@ -322,18 +322,13 @@ export default function SearchChannel() {
       >
         <MenuItem
           onClick={() => selectPlatform("")}
+          selected={!selectedPlatform}
           sx={{
             display: "flex",
             alignItems: "center",
             gap: 1.5,
             padding: "0.8rem 1.2rem",
             borderRadius: "0.6rem",
-            backgroundColor: !selectedPlatform ? "primary.main" : "transparent",
-            "&:hover": {
-              backgroundColor: !selectedPlatform
-                ? "primary.dark"
-                : "background.level3",
-            },
           }}
         >
           <Box
@@ -357,20 +352,13 @@ export default function SearchChannel() {
           <MenuItem
             key={platform}
             onClick={() => selectPlatform(platform)}
+            selected={selectedPlatform === platform}
             sx={{
               display: "flex",
               alignItems: "center",
               gap: 1.5,
               padding: "0.8rem 1.2rem",
               borderRadius: "0.6rem",
-              backgroundColor: selectedPlatform === platform
-                ? "primary.main"
-                : "transparent",
-              "&:hover": {
-                backgroundColor: selectedPlatform === platform
-                  ? "primary.dark"
-                  : "background.level3",
-              },
             }}
           >
             <Box
@@ -415,6 +403,7 @@ export default function SearchChannel() {
             position: "absolute",
             top: "4.8rem",
             right: 0,
+            ...(selectedPlatform && { left: 0 }),
             zIndex: 1000,
             overflowX: "auto",
             backgroundColor: "background.level1",
@@ -431,7 +420,7 @@ export default function SearchChannel() {
             sx={{
               display: "flex",
               gap: 1,
-              justifyContent: "center",
+              justifyContent: "flex-end",
               alignItems: "center",
               paddingBottom: "0.8rem",
               borderBottom: "1px solid",
@@ -524,7 +513,17 @@ export default function SearchChannel() {
           </Box>
 
           {/* 검색 결과 표시 영역 */}
-          <Box sx={{ display: "flex", gap: 2 }}>
+          <Box 
+            sx={{ 
+              display: "flex", 
+              flexDirection: { xs: "column", sm: "column", md: "row" },
+              gap: 2,
+              maxHeight: { xs: "50rem", sm: "50rem", md: "none" },
+              overflowY: { xs: "auto", sm: "auto", md: "visible" },
+              overflowX: { xs: "visible", sm: "visible", md: "auto" },
+              justifyContent: "stretch",
+            }}
+          >
             {enabledPlatforms.map((platform) => {
               // 선택된 플랫폼이 있을 때는 선택된 것만 표시
               if (selectedPlatform && selectedPlatform !== platform) {
@@ -535,7 +534,9 @@ export default function SearchChannel() {
                 <Box
                   key={platform}
                   sx={{
-                    width: "22.0rem",
+                    flex: { xs: "0 0 auto", sm: "0 0 auto", md: "1" },
+                    width: { xs: "100%", sm: "100%", md: "auto" },
+                    minWidth: { md: "22.0rem" },
                     backgroundColor: "background.level2",
                     borderRadius: "0.6rem",
                     padding: "0.8rem",
