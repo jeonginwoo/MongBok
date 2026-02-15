@@ -98,6 +98,11 @@ export default function useYoutubeChat(channelId) {
       return null;
     }
 
+    // 디버깅: 실제 데이터 구조 확인
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[YouTube Chat] Raw data:', JSON.stringify(chatItem, null, 2));
+    }
+
     const userId = chatItem.author.channelId || chatItem.id;
     const colorIndex = userId
       .split("")
@@ -114,37 +119,87 @@ export default function useYoutubeChat(channelId) {
     }
 
     // 배지 처리
-    const badges = chatItem.author.badge?.thumbnail || [];
+    let badges = [];
+    
+    // badge 객체가 있는 경우 (멤버십 배지 등)
+    if (chatItem.author.badge?.thumbnail?.url) {
+      badges.push(chatItem.author.badge.thumbnail.url);
+    }
+    
+    // Owner 배지 (채널 소유자)
+    if (chatItem.isOwner) {
+      badges.push('https://www.gstatic.com/youtube/img/badges/verified_badge.svg');
+    }
+    
+    // Moderator 배지
+    if (chatItem.isModerator) {
+      badges.push('https://www.gstatic.com/youtube/img/badges/moderator_badge.svg');
+    }
+    
+    // Verified 배지
+    if (chatItem.isVerified) {
+      badges.push('https://www.gstatic.com/youtube/img/badges/verified_badge.svg');
+    }
+    
+    // chazzy 스타일의 badges 배열이 있는 경우 (대체 데이터 소스)
+    if (chatItem.author.badges && Array.isArray(chatItem.author.badges)) {
+      const badgeUrls = chatItem.author.badges
+        .map(badge => {
+          if (badge.custom_thumbnail?.[0]?.url) return badge.custom_thumbnail[0].url;
+          if (badge.thumbnail?.[0]?.url) return badge.thumbnail[0].url;
+          if (badge.url) return badge.url;
+          return null;
+        })
+        .filter(Boolean);
+      badges = [...badges, ...badgeUrls];
+    }
 
     // 메시지 파싱
     let parsedMessage = [];
-    
-    if (Array.isArray(chatItem.message)) {
-      // 메시지가 배열인 경우 (텍스트와 이모지 혼합)
-      parsedMessage = chatItem.message.map((item) => {
-        if (item.emojiText && item.thumbnail) {
-          return {
-            type: "emoji",
-            emojiKey: item.emojiText,
-            url: item.thumbnail[0]?.url || "",
-          };
-        } else {
-          return { type: "text", text: item.text || "" };
-        }
-      });
-    } else if (typeof chatItem.message === "string") {
-      // 단순 문자열인 경우
-      parsedMessage = [{ type: "text", text: chatItem.message }];
-    }
-
-    // 이모지 맵 생성
     const emojis = {};
+    
+    // youtube-chat 라이브러리의 실제 데이터 구조: message: [{text: "..."}, {emojiText: "...", url: "..."}]
     if (Array.isArray(chatItem.message)) {
-      chatItem.message.forEach((item) => {
-        if (item.emojiText && item.thumbnail?.[0]?.url) {
-          emojis[item.emojiText] = item.thumbnail[0].url;
+      parsedMessage = chatItem.message.map((item) => {
+        // 이모지인 경우 (url 또는 thumbnail 필드)
+        if (item.emojiText && (item.url || item.thumbnail)) {
+          const emojiUrl = item.url || (Array.isArray(item.thumbnail) ? item.thumbnail[0]?.url : item.thumbnail);
+          if (emojiUrl) {
+            emojis[item.emojiText] = emojiUrl;
+            return { type: "emoji", emojiKey: item.emojiText };
+          }
         }
+        // 일반 텍스트인 경우
+        if (item.text) {
+          return { type: "text", text: item.text };
+        }
+        // runs 구조 (대체 형식)
+        if (item.runs) {
+          return { type: "text", text: item.runs.map(run => run.text || '').join('') };
+        }
+        return { type: "text", text: "" };
       });
+    }
+    // message.runs 구조 (youtubei.js 스타일)
+    else if (chatItem.message?.runs && Array.isArray(chatItem.message.runs)) {
+      parsedMessage = chatItem.message.runs.map((run) => {
+        if (run.emoji) {
+          const emojiId = run.emoji.emoji_id || run.emoji.emojiId || run.text;
+          const emojiUrl = run.emoji.image?.[0]?.url || 
+                          run.emoji.thumbnails?.[0]?.url ||
+                          run.emoji.thumbnail?.[0]?.url;
+          
+          if (emojiId && emojiUrl) {
+            emojis[emojiId] = emojiUrl;
+            return { type: "emoji", emojiKey: emojiId };
+          }
+        }
+        return { type: "text", text: run.text || "" };
+      });
+    }
+    // 문자열 메시지
+    else if (typeof chatItem.message === "string") {
+      parsedMessage = [{ type: "text", text: chatItem.message }];
     }
 
     // 고유한 ID 생성 (userId + timestamp + counter)
@@ -156,7 +211,7 @@ export default function useYoutubeChat(channelId) {
       time: chatItem.timestamp || Date.now(),
       userId,
       nickname: nickname,
-      badges: Array.isArray(badges) ? badges : [],
+      badges: badges,
       color,
       emojis,
       message: parsedMessage,
