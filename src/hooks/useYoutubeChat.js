@@ -76,19 +76,17 @@ export default function useYoutubeChat(channelId) {
       badges.push(chatItem.author.badge.thumbnail.url);
     }
     
-    // Owner 배지 (채널 소유자)
-    if (chatItem.isOwner) {
-      badges.push('https://www.gstatic.com/youtube/img/badges/verified_badge.svg');
-    }
+    // Owner는 배지 없음 (실제 YouTube도 배지 없이 닉네임만 강조)
     
     // Moderator 배지
     if (chatItem.isModerator) {
-      badges.push('https://www.gstatic.com/youtube/img/badges/moderator_badge.svg');
+      // SVG 데이터 URI로 moderator 배지 생성
+      badges.push('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTguMDUgMEw5Ljk5IDUuOTFMMTYgNy4wOUwxMS40NSAxMS41NEwxMi45NCAxOEw4LjA1IDEzLjk5TDMuMTYgMThMNC42NSAxMS41NEwwIDcuMDlMNi4xMSA1LjkxTDguMDUgMFoiIGZpbGw9IiM1RTg0RjEiLz4KPC9zdmc+');
     }
     
     // Verified 배지
     if (chatItem.isVerified) {
-      badges.push('https://www.gstatic.com/youtube/img/badges/verified_badge.svg');
+      badges.push('https://yt3.ggpht.com/lNH4w2c4bEuGkGl_pRF4YtbA4_UQTZqkwvM6Mn9TF3D7QdD7M1i1_VFYwPQmFztDKChqsWPp=s88');
     }
     
     // chazzy 스타일의 badges 배열이 있는 경우 (대체 데이터 소스)
@@ -165,6 +163,8 @@ export default function useYoutubeChat(channelId) {
       color,
       emojis,
       message: parsedMessage,
+      isOwner: chatItem.isOwner || false,
+      isModerator: chatItem.isModerator || false,
     };
   }, []);
 

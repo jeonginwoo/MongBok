@@ -5,7 +5,7 @@ import { useTheme } from "@mui/material/styles";
 import Image from "next/image";
 
 export default function ChatRow({ chat }) {
-  const { time, nickname, badges, color, emojis, message, messageColor } = chat;
+  const { time, nickname, badges, color, emojis, message, messageColor, isOwner, isModerator } = chat;
   const theme = useTheme();
 
   return (
@@ -17,6 +17,14 @@ export default function ChatRow({ chat }) {
         color: theme.palette.text.primary,
         fontSize: "1.6em",
         marginTop: "0.6em",
+        // 채널 주인일 때 노란색 배경
+        ...(isOwner && {
+          backgroundColor: 'rgba(255, 213, 0, 0.15)',
+          padding: '0.4em 0.6em',
+          borderRadius: '4px',
+          marginLeft: '-0.6em',
+          marginRight: '-0.6em',
+        }),
       }}
     >
       {badges.map((src, i) => {
@@ -70,7 +78,16 @@ export default function ChatRow({ chat }) {
       <Box
         component="span"
         className="nickname"
-        sx={{ color, verticalAlign: "middle", pr: "0.8em" }}
+        sx={{ 
+          color, 
+          verticalAlign: "middle", 
+          pr: "0.8em",
+          // 채널 주인일 때 글자 강조
+          ...(isOwner && {
+            fontWeight: 600,
+            color: '#FFD500',
+          }),
+        }}
       >
         {nickname}
       </Box>
