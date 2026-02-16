@@ -40,6 +40,7 @@ import {
   autoRecordEnabledAtom,
   recordQualityAtom,
   recordFrameRateAtom,
+  recordCodecAtom,
   recordSoundEnabledAtom,
   recordSoundTypeAtom,
   recordSoundVolumeAtom,
@@ -75,6 +76,7 @@ export default function SettingsPopover({ anchorEl, onClose }) {
   const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
   const [recordQuality, setRecordQuality] = useAtom(recordQualityAtom);
   const [recordFrameRate, setRecordFrameRate] = useAtom(recordFrameRateAtom);
+  const [recordCodec, setRecordCodec] = useAtom(recordCodecAtom);
   const [recordSoundEnabled, setRecordSoundEnabled] = useAtom(recordSoundEnabledAtom);
   const [recordSoundType, setRecordSoundType] = useAtom(recordSoundTypeAtom);
   const [recordSoundVolume, setRecordSoundVolume] = useAtom(recordSoundVolumeAtom);
@@ -106,6 +108,7 @@ export default function SettingsPopover({ anchorEl, onClose }) {
       "autoRecordEnabled",
       "recordQuality",
       "recordFrameRate",
+      "recordCodec",
       "recordSoundEnabled",
       "recordSoundType",
       "recordSoundVolume",
@@ -138,6 +141,7 @@ export default function SettingsPopover({ anchorEl, onClose }) {
     autoRecordEnabled,
     recordQuality,
     recordFrameRate,
+    recordCodec,
     recordSoundEnabled,
     recordSoundType,
     recordSoundVolume,
@@ -173,6 +177,16 @@ export default function SettingsPopover({ anchorEl, onClose }) {
       window.localStorage.setItem(
         "recordFrameRate",
         JSON.stringify(newFrameRate)
+      );
+    }
+  };
+
+  const handleChangeRecordCodec = (event, newCodec) => {
+    if (newCodec !== null) {
+      setRecordCodec(newCodec);
+      window.localStorage.setItem(
+        "recordCodec",
+        JSON.stringify(newCodec)
       );
     }
   };
@@ -684,6 +698,45 @@ export default function SettingsPopover({ anchorEl, onClose }) {
             </ToggleButton>
             <ToggleButton value={30}>
               <Typography sx={{ fontSize: "1.2rem" }}>30</Typography>
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+
+        {/* 녹화 코덱 설정 */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography sx={{ fontSize: "1.4rem" }}>녹화 코덱</Typography>
+          <ToggleButtonGroup
+            value={recordCodec}
+            exclusive
+            onChange={handleChangeRecordCodec}
+            size="small"
+            sx={{
+              "& .MuiToggleButton-root.Mui-selected": {
+                backgroundColor:
+                  pointColor === "default" ? "#5f5f5f" : "primary.main",
+                color: "#fff",
+                "&:hover": {
+                  backgroundColor:
+                    pointColor === "default" ? "#5f5f5f" : "primary.main",
+                  filter: "brightness(0.9)",
+                },
+              },
+            }}
+          >
+            <ToggleButton value="h264">
+              <Typography sx={{ fontSize: "1.2rem" }}>H.264</Typography>
+            </ToggleButton>
+            <ToggleButton value="vp9">
+              <Typography sx={{ fontSize: "1.2rem" }}>VP9</Typography>
+            </ToggleButton>
+            <ToggleButton value="vp8">
+              <Typography sx={{ fontSize: "1.2rem" }}>VP8</Typography>
             </ToggleButton>
           </ToggleButtonGroup>
         </Box>

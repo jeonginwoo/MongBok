@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import { isRecordingAtom } from "@/atoms/ui";
-import { recordQualityAtom, recordFrameRateAtom, recordSoundEnabledAtom, recordSoundTypeAtom, recordSoundVolumeAtom } from "@/atoms/setting";
+import { recordQualityAtom, recordFrameRateAtom, recordCodecAtom, recordSoundEnabledAtom, recordSoundTypeAtom, recordSoundVolumeAtom } from "@/atoms/setting";
 import { playNotificationSound } from "@/utils/audio";
 import dayjs from "dayjs";
 
@@ -9,6 +9,7 @@ export const useScreenRecorder = () => {
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
   const quality = useAtomValue(recordQualityAtom);
   const frameRate = useAtomValue(recordFrameRateAtom);
+  const codec = useAtomValue(recordCodecAtom);
   const recordSoundEnabled = useAtomValue(recordSoundEnabledAtom);
   const recordSoundType = useAtomValue(recordSoundTypeAtom);
   const recordSoundVolume = useAtomValue(recordSoundVolumeAtom);
@@ -57,6 +58,9 @@ export const useScreenRecorder = () => {
             displaySurface: "browser",
             cursor: "never",
             frameRate: { ideal: frameRate },
+            // GPU 가속을 위한 힌트
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
           },
           audio: {
             echoCancellation: false,
@@ -84,9 +88,27 @@ export const useScreenRecorder = () => {
           await videoTrack.cropTo(cropTarget);
         }
 
-        const mimeType = MediaRecorder.isTypeSupported("video/webm; codecs=vp9")
-          ? "video/webm; codecs=vp9"
-          : "video/webm";
+        // 사용자가 선택한 코덱 사용, 지원하지 않으면 폴백
+        let mimeType = "video/webm";
+        const codecMapping = {
+          h264: "video/webm; codecs=h264",
+          vp9: "video/webm; codecs=vp9",
+          vp8: "video/webm; codecs=vp8",
+        };
+        
+        const preferredCodec = codecMapping[codec];
+        if (preferredCodec && MediaRecorder.isTypeSupported(preferredCodec)) {
+          mimeType = preferredCodec;
+        } else {
+          // 폴백: H.264 -> VP9 -> VP8 순으로 시도
+          if (MediaRecorder.isTypeSupported("video/webm; codecs=h264")) {
+            mimeType = "video/webm; codecs=h264";
+          } else if (MediaRecorder.isTypeSupported("video/webm; codecs=vp9")) {
+            mimeType = "video/webm; codecs=vp9";
+          } else if (MediaRecorder.isTypeSupported("video/webm; codecs=vp8")) {
+            mimeType = "video/webm; codecs=vp8";
+          }
+        }
 
         const bitrateMap = {
           high: 8000000,
@@ -95,11 +117,18 @@ export const useScreenRecorder = () => {
         };
         const videoBitsPerSecond = bitrateMap[quality] || 8000000;
 
-        const recorder = new MediaRecorder(stream, {
+        const recorderOptions = {
           mimeType,
           audioBitsPerSecond: 192000,
           videoBitsPerSecond,
-        });
+        };
+
+        // 브라우저가 지원하면 하드웨어 가속 힌트 추가 (실험적 기능)
+        if ('hardwareAcceleration' in MediaRecorder.prototype) {
+          recorderOptions.hardwareAcceleration = 'prefer-hardware';
+        }
+
+        const recorder = new MediaRecorder(stream, recorderOptions);
         mediaRecorderRef.current = recorder;
         chunksRef.current = [];
 
@@ -182,7 +211,7 @@ export const useScreenRecorder = () => {
         mediaRecorderRef.current = null;
       }
     }
-  }, [isRecording, setIsRecording, quality, frameRate, recordSoundEnabled, recordSoundType, recordSoundVolume]);
+  }, [isRecording, setIsRecording, quality, frameRate, codec, recordSoundEnabled, recordSoundType, recordSoundVolume]);
 
   return contentRef;
 };

@@ -15,6 +15,7 @@ const ALLOWED_KEYS = [
   "autoRecordEnabled",
   "recordQuality",
   "recordFrameRate",
+  "recordCodec",
   "recordSound",
   "recordSoundEnabled",
   "recordSoundType",
@@ -68,6 +69,16 @@ export const validateRecordFrameRate = (value) => {
   const num = Number(value);
   if (!allowed.includes(num)) {
     return `유효하지 않은 녹화 프레임 값 '${value}'. 허용되는 값은: ${allowed.join(
+      ", "
+    )} 입니다.`;
+  }
+  return true;
+};
+
+export const validateRecordCodec = (value) => {
+  const allowed = ["h264", "vp9", "vp8"];
+  if (!allowed.includes(value)) {
+    return `유효하지 않은 녹화 코덱 값 '${value}'. 허용되는 값은: ${allowed.join(
       ", "
     )} 입니다.`;
   }
@@ -345,6 +356,10 @@ export const validatePreferences = async (dataToValidate) => {
 
         case "recordFrameRate":
           validationResult = validateRecordFrameRate(value);
+          break;
+
+        case "recordCodec":
+          validationResult = validateRecordCodec(value);
           break;
 
         case "recordSoundEnabled":

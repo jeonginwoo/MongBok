@@ -120,6 +120,13 @@ export const recordFrameRateAtom = atomWithStorage(
   storage
 );
 
+// 녹화 코덱 설정 (h264, vp9, vp8)
+export const recordCodecAtom = atomWithStorage(
+  "recordCodec",
+  "h264",
+  storage
+);
+
 // 녹화 알림음 ON/OFF
 export const recordSoundEnabledAtom = atomWithStorage(
   "recordSoundEnabled",
