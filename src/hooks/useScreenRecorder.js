@@ -149,7 +149,7 @@ export const useScreenRecorder = () => {
 
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
-          const fileName = `${dayjs().format("YYMMDD_HHdm")}.webm`;
+          const fileName = `${dayjs().format("YYMMDD_HHmm")}.webm`;
 
           a.style.display = "none";
           a.href = url;

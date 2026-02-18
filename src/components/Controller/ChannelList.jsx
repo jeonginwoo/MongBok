@@ -164,18 +164,11 @@ export default function ChannelList() {
       const storeObj = Object.fromEntries(
         Object.entries(updated).map(([id, ch]) => [
           id,
-          { platform: ch.platform },
+          { platform: ch.platform, zoneId: ch.zoneId },
         ])
       );
       
-      // 유효성 검사 후 저장
-      validateChannels(storeObj).then((result) => {
-        if (result === true) {
-          updatePreferences({ channels: storeObj });
-        } else {
-          console.error("채널 데이터 유효성 검사 실패:", result);
-        }
-      });
+      updatePreferences({ channels: storeObj });
 
       return updated;
     });
