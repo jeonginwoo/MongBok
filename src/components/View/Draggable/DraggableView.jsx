@@ -82,7 +82,9 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
       : channel.platform === "soop"
       ? `https://play.sooplive.co.kr/${channelId}/embed`
       : channel.platform === "youtube"
-      ? `https://www.youtube.com/embed/live_stream?channel=${channelId}`
+      ? channel.liveVideoId
+        ? `https://www.youtube.com/embed/${channel.liveVideoId}?autoplay=1`
+        : `https://www.youtube.com/embed/live_stream?channel=${channelId}`
       : "";
 
   return (

@@ -43,91 +43,76 @@ export async function GET(request, context) {
     let viewerCount = 0;
     let liveTitle = "";
     let startTime = null;
+    let lastLiveInfo = null;
+
+    // 라이브 영상의 시청자 수 텍스트에서 숫자 추출 헬퍼
+    const extractViewerCount = (video) => {
+      // view_count가 숫자인 경우
+      if (typeof video.view_count === 'number') {
+        return { isLive: true, count: video.view_count };
+      }
+
+      // 텍스트 소스 후보 목록
+      const textSources = [
+        typeof video.view_count === 'string' ? video.view_count : video.view_count?.text,
+        video.viewers?.text,
+        video.short_view_count_text?.text,
+      ];
+
+      for (const text of textSources) {
+        if (!text) continue;
+        const lower = text.toLowerCase();
+        if (lower.includes('watching')) {
+          const match = text.match(/([\d,.]+)([KMB])?/);
+          if (match) {
+            let num = parseFloat(match[1].replace(/,/g, ''));
+            if (match[2] === 'K') num *= 1000;
+            else if (match[2] === 'M') num *= 1000000;
+            else if (match[2] === 'B') num *= 1000000000;
+            return { isLive: true, count: Math.floor(num) };
+          }
+          return { isLive: true, count: 0 };
+        }
+        if (lower.includes('views')) {
+          // 전체 조회수 = 라이브 아님
+          return { isLive: false, count: 0 };
+        }
+      }
+      return { isLive: false, count: 0 };
+    };
 
     try {
       const livePage = await channel.getLiveStreams();
-      
+
       if (livePage.videos && livePage.videos.length > 0) {
-        const live = livePage.videos[0];
-        liveTitle = live.title?.text || "";
-        
-        // 라이브 여부 확인을 위한 플래그 (기본값 false)
-        let isCurrentlyLive = false;
-        
-        // 라이브 페이지에서 시청자 수 추출 (여러 경로 시도)
-        // view_count가 Text 객체인 경우 처리
-        let viewCountText = null;
-        if (live.view_count) {
-          if (typeof live.view_count === 'number') {
-            viewerCount = live.view_count;
-            isCurrentlyLive = true; // 숫자 형태면 라이브 중
-          } else if (typeof live.view_count === 'string') {
-            viewCountText = live.view_count;
-          } else if (live.view_count.text) {
-            // Text 객체인 경우
-            viewCountText = live.view_count.text;
+        // 전체 라이브 목록에서 현재 라이브 중인 영상 중 시청자 수가 가장 많은 것 선택
+        let bestLive = null;
+        let bestCount = -1;
+
+        for (const video of livePage.videos) {
+          const { isLive: currentlyLive, count } = extractViewerCount(video);
+          if (currentlyLive && count > bestCount) {
+            bestCount = count;
+            bestLive = video;
           }
         }
-        
-        // 텍스트에서 시청자 수 추출 (watching만 인식, views는 무시)
-        if (viewCountText) {
-          // "watching"이 포함되어 있으면 라이브 중
-          if (viewCountText.toLowerCase().includes('watching')) {
-            isCurrentlyLive = true;
-            // "4,954 watching" 형식에서 숫자 추출
-            const match = viewCountText.match(/([\d,.]+)([KMB])?/);
-            if (match) {
-              let num = parseFloat(match[1].replace(/,/g, ''));
-              const multiplier = match[2];
-              if (multiplier === 'K') num *= 1000;
-              else if (multiplier === 'M') num *= 1000000;
-              else if (multiplier === 'B') num *= 1000000000;
-              viewerCount = Math.floor(num);
-            }
-          } else if (viewCountText.toLowerCase().includes('views')) {
-            // "30,000 views"는 전체 조회수이므로 라이브 아님
-            isCurrentlyLive = false;
-            viewerCount = 0;
-          }
-        } else if (live.viewers?.text) {
-          isCurrentlyLive = true;
-          const match = live.viewers.text.match(/[\d,]+/);
-          viewerCount = match ? parseInt(match[0].replace(/,/g, '')) : 0;
-        } else if (live.short_view_count_text?.text) {
-          const text = live.short_view_count_text.text;
-          if (text.toLowerCase().includes('watching')) {
-            isCurrentlyLive = true;
-            const match = text.match(/([\d,.]+)([KMB])?/);
-            if (match) {
-              let num = parseFloat(match[1].replace(/,/g, ''));
-              const multiplier = match[2];
-              if (multiplier === 'K') num *= 1000;
-              else if (multiplier === 'M') num *= 1000000;
-              else if (multiplier === 'B') num *= 1000000000;
-              viewerCount = Math.floor(num);
-            }
-          }
-        }
-        
-        // 라이브 중일 때만 정보 설정
-        if (isCurrentlyLive) {
+
+        if (bestLive) {
           isLive = true;
-          
-          // getInfo()로 정확한 시작 시간 가져오기 (파서 경고 무시)
+          viewerCount = bestCount;
+          liveTitle = bestLive.title?.text || "";
+
+          // getInfo()로 정확한 시작 시간 가져오기
           try {
-            const info = await youtube.getInfo(live.id);
-            
+            const info = await youtube.getInfo(bestLive.id);
             if (info.basic_info?.start_timestamp) {
               const timestamp = info.basic_info.start_timestamp;
               if (typeof timestamp === 'string') {
                 const date = new Date(timestamp);
-                if (!isNaN(date.getTime())) {
-                  startTime = date.toISOString();
-                }
+                if (!isNaN(date.getTime())) startTime = date.toISOString();
               } else if (typeof timestamp === 'number') {
-                const MIN_TIMESTAMP = 0;
                 const MAX_TIMESTAMP = 4102444800; // 2100-01-01
-                if (timestamp >= MIN_TIMESTAMP && timestamp <= MAX_TIMESTAMP) {
+                if (timestamp >= 0 && timestamp <= MAX_TIMESTAMP) {
                   startTime = new Date(timestamp * 1000).toISOString();
                 }
               } else if (timestamp instanceof Date) {
@@ -135,20 +120,58 @@ export async function GET(request, context) {
               }
             }
           } catch (infoErr) {
-            // getInfo() 실패 시 아래에서 현재 시간 사용
+            // 무시 — 아래에서 현재 시간 사용
           }
-          
-          // 시작 시간을 못 가져온 경우 현재 시간 사용
-          if (!startTime) {
-            startTime = new Date().toISOString();
-          }
-          
+
+          if (!startTime) startTime = new Date().toISOString();
+
           liveVideo = {
             title: liveTitle,
-            id: live.id,
+            id: bestLive.id,
             views: viewerCount,
             startTime: startTime,
           };
+        }
+      }
+      // 라이브 중이 아닐 때 마지막 완료된 라이브 정보 조회
+      if (!isLive && livePage?.videos?.length > 0) {
+        // getLiveStreams() 결과에서 시청자수 텍스트가 없는(완료된) 라이브 VOD 탐색
+        const completedCandidates = livePage.videos.filter((v) => {
+          const textSources = [
+            typeof v.view_count === 'string' ? v.view_count : v.view_count?.text,
+            v.viewers?.text,
+            v.short_view_count_text?.text,
+          ];
+          return textSources.some((t) => t && t.toLowerCase().includes('views'));
+        });
+
+        const candidate = completedCandidates[0] ?? livePage.videos[0];
+        if (candidate?.id) {
+          try {
+            const info = await youtube.getInfo(candidate.id);
+            const ts = info.basic_info?.start_timestamp;
+            const dur = info.basic_info?.duration; // seconds
+
+            let lastStart = null;
+            if (typeof ts === 'string') {
+              const d = new Date(ts);
+              if (!isNaN(d.getTime())) lastStart = d.toISOString();
+            } else if (typeof ts === 'number' && ts > 0 && ts <= 4102444800) {
+              lastStart = new Date(ts * 1000).toISOString();
+            } else if (ts instanceof Date) {
+              lastStart = ts.toISOString();
+            }
+
+            if (lastStart) {
+              const lastEnd =
+                typeof dur === 'number' && dur > 0
+                  ? new Date(new Date(lastStart).getTime() + dur * 1000).toISOString()
+                  : null;
+              lastLiveInfo = { startTime: lastStart, closeDate: lastEnd };
+            }
+          } catch (_) {
+            // 무시
+          }
         }
       }
     } catch (e) {
@@ -168,6 +191,7 @@ export async function GET(request, context) {
       liveVideo,
       isLive,
       viewerCount,
+      lastLiveInfo,
     });
   } catch (error) {
     console.error("❌ [YouTube API] 채널 정보 가져오기 실패:", error);

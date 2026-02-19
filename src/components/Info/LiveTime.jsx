@@ -24,14 +24,28 @@ function LiveTime({ channel, isTag = false }) {
       const diff = now.diff(start);
 
       if (diff >= 0) {
-        const hours = Math.floor(diff / 1000 / 60 / 60);
-        const minutes = Math.floor((diff / 1000 / 60) % 60);
-        const seconds = Math.floor((diff / 1000) % 60);
-        setTime(
-          `${hours.toString().padStart(2, "0")}:${minutes
-            .toString()
-            .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
-        );
+        const totalSeconds = Math.floor(diff / 1000);
+        const totalMinutes = Math.floor(totalSeconds / 60);
+        const totalHours = Math.floor(totalMinutes / 60);
+        const totalDays = Math.floor(totalHours / 24);
+        const totalYears = Math.floor(totalDays / 365);
+
+        if (totalYears >= 1) {
+          const remainingDays = totalDays - totalYears * 365;
+          setTime(`${totalYears}Y ${remainingDays}D`);
+        } else if (totalDays >= 1) {
+          const remainingHours = totalHours - totalDays * 24;
+          setTime(`${totalDays}D ${remainingHours}H`);
+        } else {
+          const hours = totalHours;
+          const minutes = Math.floor((totalSeconds / 60) % 60);
+          const seconds = totalSeconds % 60;
+          setTime(
+            `${hours.toString().padStart(2, "0")}:${minutes
+              .toString()
+              .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+          );
+        }
       }
     };
 

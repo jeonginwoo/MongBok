@@ -119,16 +119,17 @@ const getYoutubeLiveStatus = async (channelId) => {
       throw new Error("Channel not found");
     }
 
-    const { channel, liveVideo, isLive, viewerCount } = data;
+    const { channel, liveVideo, isLive, viewerCount, lastLiveInfo } = data;
 
     return {
       name: channel.name ?? "",
       imageUrl: channel.iconURL ?? "",
       liveTitle: liveVideo?.title ?? "",
-      openDate: liveVideo?.startTime ?? null,
-      closeDate: null,
+      openDate: liveVideo?.startTime ?? lastLiveInfo?.startTime ?? null,
+      closeDate: lastLiveInfo?.closeDate ?? null,
       isLive: isLive ?? false,
       userCount: viewerCount ?? 0,
+      liveVideoId: liveVideo?.id ?? null,
       liveCategory: null,
       tags: [],
     };
@@ -174,6 +175,7 @@ export const getAllChannelsData = async (localStorageData) => {
           closeDate: live.closeDate,
           isLive: live.isLive,
           userCount: live.userCount,
+          liveVideoId: live.liveVideoId ?? null,
           liveCategory: live.liveCategory,
           tags: live.tags,
           isVisible: item.zoneId != null,

@@ -252,7 +252,7 @@ export default function ManualArea() {
           </List>
         </Section>
 
-        <Section title="5. 주의사항">
+        <Section title="5. 참고사항">
           <List>
             <ManualListItem
               icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
@@ -266,7 +266,12 @@ export default function ManualArea() {
             />
             <ManualListItem
               icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
-              primary="채팅 X"
+              primary="유튜브(YouTube) 플랫폼"
+              secondary="유튜브 채널이 동시에 여러 라이브를 진행 중인 경우, 시청자 수가 가장 많은 라이브 방송이 자동으로 표시됩니다. 오프라인 채널의 마지막 방송 시작/종료 시간은 채널에 라이브 VOD가 남아 있을 때만 표시됩니다. VOD를 삭제했거나 라이브를 한 적이 없는 경우 '최신 라이브 정보 없음'으로 표시됩니다."
+            />
+            <ManualListItem
+              icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
+              primary="채팅 기능 없음"
               secondary="본 서비스에는 채팅 작성 기능이 없으므로, 채팅 참여를 위해서는 각 플랫폼 사이트를 이용해야 합니다."
             />
             <ManualListItem
@@ -278,6 +283,11 @@ export default function ManualArea() {
               icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
               primary="모바일 환경"
               secondary="본 서비스는 기본적으로 PC 사용을 권장하며, 모바일 환경에서는 브라우저의 '데스크탑 사이트 보기' 설정을 권장합니다. 기기 해상도에 따라 화면 비율이나 폰트 크기 조절이 필요할 수 있습니다."
+            />
+            <ManualListItem
+              icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
+              primary="라이브 진행 시간"
+              secondary="라이브 진행 시간이 채널 정보에 표시됩니다. 24시간 이상일 경우 일(D) 단위로, 1년 이상일 경우 연(Y) 단위로 표시됩니다."
             />
             <ManualListItem
               icon={<InfoIcon sx={{ fontSize: "2rem" }} />}

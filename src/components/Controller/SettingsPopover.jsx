@@ -287,7 +287,6 @@ export default function SettingsPopover({ anchorEl, onClose }) {
     const validation = validateThemeMode(newMode);
     if (validation === true) {
       setThemeMode(newMode);
-      window.localStorage.setItem("themeMode", newMode);
     } else {
       console.error("테마 모드 유효성 검사 실패:", validation);
     }
