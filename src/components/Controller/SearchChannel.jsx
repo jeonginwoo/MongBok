@@ -43,6 +43,17 @@ const platformNames = {
   youtube: "YouTube",
 };
 
+const tooltipProps = {
+  slotProps: {
+    tooltip: {
+      sx: {
+        fontSize: "1.2rem",
+      },
+    },
+  },
+  placement: "top",
+};
+
 export default function SearchChannel() {
   const maxChannels = 30;
 
@@ -59,6 +70,7 @@ export default function SearchChannel() {
   const [loadingPlatforms, setLoadingPlatforms] = useState({ chzzk: false, soop: false, youtube: false });
   const [searchedPlatforms, setSearchedPlatforms] = useState({ chzzk: false, soop: false, youtube: false });
   const containerRef = useRef(null);
+  const searchCacheRef = useRef({}); // { [keyword]: { chzzk: [], soop: [], youtube: [] } }
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -82,59 +94,66 @@ export default function SearchChannel() {
     }
     setLoading(true);
     try {
-        // 선택된 플랫폼이 있으면 해당 플랫폼만, 없으면 모든 활성화된 플랫폼 검색
-        const platformsToSearch = selectedPlatform && enabledPlatforms.includes(selectedPlatform)
-          ? [selectedPlatform]
-          : enabledPlatforms;
+        const currentKeyword = keyword;
+        const cache = searchCacheRef.current[currentKeyword] ?? {};
 
-        // 결과를 초기화하고 검색 시작
-        setResults({ chzzk: [], soop: [], youtube: [] });
-        setSearchedPlatforms({ chzzk: false, soop: false, youtube: false });
-        
-        // 검색할 플랫폼들을 로딩 중으로 표시
-        const loadingState = { chzzk: false, soop: false, youtube: false };
-        platformsToSearch.forEach(platform => {
-          loadingState[platform] = true;
+        // 캐시에 없는 플랫폼만 실제 검색
+        const platformsToFetch = enabledPlatforms.filter(
+          (p) => cache[p] === undefined
+        );
+
+        // 캐시된 결과를 즉시 반영
+        const cachedResults = { chzzk: [], soop: [], youtube: [] };
+        const cachedSearched = { chzzk: false, soop: false, youtube: false };
+        enabledPlatforms.forEach((p) => {
+          if (cache[p] !== undefined) {
+            cachedResults[p] = cache[p];
+            cachedSearched[p] = true;
+          }
         });
+        setResults(cachedResults);
+        setSearchedPlatforms(cachedSearched);
+
+        // 아직 캐시 안된 플랫폼 로딩 표시
+        const loadingState = { chzzk: false, soop: false, youtube: false };
+        platformsToFetch.forEach(p => { loadingState[p] = true; });
         setLoadingPlatforms(loadingState);
         setShowList(true);
 
-        // 각 플랫폼을 개별적으로 검색하여 완료되는 대로 업데이트
-        const searchPromises = platformsToSearch.map(async (platform) => {
+        if (platformsToFetch.length === 0) {
+          // 전부 캐시 히트 → 즉시 완료
+          setLoading(false);
+          return;
+        }
+
+        // 캐시 안된 플랫폼만 병렬 검색
+        const searchPromises = platformsToFetch.map(async (platform) => {
           try {
-            const result = await searchChannels(keyword, platform);
-            setResults((prev) => ({
-              ...prev,
-              [platform]: result,
-            }));
-            setLoadingPlatforms((prev) => ({
-              ...prev,
-              [platform]: false,
-            }));
-            setSearchedPlatforms((prev) => ({
-              ...prev,
-              [platform]: true,
-            }));
+            const result = await searchChannels(currentKeyword, platform);
+            // 캐시 저장
+            if (!searchCacheRef.current[currentKeyword]) {
+              searchCacheRef.current[currentKeyword] = {};
+            }
+            searchCacheRef.current[currentKeyword][platform] = result;
+
+            setResults((prev) => ({ ...prev, [platform]: result }));
+            setLoadingPlatforms((prev) => ({ ...prev, [platform]: false }));
+            setSearchedPlatforms((prev) => ({ ...prev, [platform]: true }));
             return { platform, success: true };
           } catch (error) {
             console.error(`${platform} 검색 실패:`, error);
-            setResults((prev) => ({
-              ...prev,
-              [platform]: [],
-            }));
-            setLoadingPlatforms((prev) => ({
-              ...prev,
-              [platform]: false,
-            }));
-            setSearchedPlatforms((prev) => ({
-              ...prev,
-              [platform]: true,
-            }));
+            if (!searchCacheRef.current[currentKeyword]) {
+              searchCacheRef.current[currentKeyword] = {};
+            }
+            searchCacheRef.current[currentKeyword][platform] = [];
+
+            setResults((prev) => ({ ...prev, [platform]: [] }));
+            setLoadingPlatforms((prev) => ({ ...prev, [platform]: false }));
+            setSearchedPlatforms((prev) => ({ ...prev, [platform]: true }));
             return { platform, success: false };
           }
         });
 
-        // 모든 검색이 완료될 때까지 대기
         await Promise.allSettled(searchPromises);
     } catch (e) {
       console.error("검색 실패:", e);
@@ -147,7 +166,7 @@ export default function SearchChannel() {
     } finally {
       setLoading(false);
     }
-  }, [keyword, selectedPlatform, setSnackbar]);
+  }, [keyword, setSnackbar]);
 
   const handlePlatformMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -179,7 +198,9 @@ export default function SearchChannel() {
     if (keyword.trim()) {
       debounceTimeout.current = setTimeout(handleSearch, 500);
     } else {
+      searchCacheRef.current = {};
       setResults({ chzzk: [], soop: [], youtube: [] });
+      setSearchedPlatforms({ chzzk: false, soop: false, youtube: false });
       setShowList(false);
     }
 
@@ -250,6 +271,7 @@ export default function SearchChannel() {
         sx={{
           input: { color: "text.primary", fontSize: "1.4rem" },
           "& .MuiOutlinedInput-root": {
+            paddingLeft: "0.8rem",
             "& fieldset": { borderColor: "border.primary" },
             "&:hover fieldset": { borderColor: "border.secondary" },
             "&.Mui-focused fieldset": { borderColor: "primary.main" },
@@ -260,7 +282,7 @@ export default function SearchChannel() {
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <Tooltip title="플랫폼 선택">
+              <Tooltip {...tooltipProps} title="플랫폼 선택">
                 <IconButton
                   onClick={handlePlatformMenuOpen}
                   size="small"
@@ -428,7 +450,7 @@ export default function SearchChannel() {
             }}
           >
             {/* 전체 플랫폼 선택 */}
-            <Tooltip title="전체 플랫폼">
+            <Tooltip {...tooltipProps} title="전체 플랫폼">
               <IconButton
                 onClick={() => {
                   setSelectedPlatform("");
@@ -463,7 +485,7 @@ export default function SearchChannel() {
             </Tooltip>
 
             {enabledPlatforms.map((platform) => (
-              <Tooltip key={platform} title={platformNames[platform]}>
+              <Tooltip key={platform} {...tooltipProps} title={platformNames[platform]}>
                 <IconButton
                   onClick={() => {
                     setSelectedPlatform(platform);
@@ -498,6 +520,8 @@ export default function SearchChannel() {
                       width: 36,
                       height: 36,
                       position: "relative",
+                      borderRadius: "50%",
+                      overflow: "hidden",
                     }}
                   >
                     <Image
