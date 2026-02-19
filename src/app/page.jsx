@@ -6,12 +6,15 @@ import { Box } from "@mui/material";
 import ManualArea from "@/components/ManualArea";
 import ViewArea from "@/components/ViewArea";
 import ControllerArea from "@/components/ControllerArea";
+import SettingsArea from "@/components/SettingsArea";
 
-import { useAtomValue } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { viewCountAtom } from "@/atoms/setting";
+import { settingsOpenAtom } from "@/atoms/ui";
 
 export default function App() {
   const viewCount = useAtomValue(viewCountAtom);
+  const [settingsOpen, setSettingsOpen] = useAtom(settingsOpenAtom);
   const canvasRef = useRef(null);
 
   /** 🧭 전체화면 */
@@ -44,7 +47,10 @@ export default function App() {
         {(viewCount > 0)
         ? <ViewArea canvasRef={canvasRef} fullscreen={fullscreen} />
         : <ManualArea />}
-        <ControllerArea fullscreen={fullscreen} />
+        <Box sx={{ display: settingsOpen ? "none" : "flex" }}>
+          <ControllerArea fullscreen={fullscreen} />
+        </Box>
+        {settingsOpen && <SettingsArea onClose={() => setSettingsOpen(false)} />}
       </Box>
   );
 }

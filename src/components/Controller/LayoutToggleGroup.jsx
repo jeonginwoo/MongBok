@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { Box, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { canvas } from "@/data/canvas";
-import RatioSelector from "./RatioSelector";
 
 import { useAtom, useAtomValue } from "jotai";
 import {
@@ -111,7 +110,6 @@ export default function LayoutToggleGroup() {
   return (
     controllerExpanded && (
       <Box sx={{ display: "flex", gap: "0.6rem" }}>
-        <RatioSelector />
         {availableLayouts && (
           <StyledToggleButtonGroup
             value={viewCount === 0 ? null : layoutType}

@@ -30,9 +30,8 @@ import {
   chatFontSizeAdjustmentAtom,
   autoRecordEnabledAtom,
 } from "@/atoms/setting";
-import { snackbarAtom, isDraggingAtom, isRecordingAtom } from "@/atoms/ui";
+import { snackbarAtom, isDraggingAtom, isRecordingAtom, settingsOpenAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
-import SettingsPopover from "./SettingsPopover";
 
 const iconStyle = { fontSize: "2.4rem" };
 
@@ -60,8 +59,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     chatFontSizeAdjustmentAtom
   );
   const isDragging = useAtomValue(isDraggingAtom);
-
-  const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
+  const setSettingsOpen = useSetAtom(settingsOpenAtom);
   const [timeToNextRefresh, setTimeToNextRefresh] = useState(60);
   const setSnackbar = useSetAtom(snackbarAtom);
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
@@ -95,10 +93,6 @@ export default function ControlButtonGroup({ fullscreen }) {
 
   const handleRecordButtonClick = () => {
     setIsRecording((prev) => !prev);
-  };
-
-  const handleOpenSettingsPopover = (event) => {
-    setSettingsAnchorEl(event.currentTarget);
   };
 
   const handleToggleController = () => {
@@ -334,21 +328,10 @@ export default function ControlButtonGroup({ fullscreen }) {
 
       <Box sx={{ display: "flex", alignItems: "center" }}>
         <Tooltip slotProps={tooltipSlotProps} placement="top" title="설정">
-          <IconButton
-            onClick={handleOpenSettingsPopover}
-            sx={{
-              "& .MuiSvgIcon-root": Boolean(settingsAnchorEl)
-                ? { color: "primary.main" } // 포인트 컬러 적용
-                : {},
-            }}
-          >
+          <IconButton onClick={() => setSettingsOpen(true)}>
             <SettingsIcon sx={iconStyle} />
           </IconButton>
         </Tooltip>
-        <SettingsPopover
-          anchorEl={settingsAnchorEl}
-          onClose={() => setSettingsAnchorEl(null)}
-        />
 
         {controllerExpanded && (
           <>

@@ -1,0 +1,755 @@
+"use client";
+
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Box,
+  Paper,
+  IconButton,
+  Tooltip,
+  Switch,
+  Typography,
+  Stack,
+  Divider,
+  ToggleButton,
+  ToggleButtonGroup,
+  Slider,
+  Select,
+  MenuItem,
+  FormControl,
+  CircularProgress,
+} from "@mui/material";
+import {
+  Mouse as MouseIcon,
+  PanTool as PanToolIcon,
+  ContentCopy as ContentCopyIcon,
+  Check as CheckIcon,
+  Close as CloseIcon,
+  Settings as SettingsIcon,
+} from "@mui/icons-material";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import {
+  validatePreferences,
+  applyPreferences,
+  validateThemeMode,
+  validateBoolean,
+} from "@/utils/preferences";
+import {
+  pointerEventsEnabledAtom,
+  showCurrentTimeAtom,
+  themeModeAtom,
+  pointColorAtom,
+  chatFontSizeAdjustmentAtom,
+  autoRecordEnabledAtom,
+  recordQualityAtom,
+  recordFrameRateAtom,
+  recordCodecAtom,
+  recordSoundEnabledAtom,
+  recordSoundTypeAtom,
+  recordSoundVolumeAtom,
+  layoutTypeAtom,
+  ratioAtom,
+  viewCountAtom,
+} from "@/atoms/setting";
+import { snackbarAtom } from "@/atoms/ui";
+import { POINT_COLORS } from "@/data/color";
+import { playNotificationSound } from "@/utils/audio";
+import { canvas } from "@/data/canvas";
+import RatioSelector from "./Settings/RatioSelector";
+import Editor from "react-simple-code-editor";
+import Prism from "prismjs";
+import "prismjs/components/prism-json";
+import { styled } from "@mui/material/styles";
+
+// ── Shared constants ─────────────────────────────────────────────
+
+const selectMenuProps = {
+  PaperProps: {
+    sx: {
+      "& .MuiMenuItem-root": { fontSize: "1.2rem" },
+    },
+  },
+};
+
+const tooltipSlotProps = {
+  tooltip: { sx: { fontSize: "1.2rem" } },
+};
+
+// ── Styled components ────────────────────────────────────────────
+
+const SettingRow = styled(Box)({
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+});
+
+const SettingLabel = styled(Typography)({
+  fontSize: "1.4rem",
+});
+
+const SmallText = styled(Typography)({
+  fontSize: "1.2rem",
+});
+
+const SettingSwitch = styled(Switch)(({ theme }) => ({
+  "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+    backgroundColor: theme.palette.primary.main,
+    opacity: 0.65,
+  },
+  "& .MuiSwitch-track": {
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+}));
+
+const HotkeySpan = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "pointcolor",
+})(({ theme, pointcolor }) => ({
+  color: pointcolor === "default" ? "#00bcd4" : theme.palette.primary.main,
+  fontWeight: "bold",
+}));
+
+const SettingToggleGroup = styled(ToggleButtonGroup, {
+  shouldForwardProp: (prop) => prop !== "pointcolor",
+})(({ theme, pointcolor }) => ({
+  "& .MuiToggleButton-root.Mui-selected": {
+    backgroundColor:
+      pointcolor === "default" ? "#5f5f5f" : theme.palette.primary.main,
+    color: "#fff",
+    "&:hover": {
+      backgroundColor:
+        pointcolor === "default" ? "#5f5f5f" : theme.palette.primary.main,
+      filter: "brightness(0.9)",
+    },
+  },
+}));
+
+function SettingSelect({ pointcolor, sx, children, ...props }) {
+  return (
+    <FormControl size="small" sx={{ minWidth: 100 }}>
+      <Select
+        MenuProps={selectMenuProps}
+        sx={{
+          height: 30,
+          fontSize: "1.2rem",
+          color: pointcolor === "default" ? "inherit" : "primary.main",
+          ".MuiSelect-select": { paddingTop: "4px", paddingBottom: "4px" },
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderColor:
+              pointcolor === "default"
+                ? "rgba(140, 140, 140, 0.5)"
+                : "primary.main",
+          },
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor:
+              pointcolor === "default" ? "text.primary" : "primary.main",
+          },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: "primary.main",
+          },
+          ...sx,
+        }}
+        {...props}
+      >
+        {children}
+      </Select>
+    </FormControl>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────
+
+export default function SettingsArea({ onClose }) {
+  const [pointerEventsEnabled, setPointerEventsEnabled] = useAtom(pointerEventsEnabledAtom);
+  const [showCurrentTime, setShowCurrentTime] = useAtom(showCurrentTimeAtom);
+  const [themeMode, setThemeMode] = useAtom(themeModeAtom);
+  const [pointColor, setPointColor] = useAtom(pointColorAtom);
+  const [chatFontSizeAdjustment, setChatFontSizeAdjustment] = useAtom(chatFontSizeAdjustmentAtom);
+  const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
+  const [recordQuality, setRecordQuality] = useAtom(recordQualityAtom);
+  const [recordFrameRate, setRecordFrameRate] = useAtom(recordFrameRateAtom);
+  const [recordCodec, setRecordCodec] = useAtom(recordCodecAtom);
+  const [recordSoundEnabled, setRecordSoundEnabled] = useAtom(recordSoundEnabledAtom);
+  const [recordSoundType, setRecordSoundType] = useAtom(recordSoundTypeAtom);
+  const [recordSoundVolume, setRecordSoundVolume] = useAtom(recordSoundVolumeAtom);
+  const [layoutType, setLayoutType] = useAtom(layoutTypeAtom);
+  const ratioKey = useAtomValue(ratioAtom);
+  const viewCount = useAtomValue(viewCountAtom);
+
+  const [group, orientation] = ratioKey.split("-");
+  const availableLayouts = canvas[group]?.[orientation]?.layouts?.[viewCount];
+  const layoutKeys = availableLayouts ? Object.keys(availableLayouts) : [];
+
+  const setSnackbar = useSetAtom(snackbarAtom);
+
+  const [data, setData] = useState("");
+  const [copySuccess, setCopySuccess] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSliderHovered, setIsSliderHovered] = useState(false);
+  const [isVolumeSliderHovered, setIsVolumeSliderHovered] = useState(false);
+
+  const activePointColor =
+    POINT_COLORS[pointColor]?.[themeMode] || POINT_COLORS["default"][themeMode];
+
+  const getLocalStorageDataString = useCallback(() => {
+    return JSON.stringify(
+      [
+        "channels", "layout", "ratio", "pointerEventsEnabled", "showCurrentTime",
+        "controllerExpanded", "themeMode", "pointColor", "chatFontSizeAdjustment",
+        "autoRecordEnabled", "recordQuality", "recordFrameRate", "recordCodec",
+        "recordSoundEnabled", "recordSoundType", "recordSoundVolume",
+        "selectedSearchPlatform",
+      ].reduce((obj, key) => {
+        const value = window.localStorage.getItem(key);
+        if (value) {
+          try { obj[key] = JSON.parse(value); }
+          catch { obj[key] = value; }
+        }
+        return obj;
+      }, {}),
+      null,
+      2
+    );
+  }, []);
+
+  useEffect(() => {
+    setData(getLocalStorageDataString());
+  }, [
+    themeMode, pointColor, chatFontSizeAdjustment, showCurrentTime,
+    pointerEventsEnabled, autoRecordEnabled, recordQuality, recordFrameRate,
+    recordCodec, recordSoundEnabled, recordSoundType, recordSoundVolume,
+    getLocalStorageDataString,
+  ]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  const handleToggleAutoRecord = () => {
+    setAutoRecordEnabled((prev) => {
+      const nextState = !prev;
+      const validation = validateBoolean(nextState, "autoRecordEnabled");
+      if (validation === true) {
+        window.localStorage.setItem("autoRecordEnabled", JSON.stringify(nextState));
+      }
+      return nextState;
+    });
+  };
+
+  const handleChangeRecordQuality = (event, newQuality) => {
+    if (newQuality !== null) {
+      setRecordQuality(newQuality);
+      window.localStorage.setItem("recordQuality", JSON.stringify(newQuality));
+    }
+  };
+
+  const handleChangeRecordFrameRate = (event, newFrameRate) => {
+    if (newFrameRate !== null) {
+      setRecordFrameRate(newFrameRate);
+      window.localStorage.setItem("recordFrameRate", JSON.stringify(newFrameRate));
+    }
+  };
+
+  const handleChangeRecordCodec = (event, newCodec) => {
+    if (newCodec !== null) {
+      setRecordCodec(newCodec);
+      window.localStorage.setItem("recordCodec", JSON.stringify(newCodec));
+    }
+  };
+
+  const handleToggleRecordSound = () => {
+    setRecordSoundEnabled((prev) => {
+      const nextState = !prev;
+      window.localStorage.setItem("recordSoundEnabled", JSON.stringify(nextState));
+      setData(getLocalStorageDataString());
+      if (nextState) playNotificationSound(recordSoundType, recordSoundVolume);
+      return nextState;
+    });
+  };
+
+  const handleChangeRecordSoundType = (event) => {
+    const newType = event.target.value;
+    setRecordSoundType(newType);
+    window.localStorage.setItem("recordSoundType", JSON.stringify(newType));
+    setData(getLocalStorageDataString());
+    playNotificationSound(newType, recordSoundVolume);
+  };
+
+  const handleChangeRecordSoundVolume = (event, newVolume) => {
+    setRecordSoundVolume(newVolume);
+    window.localStorage.setItem("recordSoundVolume", JSON.stringify(newVolume));
+    setData(getLocalStorageDataString());
+  };
+
+  const handleCopy = () => {
+    const dataString = getLocalStorageDataString();
+    setData(dataString);
+    navigator.clipboard.writeText(dataString);
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 750);
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const validationResult = await Promise.race([
+        validatePreferences(data),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 7500)),
+      ]);
+
+      if (typeof validationResult === "string") {
+        setSnackbar({ open: true, message: validationResult, severity: "error" });
+        setSaveError(true);
+        setTimeout(() => setSaveError(false), 750);
+        return;
+      }
+
+      applyPreferences(data.trim() === "" ? {} : JSON.parse(data));
+
+      setSaveSuccess(true);
+      setSnackbar({ open: true, message: "설정이 성공적으로 저장되었습니다!", severity: "success" });
+      setTimeout(() => {
+        setSaveSuccess(false);
+        onClose();
+        window.location.reload();
+      }, 750);
+    } catch (e) {
+      const message =
+        e.message === "Timeout"
+          ? "유효성 검사 시간이 초과되었습니다."
+          : "데이터를 저장하는 중 오류가 발생했습니다.";
+      setSnackbar({ open: true, message, severity: "error" });
+      setSaveError(true);
+      setTimeout(() => setSaveError(false), 750);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleChangeTheme = (newMode) => {
+    if (validateThemeMode(newMode) === true) setThemeMode(newMode);
+  };
+
+  const handleChangePointerEvents = (event, newMode) => {
+    if (newMode !== null) {
+      setPointerEventsEnabled(newMode);
+      window.localStorage.setItem("pointerEventsEnabled", JSON.stringify(newMode));
+    }
+  };
+
+  const handleToggleCurrentTime = () => {
+    setShowCurrentTime((prev) => {
+      const nextState = !prev;
+      if (validateBoolean(nextState, "showCurrentTime") === true) {
+        window.localStorage.setItem("showCurrentTime", JSON.stringify(nextState));
+      }
+      return nextState;
+    });
+  };
+
+  const handleChangePointColor = (color) => {
+    setPointColor(color);
+    window.localStorage.setItem("pointColor", JSON.stringify(color));
+  };
+
+  const handleChangeChatFontSize = (event, newValue) => {
+    setChatFontSizeAdjustment(newValue);
+    window.localStorage.setItem("chatFontSizeAdjustment", JSON.stringify(newValue));
+  };
+
+  const successAnimation = { "100%": { color: "success.main" } };
+  const errorAnimation = { "100%": { color: "error.main" } };
+
+  const availableThemes = [
+    { mode: "light", color: "#ffffff", label: "Light" },
+    { mode: "dark", color: "#333333", label: "Dark" },
+  ];
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        width: 340,
+        backgroundColor: "background.paper",
+        color: "text.primary",
+        display: "flex",
+        flexDirection: "column",
+        borderLeft: "0.1rem solid",
+        borderColor: "divider",
+        flexShrink: 0,
+      }}
+    >
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+      }}
+    >
+      {/* 헤더 */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          px: 1.5,
+          py: 1.5,
+          borderBottom: "0.1rem solid",
+          borderColor: "divider",
+          flexShrink: 0,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+          <SettingsIcon sx={{ fontSize: "1.8rem", color: "text.secondary" }} />
+          <Typography sx={{ fontWeight: "bold", fontSize: "1.6rem" }}>설정</Typography>
+        </Box>
+        <IconButton size="small" onClick={onClose}>
+          <CloseIcon sx={{ fontSize: "2rem" }} />
+        </IconButton>
+      </Box>
+
+      {/* 스크롤 가능한 콘텐츠 영역 */}
+      <Box
+        sx={{
+          flexGrow: 1,
+          overflowY: "auto",
+          p: 1.5,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        {/* 테마 설정 */}
+        <SettingRow>
+          <SettingLabel>
+            테마{" "}
+            <HotkeySpan component="span" pointcolor={pointColor}>(M)</HotkeySpan>
+          </SettingLabel>
+          <Stack direction="row" spacing={1}>
+            {availableThemes.map((t) => (
+              <Tooltip slotProps={tooltipSlotProps} placement="top" title={t.label} key={t.mode}>
+                <Box
+                  onClick={() => handleChangeTheme(t.mode)}
+                  sx={{
+                    width: 28, height: 28, borderRadius: "50%",
+                    backgroundColor: t.color,
+                    border: themeMode === t.mode ? "3px solid" : "1px solid rgba(0,0,0,0.1)",
+                    borderColor: themeMode === t.mode ? "primary.main" : "divider",
+                    cursor: "pointer",
+                    boxShadow: themeMode === t.mode ? 2 : 0,
+                    transition: "all 0.2s",
+                    "&:hover": { transform: "scale(1.1)" },
+                  }}
+                />
+              </Tooltip>
+            ))}
+          </Stack>
+        </SettingRow>
+
+        {/* 포인트 컬러 설정 */}
+        <SettingRow>
+          <SettingLabel>포인트 컬러</SettingLabel>
+          <Stack direction="row" spacing={1}>
+            {Object.values(POINT_COLORS).map((p) => (
+              <Tooltip slotProps={tooltipSlotProps} placement="top" title={p.label} key={p.value}>
+                <Box
+                  onClick={() => handleChangePointColor(p.value)}
+                  sx={{
+                    width: 28, height: 28, borderRadius: "50%",
+                    backgroundColor: p[themeMode],
+                    border: pointColor === p.value ? "3px solid" : "1px solid rgba(0,0,0,0.1)",
+                    borderColor: pointColor === p.value ? "primary.main" : "divider",
+                    cursor: "pointer",
+                    boxShadow: pointColor === p.value ? 2 : 0,
+                    transition: "all 0.2s",
+                    "&:hover": { transform: "scale(1.1)" },
+                  }}
+                />
+              </Tooltip>
+            ))}
+          </Stack>
+        </SettingRow>
+
+        <Divider />
+
+        {/* 화면 비율 */}
+        <SettingRow>
+          <SettingLabel>화면 비율</SettingLabel>
+          <RatioSelector />
+        </SettingRow>
+
+        {/* 레이아웃 */}
+        {layoutKeys.length > 0 && (
+          <SettingRow>
+            <SettingLabel sx={{ whiteSpace: "nowrap" }}>레이아웃</SettingLabel>
+            <SettingSelect
+              pointcolor={pointColor}
+              value={layoutKeys.includes(layoutType) ? layoutType : layoutKeys[0]}
+              onChange={(e) => setLayoutType(e.target.value)}
+            >
+              {layoutKeys.map((key, index) => (
+                <MenuItem key={key} value={key}>layout {index + 1}</MenuItem>
+              ))}
+            </SettingSelect>
+          </SettingRow>
+        )}
+
+        {/* 현재 시간 표시 */}
+        <SettingRow>
+          <SettingLabel>
+            현재 시간 표시{" "}
+            <HotkeySpan component="span" pointcolor={pointColor}>(T)</HotkeySpan>
+          </SettingLabel>
+          <SettingSwitch checked={showCurrentTime} onChange={handleToggleCurrentTime} />
+        </SettingRow>
+
+        {/* 화면 조작 모드 */}
+        <SettingRow>
+          <SettingLabel>
+            {pointerEventsEnabled ? "화면 조작 모드" : "화면 이동 모드"}{" "}
+            <HotkeySpan component="span" pointcolor={pointColor}>(V)</HotkeySpan>
+          </SettingLabel>
+          <SettingToggleGroup
+            value={pointerEventsEnabled}
+            exclusive
+            onChange={handleChangePointerEvents}
+            aria-label="pointer events"
+            pointcolor={pointColor}
+          >
+            <ToggleButton value={false} aria-label="pan tool">
+              <Tooltip slotProps={tooltipSlotProps} title="화면 이동 모드" placement="top">
+                <PanToolIcon />
+              </Tooltip>
+            </ToggleButton>
+            <ToggleButton value={true} aria-label="mouse">
+              <Tooltip slotProps={tooltipSlotProps} title="화면 조작 모드" placement="top">
+                <MouseIcon />
+              </Tooltip>
+            </ToggleButton>
+          </SettingToggleGroup>
+        </SettingRow>
+
+        {/* 채팅창 글자 크기 */}
+        <SettingRow>
+          <SettingLabel>
+            채팅창 글자 크기
+            <Box component="span" sx={{ color: "text.secondary", fontSize: "1.2rem", ml: 0.5 }}>
+              ({chatFontSizeAdjustment > 0 ? "+" : ""}{chatFontSizeAdjustment})
+            </Box>
+          </SettingLabel>
+          <Box
+            sx={{ width: 130, px: 1 }}
+            onMouseEnter={() => setIsSliderHovered(true)}
+            onMouseLeave={() => setIsSliderHovered(false)}
+          >
+            <Slider
+              size="small"
+              value={chatFontSizeAdjustment}
+              min={-5} max={10} step={1}
+              valueLabelDisplay={isSliderHovered ? "on" : "auto"}
+              onChange={handleChangeChatFontSize}
+              slotProps={{
+                thumb: {
+                  sx: {
+                    transition: "0.2s",
+                    "&::before": { display: "none" },
+                    "&:hover, &.Mui-focusVisible": {
+                      boxShadow: (theme) =>
+                        `0px 0px 0px 6px ${theme.palette.primary.opacity}`,
+                    },
+                  },
+                },
+              }}
+              sx={{ color: "primary.main", "& .MuiSlider-mark": { backgroundColor: "transparent" } }}
+            />
+          </Box>
+        </SettingRow>
+
+        <Divider />
+
+        {/* 자동 녹화 설정 */}
+        <SettingRow>
+          <SettingLabel>
+            자동 녹화{" "}
+            <Box component="span" sx={{ color: "text.secondary", fontSize: "1.2rem" }}>
+              (1번 Zone)
+            </Box>
+          </SettingLabel>
+          <SettingSwitch checked={autoRecordEnabled} onChange={handleToggleAutoRecord} />
+        </SettingRow>
+
+        {/* 녹화 프레임 설정 */}
+        <SettingRow>
+          <SettingLabel>녹화 프레임</SettingLabel>
+          <SettingToggleGroup value={recordFrameRate} exclusive onChange={handleChangeRecordFrameRate} size="small" pointcolor={pointColor}>
+            <ToggleButton value={60}><SmallText>60</SmallText></ToggleButton>
+            <ToggleButton value={30}><SmallText>30</SmallText></ToggleButton>
+          </SettingToggleGroup>
+        </SettingRow>
+
+        {/* 녹화 화질 설정 */}
+        <SettingRow>
+          <SettingLabel>녹화 화질</SettingLabel>
+          <SettingToggleGroup value={recordQuality} exclusive onChange={handleChangeRecordQuality} size="small" pointcolor={pointColor}>
+            <ToggleButton value="high"><SmallText>High</SmallText></ToggleButton>
+            <ToggleButton value="medium"><SmallText>Mid</SmallText></ToggleButton>
+            <ToggleButton value="low"><SmallText>Low</SmallText></ToggleButton>
+          </SettingToggleGroup>
+        </SettingRow>
+
+        {/* 녹화 코덱 설정 */}
+        <SettingRow>
+          <SettingLabel>녹화 코덱</SettingLabel>
+          <SettingToggleGroup value={recordCodec} exclusive onChange={handleChangeRecordCodec} size="small" pointcolor={pointColor}>
+            <ToggleButton value="h264"><SmallText>H.264</SmallText></ToggleButton>
+            <ToggleButton value="vp9"><SmallText>VP9</SmallText></ToggleButton>
+            <ToggleButton value="vp8"><SmallText>VP8</SmallText></ToggleButton>
+          </SettingToggleGroup>
+        </SettingRow>
+
+        {/* 녹화 알림음 설정 */}
+        <SettingRow>
+          <SettingLabel sx={{ whiteSpace: "nowrap" }}>녹화 알림음</SettingLabel>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <SettingSelect
+              pointcolor={pointColor}
+              value={recordSoundType}
+              onChange={handleChangeRecordSoundType}
+              disabled={!recordSoundEnabled}
+              sx={{ "&.Mui-disabled": { opacity: 0.5 } }}
+            >
+              <MenuItem value="ding">Ding</MenuItem>
+              <MenuItem value="chime">Chime</MenuItem>
+              <MenuItem value="alert">Alert</MenuItem>
+              <MenuItem value="beep">Beep</MenuItem>
+              <MenuItem value="success">Success</MenuItem>
+              <MenuItem value="fanfare">Fanfare</MenuItem>
+              <MenuItem value="blip">Blip</MenuItem>
+              <MenuItem value="swoosh">Swoosh</MenuItem>
+              <MenuItem value="pop">Pop</MenuItem>
+            </SettingSelect>
+            <Switch
+              checked={recordSoundEnabled}
+              onChange={handleToggleRecordSound}
+              sx={{
+                "& .MuiSwitch-switchBase.Mui-checked": {
+                  color: pointColor === "default" ? "primary.main" : activePointColor,
+                },
+                "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                  backgroundColor: pointColor === "default" ? "primary.main" : activePointColor,
+                },
+              }}
+            />
+          </Box>
+        </SettingRow>
+
+        {/* 알림음 볼륨 */}
+        {recordSoundEnabled && (
+          <SettingRow>
+            <SettingLabel>
+              알림음 크기
+              <Box component="span" sx={{ color: "text.secondary", fontSize: "1.2rem", ml: 0.5 }}>
+                ({recordSoundVolume}%)
+              </Box>
+            </SettingLabel>
+            <Box
+              sx={{ width: 130, px: 1 }}
+              onMouseEnter={() => setIsVolumeSliderHovered(true)}
+              onMouseLeave={() => setIsVolumeSliderHovered(false)}
+            >
+              <Slider
+                size="small"
+                value={recordSoundVolume}
+                min={0} max={200} step={5}
+                valueLabelDisplay={isVolumeSliderHovered ? "on" : "auto"}
+                onChange={handleChangeRecordSoundVolume}
+                onChangeCommitted={(e, value) => playNotificationSound(recordSoundType, value)}
+                sx={{ color: "primary.main", "& .MuiSlider-mark": { backgroundColor: "transparent" } }}
+              />
+            </Box>
+          </SettingRow>
+        )}
+
+        <Divider />
+
+        {/* 설정 동기화 */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <SettingRow>
+            <SettingLabel>설정 동기화</SettingLabel>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Tooltip slotProps={tooltipSlotProps} title={copySuccess ? "복사 완료!" : "현재 설정 복사"}>
+                <span>
+                  <IconButton
+                    disabled={copySuccess}
+                    onClick={handleCopy}
+                    size="small"
+                    sx={{
+                      border: "1px solid", borderColor: "divider", borderRadius: 1,
+                      animation: copySuccess ? "successAnimation 0.750s ease" : "none",
+                      "@keyframes successAnimation": successAnimation,
+                    }}
+                  >
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip
+                slotProps={tooltipSlotProps}
+                title={saveSuccess ? "저장 완료!" : saveError ? "저장 실패" : "설정 저장"}
+              >
+                <span>
+                  <IconButton
+                    disabled={saveSuccess || isSaving}
+                    onClick={handleSave}
+                    size="small"
+                    sx={{
+                      border: "1px solid", borderColor: "divider", borderRadius: 1,
+                      animation: saveSuccess
+                        ? "successAnimation 0.750s ease"
+                        : saveError
+                        ? "errorAnimation 0.750s ease"
+                        : "none",
+                      "@keyframes successAnimation": successAnimation,
+                      "@keyframes errorAnimation": errorAnimation,
+                    }}
+                  >
+                    {isSaving ? <CircularProgress size={12.5} /> : <CheckIcon fontSize="small" />}
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Box>
+          </SettingRow>
+          <Box
+            sx={{
+              border: 1, borderColor: "divider", borderRadius: 1,
+              bgcolor: "background.paper", overflow: "auto", height: "200px",
+              transition: "border-color 0.2s",
+              "&:hover": { borderColor: "text.primary" },
+              "&:focus-within": { borderColor: "primary.main", borderWidth: 2, m: "-1px" },
+              "& .token.property": { color: activePointColor },
+              "& .token.string": { color: themeMode === "dark" ? "#ce9178" : "#a31515" },
+              "& .token.number": { color: themeMode === "dark" ? "#b5cea8" : "#098658" },
+              "& .token.boolean": { color: themeMode === "dark" ? "#9cdcfe" : "#0451a5" },
+              "& .token.punctuation": { color: "text.secondary" },
+              "& textarea": { outline: "none" },
+            }}
+          >
+            <Editor
+              value={data}
+              onValueChange={(code) => setData(code)}
+              highlight={(code) => Prism.highlight(code, Prism.languages.json, "json")}
+              padding={10}
+              style={{ fontFamily: '"Fira code", "Fira Mono", monospace', fontSize: "1.2rem", minHeight: "100%" }}
+              placeholder="설정 데이터를 여기에 붙여넣거나 복사하세요."
+            />
+          </Box>
+        </Box>
+      </Box>
+    </Box>
+    </Paper>
+  );
+}
