@@ -7,6 +7,7 @@ import ManualArea from "@/components/ManualArea";
 import ViewArea from "@/components/ViewArea";
 import ControllerArea from "@/components/ControllerArea";
 import SettingsArea from "@/components/SettingsArea";
+import GlobalSnackbar from "@/components/Info/GlobalSnackbar";
 
 import { useAtom, useAtomValue } from "jotai";
 import { viewCountAtom } from "@/atoms/setting";
@@ -51,6 +52,7 @@ export default function App() {
           <ControllerArea fullscreen={fullscreen} />
         </Box>
         {settingsOpen && <SettingsArea onClose={() => setSettingsOpen(false)} />}
+        <GlobalSnackbar />
       </Box>
   );
 }

@@ -4,7 +4,6 @@ import LayoutToggleGroup from "@/components/Controller/LayoutToggleGroup";
 import SearchChannel from "@/components/Controller/SearchChannel";
 import ChannelList from "@/components/Controller/ChannelList";
 import ControlButtonGroup from "@/components/Controller/ControlButtonGroup";
-import GlobalSnackbar from "@/components/Info/GlobalSnackbar";
 
 import { useAtomValue } from "jotai";
 import { viewCountAtom, controllerExpandedAtom } from "@/atoms/setting";
@@ -51,9 +50,6 @@ export default function ControllerArea({ fullscreen }) {
 
       {/* 🔹 버튼 그룹 */}
       <ControlButtonGroup fullscreen={fullscreen} />
-
-      {/* 🔹 스넥바 */}
-      <GlobalSnackbar />
     </Paper>
   );
 }
