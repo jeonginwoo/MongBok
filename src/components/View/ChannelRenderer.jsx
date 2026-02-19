@@ -6,13 +6,20 @@ export default function ChannelRenderer({
   channel,
   layout,
   pointerEventsEnabled,
+  dynamicOverrides = {},
 }) {
+  const applyOverride = (zone) => {
+    if (!zone) return zone;
+    const override = dynamicOverrides[`${zone.type}-${zone.id}`];
+    return override ? { ...zone, style: { ...zone.style, ...override } } : zone;
+  };
+
   return (
     <React.Fragment key={channel.id}>
       {layout["view"]?.[channel.zoneId] && (
         <DraggableView
           channel={channel}
-          zone={layout["view"][channel.zoneId]}
+          zone={applyOverride(layout["view"][channel.zoneId])}
           pointerEventsEnabled={pointerEventsEnabled}
         />
       )}
@@ -20,7 +27,7 @@ export default function ChannelRenderer({
       {layout["chat"]?.[channel.zoneId] && (
         <DraggableChat
           channel={channel}
-          zone={layout["chat"][channel.zoneId]}
+          zone={applyOverride(layout["chat"][channel.zoneId])}
         />
       )}
     </React.Fragment>

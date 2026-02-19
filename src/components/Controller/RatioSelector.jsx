@@ -12,16 +12,16 @@ import {
 
 const RatioDisplay = ({ ratioConfig, sx }) => {
   const ratioValue = ratioConfig?.style?.aspectRatio;
-  if (!ratioValue) return null;
 
-  const [w, h] = ratioValue.split("/").map(Number);
-  const numericRatio = w / h;
-
-  // This logic assumes the parent container is a square.
-  const style =
-    numericRatio >= 1
-      ? { width: "100%", height: `${(1 / numericRatio) * 100}%` }
-      : { width: `${numericRatio * 100}%`, height: "100%" };
+  const style = ratioValue
+    ? (() => {
+        const [w, h] = ratioValue.split("/").map(Number);
+        const numericRatio = w / h;
+        return numericRatio >= 1
+          ? { width: "100%", height: `${(1 / numericRatio) * 100}%` }
+          : { width: `${numericRatio * 100}%`, height: "100%" };
+      })()
+    : { width: "100%", height: "100%" };
 
   return (
     <Box
@@ -85,7 +85,7 @@ export default function RatioSelector() {
             zIndex: 1,
           }}
         >
-          {currentRatioConfig?.style?.aspectRatio.replace(" / ", " : ")}
+          {currentRatioConfig?.style?.aspectRatio?.replace(" / ", " : ") ?? ratio?.split("-")[0]}
         </Box>
         <RatioDisplay ratioConfig={currentRatioConfig} />
       </Button>
@@ -143,7 +143,7 @@ export default function RatioSelector() {
                       fontSize: "1.2rem",
                     }}
                   >
-                    {config.style.aspectRatio.replace(" / ", " : ")}
+                    {config.style?.aspectRatio?.replace(" / ", " : ") ?? group}
                   </Box>
                 </MenuItem>
               );

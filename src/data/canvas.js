@@ -659,4 +659,127 @@ export const canvas = {
       },
     },
   },
+  "full": {
+    landscape: {
+      maxViewCount: 5,
+      style: {},
+      layouts: {
+        1: {
+          layout1: {
+            view: {},
+            chat: {
+              1: { id: 1, type: "chat", style: { top: `0%`, left: `0%`, width: `100%`, height: `100%` } },
+            },
+          },
+          layout2: {
+            dynamicView: { ratio: 16 / 9 },
+            view: {
+              1: { id: 1, type: "view", style: {} },
+            },
+            chat: {
+              1: { id: 1, type: "chat", style: {} },
+            },
+          },
+        },
+        2: {
+          layout1: {
+            view: {},
+            chat: {
+              1: { id: 1, type: "chat", style: { top: `0%`, left: `${50 * 0}%`, width: `${50}%`, height: `100%` } },
+              2: { id: 2, type: "chat", style: { top: `0%`, left: `${50 * 1}%`, width: `${50}%`, height: `100%` } },
+            },
+          },
+          layout2: {
+            dynamicView: { ratio: 16 / 9 },
+            view: {
+              1: { id: 1, type: "view", style: {} },
+              2: { id: 2, type: "view", style: {} },
+            },
+            chat: {
+              1: { id: 1, type: "chat", style: {} },
+              2: { id: 2, type: "chat", style: {} },
+            },
+          },
+        },
+        3: {
+          layout1: {
+            view: {},
+            chat: {
+              1: { id: 1, type: "chat", style: { top: `0%`, left: `${100 / 3 * 0}%`, width: `${100 / 3}%`, height: `100%` } },
+              2: { id: 2, type: "chat", style: { top: `0%`, left: `${100 / 3 * 1}%`, width: `${100 / 3}%`, height: `100%` } },
+              3: { id: 3, type: "chat", style: { top: `0%`, left: `${100 / 3 * 2}%`, width: `${100 / 3}%`, height: `100%` } },
+            },
+          },
+          layout2: {
+            dynamicView: { ratio: 16 / 9 },
+            view: {
+              1: { id: 1, type: "view", style: {} },
+              2: { id: 2, type: "view", style: {} },
+              3: { id: 3, type: "view", style: {} },
+            },
+            chat: {
+              1: { id: 1, type: "chat", style: {} },
+              2: { id: 2, type: "chat", style: {} },
+              3: { id: 3, type: "chat", style: {} },
+            },
+          },
+        },
+        4: {
+          layout1: {
+            view: {},
+            chat: {
+              1: { id: 1, type: "chat", style: { top: `0%`, left: `${25 * 0}%`, width: `25%`, height: `100%` } },
+              2: { id: 2, type: "chat", style: { top: `0%`, left: `${25 * 1}%`, width: `25%`, height: `100%` } },
+              3: { id: 3, type: "chat", style: { top: `0%`, left: `${25 * 2}%`, width: `25%`, height: `100%` } },
+              4: { id: 4, type: "chat", style: { top: `0%`, left: `${25 * 3}%`, width: `25%`, height: `100%` } },
+            },
+          },
+          layout2: {
+            dynamicView: { ratio: 16 / 9 },
+            view: {
+              1: { id: 1, type: "view", style: {} },
+              2: { id: 2, type: "view", style: {} },
+              3: { id: 3, type: "view", style: {} },
+              4: { id: 4, type: "view", style: {} },
+            },
+            chat: {
+              1: { id: 1, type: "chat", style: {} },
+              2: { id: 2, type: "chat", style: {} },
+              3: { id: 3, type: "chat", style: {} },
+              4: { id: 4, type: "chat", style: {} },
+            },
+          },
+        },
+        5: {
+          layout1: {
+            view: {},
+            chat: {
+              1: { id: 1, type: "chat", style: { top: `0%`, left: `${20 * 0}%`, width: `20%`, height: `100%` } },
+              2: { id: 2, type: "chat", style: { top: `0%`, left: `${20 * 1}%`, width: `20%`, height: `100%` } },
+              3: { id: 3, type: "chat", style: { top: `0%`, left: `${20 * 2}%`, width: `20%`, height: `100%` } },
+              4: { id: 4, type: "chat", style: { top: `0%`, left: `${20 * 3}%`, width: `20%`, height: `100%` } },
+              5: { id: 5, type: "chat", style: { top: `0%`, left: `${20 * 4}%`, width: `20%`, height: `100%` } },
+            },
+          },
+          layout2: {
+            dynamicView: { ratio: 16 / 9 },
+            view: {
+              1: { id: 1, type: "view", style: {} },
+              2: { id: 2, type: "view", style: {} },
+              3: { id: 3, type: "view", style: {} },
+              4: { id: 4, type: "view", style: {} },
+              5: { id: 5, type: "view", style: {} },
+            },
+            chat: {
+              1: { id: 1, type: "chat", style: {} },
+              2: { id: 2, type: "chat", style: {} },
+              3: { id: 3, type: "chat", style: {} },
+              4: { id: 4, type: "chat", style: {} },
+              5: { id: 5, type: "chat", style: {} },
+            },
+          },
+        },
+      },
+    },
+  },
 };

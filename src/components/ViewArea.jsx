@@ -37,6 +37,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
   const [isDraggingAny, setIsDraggingAny] = useAtom(isDraggingAtom);
   const [draggingType, setDraggingType] = useState(null);
   const [fitStyle, setFitStyle] = useAtom(fitStyleAtom);
+  const [dynamicOverrides, setDynamicOverrides] = useState({});
   const [channels, setChannels] = useAtom(channelsAtom);
   const [ratioKey] = useAtom(ratioAtom);
   const layout = useAtomValue(layoutAtom);
@@ -96,7 +97,10 @@ export default function ViewArea({ canvasRef, fullscreen }) {
     if (!element) return;
 
     const currentRatio = ratioConfig?.style?.aspectRatio;
-    if (!currentRatio) return;
+    if (!currentRatio) {
+      setFitStyle({ width: "100%", height: "100%" });
+      return;
+    }
 
     const [ratioW, ratioH] = currentRatio.split("/").map(Number);
 
@@ -135,6 +139,54 @@ export default function ViewArea({ canvasRef, fullscreen }) {
 
     return () => observer.disconnect();
   }, [canvasRef, ratioKey, ratioConfig, setFitStyle]);
+
+  useEffect(() => {
+    if (!layout?.dynamicView) {
+      setDynamicOverrides({});
+      return;
+    }
+
+    const element = canvasContentRef?.current;
+    if (!element) return;
+
+    const { ratio } = layout.dynamicView;
+    const N = Object.values(channels).filter((c) => c.isVisible).length || 1;
+
+    const compute = () => {
+      const canvasWidth = element.clientWidth;
+      const canvasHeight = element.clientHeight;
+      if (!canvasWidth || !canvasHeight) return;
+
+      const colWidthPct = 100 / N;
+      const viewHeightPx = (canvasWidth / N) / ratio;
+      const viewHeightPct = Math.min((viewHeightPx / canvasHeight) * 100, 70);
+      const chatTopPct = viewHeightPct;
+      const chatHeightPct = 100 - chatTopPct;
+
+      const overrides = {};
+      for (let i = 1; i <= N; i++) {
+        const leftPct = colWidthPct * (i - 1);
+        overrides[`view-${i}`] = {
+          top: "0%",
+          left: `${leftPct}%`,
+          width: `${colWidthPct}%`,
+          height: `${viewHeightPct}%`,
+        };
+        overrides[`chat-${i}`] = {
+          top: `${chatTopPct}%`,
+          left: `${leftPct}%`,
+          width: `${colWidthPct}%`,
+          height: `${chatHeightPct}%`,
+        };
+      }
+      setDynamicOverrides(overrides);
+    };
+
+    compute();
+    const observer = new ResizeObserver(compute);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [canvasContentRef, layout, channels]);
 
   const handleDrop = (baseId, targetZoneId) => {
     setChannels((prev) => {
@@ -198,19 +250,26 @@ export default function ViewArea({ canvasRef, fullscreen }) {
             transition: "width 0.25s ease-out, height 0.25s ease-out",
             ...fitStyle,
             ...ratioConfig?.style,
+            ...(layout?.canvasStyle ?? {}),
           }}
         >
           {/* DropZone */}
           {isDraggingAny &&
             draggingType &&
             layout[draggingType] &&
-            Object.values(layout[draggingType]).map((zone) => (
-              <DropZone
-                key={`${zone.type}-${zone.id}`}
-                zone={zone}
-                canvasRef={canvasRef}
-              />
-            ))}
+            Object.values(layout[draggingType]).map((zone) => {
+              const override = dynamicOverrides[`${zone.type}-${zone.id}`];
+              const effectiveZone = override
+                ? { ...zone, style: { ...zone.style, ...override } }
+                : zone;
+              return (
+                <DropZone
+                  key={`${effectiveZone.type}-${effectiveZone.id}`}
+                  zone={effectiveZone}
+                  canvasRef={canvasRef}
+                />
+              );
+            })}
 
           {/* 채널 렌더링 */}
           {Object.values(channels)
@@ -221,6 +280,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
                 channel={channel}
                 layout={layout}
                 pointerEventsEnabled={pointerEventsEnabled}
+                dynamicOverrides={dynamicOverrides}
               />
             ))}
 

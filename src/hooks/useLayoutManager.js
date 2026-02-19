@@ -30,10 +30,10 @@ export const useLayoutManager = () => {
     if (!newRatioConfig) return;
 
     // Case 1: Same viewCount and layoutType exist
-    if (newRatioConfig.layouts?.[viewCount]?.[layoutType]) {
-      setRatio(newRatioKey);
-      return;
-    }
+    // if (newRatioConfig.layouts?.[viewCount]?.[layoutType]) {
+    //   setRatio(newRatioKey);
+    //   return;
+    // }
 
     // Case 2: Only same viewCount exists
     if (newRatioConfig.layouts?.[viewCount]) {
