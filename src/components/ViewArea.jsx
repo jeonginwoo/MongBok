@@ -228,7 +228,8 @@ export default function ViewArea({ canvasRef, fullscreen }) {
         collisionDetection={pointerWithin}
         onDragStart={({ active }) => {
           setIsDraggingAny(true);
-          const [baseId, type] = active.id.split("-");
+          const lastDash = active.id.lastIndexOf("-");
+          const type = active.id.slice(lastDash + 1);
           setDraggingType(type);
         }}
         onDragEnd={({ active, over }) => {
@@ -236,7 +237,8 @@ export default function ViewArea({ canvasRef, fullscreen }) {
           setDraggingType(null);
           if (!over) return;
           const [zoneType, zoneId] = over.id.split("-");
-          const [baseId] = active.id.split("-");
+          const lastDash = active.id.lastIndexOf("-");
+          const baseId = active.id.slice(0, lastDash);
           handleDrop(baseId, Number(zoneId));
         }}
       >
