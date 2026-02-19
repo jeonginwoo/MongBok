@@ -17,7 +17,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { List, ListItem, Divider, Box, Typography } from "@mui/material";
+import { List, ListItem, Divider, Box } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ChannelInfo from "@/components/Info/ChannelInfo/ChannelListChannelInfo";
 
@@ -243,24 +243,9 @@ export default function ChannelList() {
         </DragOverlay>
       </DndContext>
 
-      <Box sx={{ position: "relative", mt: 1, mb: 2, px: 1.5 }}>
-        <Divider sx={{ borderColor: "border.primary" }} />
-        <Typography
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            fontSize: "1.2rem",
-            color: "text.disabled",
-            bgcolor: "background.paper",
-            px: 0.6,
-            userSelect: "none",
-          }}
-        >
-          {visible.length} / {maxViewCount}
-        </Typography>
-      </Box>
+      <Divider sx={{ mt: 1, mb: 2, mx: 1.5, fontSize: "1.2rem", color: "text.disabled", borderColor: "border.primary", userSelect: "none" }}>
+        {visible.length} / {maxViewCount}
+      </Divider>
 
       {sortedHidden.length > 0 && (
         <>
