@@ -149,7 +149,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
     const element = canvasContentRef?.current;
     if (!element) return;
 
-    const { ratio } = layout.dynamicView;
+    const { ratio, viewCount } = layout.dynamicView;
     const N = Object.values(channels).filter((c) => c.isVisible).length || 1;
 
     const compute = () => {
@@ -157,28 +157,54 @@ export default function ViewArea({ canvasRef, fullscreen }) {
       const canvasHeight = element.clientHeight;
       if (!canvasWidth || !canvasHeight) return;
 
-      const colWidthPct = 100 / N;
-      const viewHeightPx = (canvasWidth / N) / ratio;
-      const viewHeightPct = Math.min((viewHeightPx / canvasHeight) * 100, 70);
-      const chatTopPct = viewHeightPct;
-      const chatHeightPct = 100 - chatTopPct;
-
       const overrides = {};
-      for (let i = 1; i <= N; i++) {
-        const leftPct = colWidthPct * (i - 1);
-        overrides[`view-${i}`] = {
+
+      if (viewCount === 1) {
+        // Only zone 1 video at top (full width), all chats split below
+        const viewHeightPx = canvasWidth / ratio;
+        const viewHeightPct = Math.min((viewHeightPx / canvasHeight) * 100, 70);
+        const chatTopPct = viewHeightPct;
+        const chatHeightPct = 100 - chatTopPct;
+        const chatColWidthPct = 100 / N;
+
+        overrides[`view-1`] = {
           top: "0%",
-          left: `${leftPct}%`,
-          width: `${colWidthPct}%`,
+          left: "0%",
+          width: "100%",
           height: `${viewHeightPct}%`,
         };
-        overrides[`chat-${i}`] = {
-          top: `${chatTopPct}%`,
-          left: `${leftPct}%`,
-          width: `${colWidthPct}%`,
-          height: `${chatHeightPct}%`,
-        };
+        for (let i = 1; i <= N; i++) {
+          overrides[`chat-${i}`] = {
+            top: `${chatTopPct}%`,
+            left: `${chatColWidthPct * (i - 1)}%`,
+            width: `${chatColWidthPct}%`,
+            height: `${chatHeightPct}%`,
+          };
+        }
+      } else {
+        const colWidthPct = 100 / N;
+        const viewHeightPx = (canvasWidth / N) / ratio;
+        const viewHeightPct = Math.min((viewHeightPx / canvasHeight) * 100, 70);
+        const chatTopPct = viewHeightPct;
+        const chatHeightPct = 100 - chatTopPct;
+
+        for (let i = 1; i <= N; i++) {
+          const leftPct = colWidthPct * (i - 1);
+          overrides[`view-${i}`] = {
+            top: "0%",
+            left: `${leftPct}%`,
+            width: `${colWidthPct}%`,
+            height: `${viewHeightPct}%`,
+          };
+          overrides[`chat-${i}`] = {
+            top: `${chatTopPct}%`,
+            left: `${leftPct}%`,
+            width: `${colWidthPct}%`,
+            height: `${chatHeightPct}%`,
+          };
+        }
       }
+
       setDynamicOverrides(overrides);
     };
 
