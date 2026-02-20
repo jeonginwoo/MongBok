@@ -133,7 +133,7 @@ export default function DraggableChat({ channel, zone }) {
             maxHeight: "10rem",
             aspectRatio: "100/30",
             background: (theme) => theme.palette.background.gradient,
-            p: "3%",
+            p: "1.2rem",
             zIndex: 10,
             cursor: pointerEventsEnabled ? "grab" : undefined,
             pointerEvents: pointerEventsEnabled ? "auto" : "none",

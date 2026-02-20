@@ -169,6 +169,11 @@ export default function ManualArea() {
               primary="채널 활성화 및 정렬"
               secondary="목록의 채널을 클릭하면 상단으로 이동(활성화)되어 화면에 표시됩니다. 활성화된 채널은 드래그하여 순서를 변경할 수 있으며, 다시 클릭하면 목록으로 돌아갑니다. 비활성화된 채널은 1순위-시청자순, 2순위-채널명 으로 자동 정렬됩니다."
             />
+            <ManualListItem
+              icon={<ImportExportIcon sx={{ fontSize: '2rem' }} />}
+              primary="채널 수동 추가 (검색 결과에 없는 경우)"
+              secondary='검색 결과 상위 5개에 포함되지 않는 채널은 설정 > 설정 동기화를 통해 직접 추가할 수 있습니다. 현재 설정을 복사한 뒤, channels 항목에 추가하려는 채널을 직접 입력하면 됩니다. 형식은 다음과 같습니다: "채널ID": { "platform": "플랫폼명" } — 플랫폼명은 chzzk / soop / youtube 중 하나입니다. 채널ID는 각 플랫폼의 채널 URL에서 확인할 수 있습니다.'
+            />
           </List>
         </Section>
 
@@ -202,37 +207,7 @@ export default function ManualArea() {
             <ManualListItem
               icon={<SettingsIcon sx={{ fontSize: '2rem' }} />}
               primary="설정"
-              secondary="테마 색상, 포인트 컬러, 현재 시간 표시 여부, 화면 조작 모드 설정, 설정 동기화 기능이 포함된 설정 팝업을 엽니다."
-            />
-            <ManualListItem
-              icon={<Brightness4Icon sx={{ fontSize: '2rem' }} />}
-              nested
-              primary="테마/포인트 컬러 변경"
-              secondary="라이트/다크 모드 전환 및 앱의 포인트 컬러를 변경하여 원하는 디자인으로 꾸밀 수 있습니다."
-            />
-            <ManualListItem
-              icon={<MouseIcon sx={{ fontSize: '2rem' }} />}
-              nested
-              primary="화면 조작/이동 모드 (단축키: V)"
-              secondary="'화면 이동 모드'와 '화면 조작 모드'를 전환합니다. 이동 모드에서는 드래그&드롭으로 화면 배치를 변경할 수 있고, 조작 모드에서는 각 방송 화면(치지직 채팅창 닫기 등)을 직접 클릭하여 제어할 수 있습니다. 조작 모드에서는 채팅창을 마우스 휠로 스크롤하여 이전 채팅을 확인할 수 있으며, 스크롤을 올린 상태에서 새 채팅이 오면 최신 채팅으로 이동하는 버튼이 나타납니다."
-            />
-            <ManualListItem
-              icon={<AccessTimeIcon sx={{ fontSize: '2rem' }} />}
-              nested
-              primary="현재 시간 (단축키: T)"
-              secondary="설정에서 시간 표시를 켠 경우, 화면 좌측 상단에 현재 시간이 표시됩니다. 시간을 클릭하면 전체 화면 모드가 토글됩니다."
-            />
-            <ManualListItem
-              icon={<FormatSizeIcon sx={{ fontSize: "2rem" }} />}
-              nested
-              primary="채팅창 글자 크기 조절 (단축키: ↑, ↓)"
-              secondary="설정 팝업을 열지 않고도, 방향키 위(↑)/아래(↓) 버튼을 눌러 채팅창의 글자 크기를 간편하게 조절할 수 있습니다."
-            />
-            <ManualListItem
-              icon={<ImportExportIcon sx={{ fontSize: '2rem' }} />}
-              nested
-              primary="설정 동기화"
-              secondary="현재 브라우저에 저장된 설정(채널 목록, 레이아웃 등)을 텍스트 형태로 복사하거나, 다른 기기에서 복사한 설정을 붙여넣어 동기화할 수 있습니다."
+              secondary="테마, 화면, 녹화, 동기화 관련 설정기능이 포함된 설정창을 엽니다."
             />
             <ManualListItem
               icon={<RefreshIcon sx={{ fontSize: '2rem' }} />}

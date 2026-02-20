@@ -185,7 +185,7 @@ export const validateChannels = async (value) => {
           });
         }
 
-        const { platform, zoneId } = channelData;
+        const { platform, zoneId = null } = channelData;
         if (!["chzzk", "soop", "youtube"].includes(platform)) {
           return Promise.reject({
             error: `Validation Error: Invalid platform '${platform}' for channel '${channelId}'. Must be 'chzzk', 'soop', or 'youtube'.`,
@@ -262,9 +262,11 @@ export const validateLayout = async (parsedData) => {
   }
 
   try {
-    const viewCount = Object.keys(channelsObj).length;
+    const visibleCount = Object.values(channelsObj).filter(
+      (ch) => (ch.zoneId ?? null) !== null
+    ).length;
 
-    if (viewCount > 0) {
+    if (visibleCount > 0 || Object.keys(channelsObj).length > 0) {
       const [group, orientation] = ratio.split("-");
       if (!group || !orientation) {
         return `유효하지 않은 비율 형식 '${ratio}'. 'group-orientation' 형식이 예상됩니다.`;
@@ -275,15 +277,17 @@ export const validateLayout = async (parsedData) => {
         return `비율 그룹 '${group}' 또는 방향 '${orientation}'이 캔버스 레이아웃에서 찾을 수 없습니다.`;
       }
 
-      if (viewCount > ratioInfo.maxViewCount) {
-        // Max view count exceeded, but we just ignore specific layout validation
-      } else {
-        const availableLayouts = ratioInfo.layouts[viewCount];
+      if (visibleCount > ratioInfo.maxViewCount) {
+        return `현재 화면 비율 '${ratio}'에서 표시 가능한 최대 채널 수는 ${ratioInfo.maxViewCount}개입니다. (현재 활성 채널: ${visibleCount}개)`;
+      }
+
+      if (visibleCount > 0) {
+        const availableLayouts = ratioInfo.layouts[visibleCount];
         if (!availableLayouts || !availableLayouts[layout]) {
           const validLayouts = availableLayouts
             ? Object.keys(availableLayouts)
             : [];
-          return `viewCount ${viewCount} 및 비율 '${ratio}'에 대한 유효하지 않은 레이아웃 '${layout}'. 사용 가능한 레이아웃: ${validLayouts.join(
+          return `활성 채널 수 ${visibleCount} 및 비율 '${ratio}'에 대한 유효하지 않은 레이아웃 '${layout}'. 사용 가능한 레이아웃: ${validLayouts.join(
             ", "
           )}`;
         }
