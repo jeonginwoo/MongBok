@@ -16,6 +16,7 @@ import {
 } from "@mui/icons-material";
 import { getLiveStatus } from "@/api/live";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
+import { styled } from "@mui/material/styles";
 import {
   validateThemeMode,
   validateBoolean
@@ -34,6 +35,18 @@ import { snackbarAtom, isDraggingAtom, isRecordingAtom, settingsOpenAtom } from 
 import { POINT_COLORS } from "@/data/color";
 
 const iconStyle = { fontSize: "2.4rem" };
+
+const HotkeySpan = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "pointcolor",
+})(({ theme, pointcolor }) => ({
+  color: pointcolor === "default" ? "#00bcd4" : theme.palette.primary.main,
+  fontWeight: "bold",
+}));
+
+const rotate360 = {
+  "0%": { transform: "rotate(0deg)" },
+  "100%": { transform: "rotate(360deg)" },
+};
 
 const tooltipSlotProps = {
   tooltip: {
@@ -236,10 +249,15 @@ export default function ControlButtonGroup({ fullscreen }) {
         return;
       if (isDragging) return;
 
-      switch (event.key.toUpperCase()) {
-        case "S":
+      const key = event.key.toUpperCase();
+      switch (key) {
+        case "C":
           event.preventDefault();
           handleToggleController();
+          break;
+        case "S":
+          event.preventDefault();
+          setSettingsOpen((prev) => !prev);
           break;
         case "M":
           event.preventDefault();
@@ -289,11 +307,6 @@ export default function ControlButtonGroup({ fullscreen }) {
     isDragging,
   ]);
 
-  const rotate360 = {
-    "0%": { transform: "rotate(0deg)" },
-    "100%": { transform: "rotate(360deg)" },
-  };
-
   return (
     <Box
       sx={{
@@ -305,19 +318,12 @@ export default function ControlButtonGroup({ fullscreen }) {
         slotProps={tooltipSlotProps}
         title={
           <>
-            {controllerExpanded ? "사이드 접기" : "사이드 펴기"}{" "}
-            <Box
-              component="span"
-              sx={{ color: pointColor === 'default' ? "#00bcd4" : "primary.main", fontWeight: "bold" }}
-            >
-              (S)
-            </Box>
+            {controllerExpanded ? "컨트롤러 접기" : "컨트롤러 펴기"}{" "}
+            <HotkeySpan component="span" pointcolor={pointColor}>(C)</HotkeySpan>
           </>
         }
       >
-        <IconButton
-          onClick={handleToggleController}
-        >
+        <IconButton onClick={handleToggleController}>
           {controllerExpanded ? (
             <FormatIndentIncreaseIcon sx={iconStyle} />
           ) : (
@@ -327,7 +333,16 @@ export default function ControlButtonGroup({ fullscreen }) {
       </Tooltip>
 
       <Box sx={{ display: "flex", alignItems: "center" }}>
-        <Tooltip slotProps={tooltipSlotProps} placement="top" title="설정">
+        <Tooltip
+          slotProps={tooltipSlotProps}
+          placement="top"
+          title={
+            <>
+              설정{" "}
+              <HotkeySpan component="span" pointcolor={pointColor}>(S)</HotkeySpan>
+            </>
+          }
+        >
           <IconButton onClick={() => setSettingsOpen(true)}>
             <SettingsIcon sx={iconStyle} />
           </IconButton>
@@ -340,12 +355,7 @@ export default function ControlButtonGroup({ fullscreen }) {
               title={
                 <>
                   채널 정보 갱신{" "}
-                  <Box
-                    component="span"
-                    sx={{ color: pointColor === 'default' ? "#00bcd4" : "primary.main", fontWeight: "bold" }}
-                  >
-                    (R)
-                  </Box>
+                  <HotkeySpan component="span" pointcolor={pointColor}>(R)</HotkeySpan>
                   {" "}{timeToNextRefresh}
                 </>
               }
@@ -395,12 +405,7 @@ export default function ControlButtonGroup({ fullscreen }) {
               title={
                 <>
                   전체화면{" "}
-                  <Box
-                    component="span"
-                    sx={{ color: pointColor === 'default' ? "#00bcd4" : "primary.main", fontWeight: "bold" }}
-                  >
-                    (F)
-                  </Box>
+                  <HotkeySpan component="span" pointcolor={pointColor}>(F)</HotkeySpan>
                 </>
               }
             >

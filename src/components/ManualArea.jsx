@@ -201,12 +201,12 @@ export default function ManualArea() {
           <List>
             <ManualListItem
               icon={<FormatIndentIncreaseIcon sx={{ fontSize: '2rem' }} />}
-              primary="사이드바 펴기/접기 (단축키: S)"
+              primary="사이드바 펴기/접기 (단축키: C)"
               secondary="컨트롤러(사이드바) 영역을 펴거나 접습니다. 넓은 화면으로 시청하고 싶을 때 유용합니다."
             />
             <ManualListItem
               icon={<SettingsIcon sx={{ fontSize: '2rem' }} />}
-              primary="설정"
+              primary="설정 (단축키: S)"
               secondary="테마, 화면, 녹화, 동기화 관련 설정기능이 포함된 설정창을 엽니다."
             />
             <ManualListItem
