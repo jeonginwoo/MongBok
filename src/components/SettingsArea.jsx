@@ -381,13 +381,7 @@ export default function SettingsArea({ onClose }) {
         borderLeft: "0.1rem solid",
         borderColor: "divider",
         flexShrink: 0,
-      }}
-    >
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
+        overflow: "hidden",
       }}
     >
       {/* 헤더 */}
@@ -417,7 +411,9 @@ export default function SettingsArea({ onClose }) {
         sx={{
           flexGrow: 1,
           overflowY: "auto",
-          p: 1.5,
+          overflowX: "hidden",
+          pt: 1.5,
+          px: 1.5,
           display: "flex",
           flexDirection: "column",
           gap: 2,
@@ -677,7 +673,7 @@ export default function SettingsArea({ onClose }) {
         <Divider />
 
         {/* 설정 동기화 */}
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1, flexGrow: 1, minHeight: 0 }}>
           <SettingRow>
             <SettingLabel>설정 동기화</SettingLabel>
             <Box sx={{ display: "flex", gap: 1 }}>
@@ -726,7 +722,7 @@ export default function SettingsArea({ onClose }) {
           <Box
             sx={{
               border: 1, borderColor: "divider", borderRadius: 1,
-              bgcolor: "background.paper", overflow: "auto", height: "200px",
+              bgcolor: "background.paper", overflow: "auto", minHeight: "240px", flexGrow: 1,
               transition: "border-color 0.2s",
               "&:hover": { borderColor: "text.primary" },
               "&:focus-within": { borderColor: "primary.main", borderWidth: 2, m: "-1px" },
@@ -743,13 +739,13 @@ export default function SettingsArea({ onClose }) {
               onValueChange={(code) => setData(code)}
               highlight={(code) => Prism.highlight(code, Prism.languages.json, "json")}
               padding={10}
-              style={{ fontFamily: '"Fira code", "Fira Mono", monospace', fontSize: "1.2rem", minHeight: "100%" }}
+              style={{ fontFamily: '"Fira code", "Fira Mono", monospace', fontSize: "1.2rem" }}
               placeholder="설정 데이터를 여기에 붙여넣거나 복사하세요."
             />
           </Box>
+          <Box sx={{ minHeight: 6, height: 6, width: '100%' }} />
         </Box>
       </Box>
-    </Box>
     </Paper>
   );
 }

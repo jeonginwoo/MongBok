@@ -296,6 +296,7 @@ export default function ManualArea() {
             />
           </List>
         </Section>
+        <Box sx={{ minHeight: 10, height: 10, width: '100%' }} />
       </Box>
     </Box>
   );
