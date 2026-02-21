@@ -697,7 +697,6 @@ export const canvas = {
             dynamicView: { ratio: 16 / 9, viewCount: 1 },
             view: {
               1: { id: 1, type: "view", style: {} },
-              2: { id: 2, type: "view", style: { display: "none" } },
             },
             chat: {
               1: { id: 1, type: "chat", style: {} },
@@ -730,8 +729,6 @@ export const canvas = {
             dynamicView: { ratio: 16 / 9, viewCount: 1 },
             view: {
               1: { id: 1, type: "view", style: {} },
-              2: { id: 2, type: "view", style: { display: "none" } },
-              3: { id: 3, type: "view", style: { display: "none" } },
             },
             chat: {
               1: { id: 1, type: "chat", style: {} },
@@ -768,9 +765,6 @@ export const canvas = {
             dynamicView: { ratio: 16 / 9, viewCount: 1 },
             view: {
               1: { id: 1, type: "view", style: {} },
-              2: { id: 2, type: "view", style: { display: "none" } },
-              3: { id: 3, type: "view", style: { display: "none" } },
-              4: { id: 4, type: "view", style: { display: "none" } },
             },
             chat: {
               1: { id: 1, type: "chat", style: {} },
@@ -811,10 +805,6 @@ export const canvas = {
             dynamicView: { ratio: 16 / 9, viewCount: 1 },
             view: {
               1: { id: 1, type: "view", style: {} },
-              2: { id: 2, type: "view", style: { display: "none" } },
-              3: { id: 3, type: "view", style: { display: "none" } },
-              4: { id: 4, type: "view", style: { display: "none" } },
-              5: { id: 5, type: "view", style: { display: "none" } },
             },
             chat: {
               1: { id: 1, type: "chat", style: {} },
