@@ -48,9 +48,7 @@ export default function App() {
         {(viewCount > 0)
         ? <ViewArea canvasRef={canvasRef} fullscreen={fullscreen} />
         : <ManualArea />}
-        <Box sx={{ display: settingsOpen ? "none" : "flex" }}>
-          <ControllerArea fullscreen={fullscreen} />
-        </Box>
+        <ControllerArea fullscreen={fullscreen} />
         {settingsOpen && <SettingsArea onClose={() => setSettingsOpen(false)} />}
         <GlobalSnackbar />
       </Box>

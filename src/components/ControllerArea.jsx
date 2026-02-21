@@ -1,6 +1,5 @@
 import React from "react";
 import { Box, Paper } from "@mui/material";
-import LayoutToggleGroup from "@/components/Controller/LayoutToggleGroup";
 import SearchChannel from "@/components/Controller/SearchChannel";
 import ChannelList from "@/components/Controller/ChannelList";
 import ControlButtonGroup from "@/components/Controller/ControlButtonGroup";
@@ -27,15 +26,6 @@ export default function ControllerArea({ fullscreen }) {
         flexShrink: 0,
       }}
     >
-      {/* 🔹 LayoutType 선택 */}
-      {controllerExpanded ? (
-        <Box sx={{ mb: 2, pr: 1.5, pl: 1.5 }}>
-          <LayoutToggleGroup viewCount={viewCount} />
-        </Box>
-      ) :
-        <LayoutToggleGroup viewCount={viewCount} />
-      }
-
       {/* 🔹 검색 컴포넌트 추가 */}
       {controllerExpanded && (
         <Box sx={{ mb: 2, pr: 1.5, pl: 1.5 }}>

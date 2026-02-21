@@ -55,6 +55,7 @@ import { POINT_COLORS } from "@/data/color";
 import { playNotificationSound } from "@/utils/audio";
 import { canvas } from "@/data/canvas";
 import RatioSelector from "./Settings/RatioSelector";
+import LayoutToggleGroup from "@/components/Settings/LayoutToggleGroup";
 import Editor from "react-simple-code-editor";
 import Prism from "prismjs";
 import "prismjs/components/prism-json";
@@ -479,20 +480,15 @@ export default function SettingsArea({ onClose }) {
         </SettingRow>
 
         {/* 레이아웃 */}
-        {layoutKeys.length > 0 && (
-          <SettingRow>
-            <SettingLabel sx={{ whiteSpace: "nowrap" }}>레이아웃</SettingLabel>
-            <SettingSelect
-              pointcolor={pointColor}
-              value={layoutKeys.includes(layoutType) ? layoutType : layoutKeys[0]}
-              onChange={(e) => setLayoutType(e.target.value)}
-            >
-              {layoutKeys.map((key, index) => (
-                <MenuItem key={key} value={key}>layout {index + 1}</MenuItem>
-              ))}
-            </SettingSelect>
-          </SettingRow>
-        )}
+        <SettingRow>
+          <SettingLabel sx={{ whiteSpace: "nowrap" }}>
+            레이아웃{" "}
+            <HotkeySpan component="span" pointcolor={pointColor}>(1, 2, ...)</HotkeySpan>
+          </SettingLabel>
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            <LayoutToggleGroup settingsMode />
+          </Box>
+        </SettingRow>
 
         {/* 현재 시간 표시 */}
         <SettingRow>
@@ -532,16 +528,17 @@ export default function SettingsArea({ onClose }) {
         {/* 채팅창 글자 크기 */}
         <SettingRow>
           <SettingLabel>
-            채팅창 글자 크기
-            <Box component="span" sx={{ color: "text.secondary", fontSize: "1.2rem", ml: 0.5 }}>
-              ({chatFontSizeAdjustment > 0 ? "+" : ""}{chatFontSizeAdjustment})
-            </Box>
+            채팅창 글자 크기{" "}
+            <HotkeySpan component="span" pointcolor={pointColor}>(↑, ↓)</HotkeySpan>
           </SettingLabel>
           <Box
-            sx={{ width: 130, px: 1 }}
+            sx={{ px: 1, display: "flex", alignItems: "center", gap: 1 }}
             onMouseEnter={() => setIsSliderHovered(true)}
             onMouseLeave={() => setIsSliderHovered(false)}
           >
+            <Box component="span" sx={{ color: "text.secondary", fontSize: "1.2rem" }}>
+              {chatFontSizeAdjustment > 0 ? "+" : ""}{chatFontSizeAdjustment}
+            </Box>
             <Slider
               size="small"
               value={chatFontSizeAdjustment}
@@ -560,7 +557,7 @@ export default function SettingsArea({ onClose }) {
                   },
                 },
               }}
-              sx={{ color: "primary.main", "& .MuiSlider-mark": { backgroundColor: "transparent" } }}
+              sx={{ color: "primary.main", width: 130, "& .MuiSlider-mark": { backgroundColor: "transparent" } }}
             />
           </Box>
         </SettingRow>
@@ -648,15 +645,15 @@ export default function SettingsArea({ onClose }) {
           <SettingRow>
             <SettingLabel>
               알림음 크기
-              <Box component="span" sx={{ color: "text.secondary", fontSize: "1.2rem", ml: 0.5 }}>
-                ({recordSoundVolume}%)
-              </Box>
             </SettingLabel>
             <Box
-              sx={{ width: 130, px: 1 }}
+              sx={{ px: 1, display: "flex", alignItems: "center", gap: 1 }}
               onMouseEnter={() => setIsVolumeSliderHovered(true)}
               onMouseLeave={() => setIsVolumeSliderHovered(false)}
             >
+              <Box component="span" sx={{ color: "text.secondary", fontSize: "1.2rem" }}>
+                {recordSoundVolume}%
+              </Box>
               <Slider
                 size="small"
                 value={recordSoundVolume}
@@ -664,7 +661,7 @@ export default function SettingsArea({ onClose }) {
                 valueLabelDisplay={isVolumeSliderHovered ? "on" : "auto"}
                 onChange={handleChangeRecordSoundVolume}
                 onChangeCommitted={(e, value) => playNotificationSound(recordSoundType, value)}
-                sx={{ color: "primary.main", "& .MuiSlider-mark": { backgroundColor: "transparent" } }}
+                sx={{ color: "primary.main", width: 130, "& .MuiSlider-mark": { backgroundColor: "transparent" } }}
               />
             </Box>
           </SettingRow>

@@ -72,7 +72,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     chatFontSizeAdjustmentAtom
   );
   const isDragging = useAtomValue(isDraggingAtom);
-  const setSettingsOpen = useSetAtom(settingsOpenAtom);
+  const [settingsOpen, setSettingsOpen] = useAtom(settingsOpenAtom);
   const [timeToNextRefresh, setTimeToNextRefresh] = useState(60);
   const setSnackbar = useSetAtom(snackbarAtom);
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
@@ -343,8 +343,10 @@ export default function ControlButtonGroup({ fullscreen }) {
             </>
           }
         >
-          <IconButton onClick={() => setSettingsOpen(true)}>
-            <SettingsIcon sx={iconStyle} />
+          <IconButton
+            onClick={() => setSettingsOpen((prev) => !prev)}
+          >
+            <SettingsIcon sx={{ ...iconStyle, color: settingsOpen ? activePointColor : undefined }} />
           </IconButton>
         </Tooltip>
 
