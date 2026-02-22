@@ -8,6 +8,7 @@ import ViewArea from "@/components/ViewArea";
 import ControllerArea from "@/components/ControllerArea";
 import SettingsArea from "@/components/SettingsArea";
 import GlobalSnackbar from "@/components/Info/GlobalSnackbar";
+import SettingChangeIndicator from "@/components/Info/SettingChangeIndicator";
 
 import { useAtom, useAtomValue } from "jotai";
 import { viewCountAtom } from "@/atoms/setting";
@@ -51,6 +52,7 @@ export default function App() {
         <ControllerArea fullscreen={fullscreen} />
         {settingsOpen && <SettingsArea onClose={() => setSettingsOpen(false)} />}
         <GlobalSnackbar />
+        <SettingChangeIndicator />
       </Box>
   );
 }
