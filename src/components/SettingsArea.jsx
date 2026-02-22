@@ -59,6 +59,7 @@ import RatioSelector from "./Settings/RatioSelector";
 import LayoutToggleGroup from "@/components/Settings/LayoutToggleGroup";
 import Editor from "react-simple-code-editor";
 import Prism from "prismjs";
+import { SETTINGS_ORDER } from "@/data/settingsOrder";
 import "prismjs/components/prism-json";
 import { styled } from "@mui/material/styles";
 
@@ -196,17 +197,14 @@ export default function SettingsArea({ onClose }) {
 
   const getLocalStorageDataString = useCallback(() => {
     return JSON.stringify(
-      [
-        "channels", "layout", "ratio", "pointerEventsEnabled", "showCurrentTime", "currentTimePosition",
-        "controllerExpanded", "themeMode", "pointColor", "chatFontSizeAdjustment",
-        "autoRecordEnabled", "recordQuality", "recordFrameRate", "recordCodec",
-        "recordSoundEnabled", "recordSoundType", "recordSoundVolume",
-        "selectedSearchPlatform",
-      ].reduce((obj, key) => {
+      SETTINGS_ORDER.reduce((obj, key) => {
         const value = window.localStorage.getItem(key);
         if (value) {
-          try { obj[key] = JSON.parse(value); }
-          catch { obj[key] = value; }
+          try {
+            obj[key] = JSON.parse(value);
+          } catch {
+            obj[key] = value;
+          }
         }
         return obj;
       }, {}),
@@ -218,9 +216,21 @@ export default function SettingsArea({ onClose }) {
   useEffect(() => {
     setData(getLocalStorageDataString());
   }, [
-    themeMode, pointColor, chatFontSizeAdjustment, showCurrentTime, currentTimePosition,
-    pointerEventsEnabled, autoRecordEnabled, recordQuality, recordFrameRate,
-    recordCodec, recordSoundEnabled, recordSoundType, recordSoundVolume,
+    themeMode,
+    pointColor,
+    ratioKey,
+    layoutType,
+    showCurrentTime,
+    currentTimePosition,
+    pointerEventsEnabled,
+    chatFontSizeAdjustment,
+    autoRecordEnabled,
+    recordFrameRate,
+    recordQuality,
+    recordCodec,
+    recordSoundEnabled,
+    recordSoundType,
+    recordSoundVolume,
     getLocalStorageDataString,
   ]);
 

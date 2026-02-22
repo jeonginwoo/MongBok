@@ -1,28 +1,9 @@
 import { canvas } from "@/data/canvas";
 import { palettes, POINT_COLORS } from "@/data/color";
 import { getLiveStatus } from "@/api/live";
+import { ALL_SETTINGS } from "@/data/settingsOrder";
 
-const ALLOWED_KEYS = [
-  "channels",
-  "layout",
-  "ratio",
-  "pointerEventsEnabled",
-  "showCurrentTime",
-  "currentTimePosition",
-  "controllerExpanded",
-  "themeMode",
-  "pointColor",
-  "chatFontSizeAdjustment",
-  "autoRecordEnabled",
-  "recordQuality",
-  "recordFrameRate",
-  "recordCodec",
-  "recordSound",
-  "recordSoundEnabled",
-  "recordSoundType",
-  "recordSoundVolume",
-  "selectedSearchPlatform",
-];
+const ALLOWED_KEYS = ALL_SETTINGS;
 
 // ========== 개별 키 유효성 검사 함수 ==========
 
@@ -48,17 +29,6 @@ export const validateCurrentTimePosition = (value) => {
   const allowed = ["left", "right"];
   if (!allowed.includes(value)) {
     return `유효하지 않은 현재 시간 위치 값 '${value}'. 허용되는 값은: ${allowed.join(
-      ", "
-    )} 입니다.`;
-  }
-  return true;
-};
-
-// 레거시 호환성
-export const validateRecordSound = (value) => {
-  const allowed = ["none", "ding", "chime", "alert", "beep", "success", "fanfare", "blip", "swoosh", "pop"];
-  if (!allowed.includes(value)) {
-    return `유효하지 않은 녹화 알림음 값 '${value}'. 허용되는 값은: ${allowed.join(
       ", "
     )} 입니다.`;
   }
@@ -199,7 +169,7 @@ export const validateChannels = async (value) => {
         const { platform, zoneId = null } = channelData;
         if (!["chzzk", "soop", "youtube"].includes(platform)) {
           return Promise.reject({
-            error: `Validation Error: Invalid platform '${platform}' for channel '${channelId}'. Must be 'chzzk', 'soop', or 'youtube'.`,
+            error: `Validation Error: Invalid platform '${platform}' for channel '${channelId}'. Must be 'chzzk', 'soop', 'youtube'.`,
           });
         }
 
@@ -350,65 +320,54 @@ export const validatePreferences = async (dataToValidate) => {
         case "themeMode":
           validationResult = validateThemeMode(value);
           break;
-
         case "pointColor":
           validationResult = validatePointColor(value);
           break;
-
-        case "pointerEventsEnabled":
-        case "showCurrentTime":
-        case "controllerExpanded":
-          validationResult = validateBoolean(value, key);
-          break;
-
-        case "currentTimePosition":
-          validationResult = validateCurrentTimePosition(value);
-          break;
-
-        case "chatFontSizeAdjustment":
-          validationResult = validateChatFontSizeAdjustment(value);
-          break;
-
-        case "recordQuality":
-          validationResult = validateRecordQuality(value);
-          break;
-
-        case "recordFrameRate":
-          validationResult = validateRecordFrameRate(value);
-          break;
-
-        case "recordCodec":
-          validationResult = validateRecordCodec(value);
-          break;
-
-        case "recordSoundEnabled":
-          validationResult = validateBoolean(value, "recordSoundEnabled");
-          break;
-
-        case "recordSoundType":
-          validationResult = validateRecordSoundType(value);
-          break;
-
-        case "recordSoundVolume":
-          validationResult = validateRecordSoundVolume(value);
-          break;
-
-        case "recordSound":
-          validationResult = validateRecordSound(value);
-          break;
-
         case "ratio":
           validationResult = validateRatio(value);
           break;
-
+        case "showCurrentTime":
+          validationResult = validateBoolean(value, key);
+          break;
+        case "currentTimePosition":
+          validationResult = validateCurrentTimePosition(value);
+          break;
+        case "pointerEventsEnabled":
+          validationResult = validateBoolean(value, key);
+          break;
+        case "chatFontSizeAdjustment":
+          validationResult = validateChatFontSizeAdjustment(value);
+          break;
+        case "autoRecordEnabled":
+          validationResult = validateBoolean(value, key);
+          break;
+        case "recordFrameRate":
+          validationResult = validateRecordFrameRate(value);
+          break;
+        case "recordQuality":
+          validationResult = validateRecordQuality(value);
+          break;
+        case "recordCodec":
+          validationResult = validateRecordCodec(value);
+          break;
+        case "recordSoundEnabled":
+          validationResult = validateBoolean(value, key);
+          break;
+        case "recordSoundType":
+          validationResult = validateRecordSoundType(value);
+          break;
+        case "recordSoundVolume":
+          validationResult = validateRecordSoundVolume(value);
+          break;
+        case "controllerExpanded":
+          validationResult = validateBoolean(value, key);
+          break;
         case "channels":
           validationResult = await validateChannels(value);
           break;
-
         case "layout":
           // Layout validation depends on other keys, handled below.
           break;
-
         default:
           break;
       }
