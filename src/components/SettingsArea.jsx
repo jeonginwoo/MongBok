@@ -36,6 +36,7 @@ import {
 import {
   pointerEventsEnabledAtom,
   showCurrentTimeAtom,
+  currentTimePositionAtom,
   themeModeAtom,
   pointColorAtom,
   chatFontSizeAdjustmentAtom,
@@ -161,6 +162,7 @@ function SettingSelect({ pointcolor, sx, children, ...props }) {
 export default function SettingsArea({ onClose }) {
   const [pointerEventsEnabled, setPointerEventsEnabled] = useAtom(pointerEventsEnabledAtom);
   const [showCurrentTime, setShowCurrentTime] = useAtom(showCurrentTimeAtom);
+  const [currentTimePosition, setCurrentTimePosition] = useAtom(currentTimePositionAtom);
   const [themeMode, setThemeMode] = useAtom(themeModeAtom);
   const [pointColor, setPointColor] = useAtom(pointColorAtom);
   const [chatFontSizeAdjustment, setChatFontSizeAdjustment] = useAtom(chatFontSizeAdjustmentAtom);
@@ -195,7 +197,7 @@ export default function SettingsArea({ onClose }) {
   const getLocalStorageDataString = useCallback(() => {
     return JSON.stringify(
       [
-        "channels", "layout", "ratio", "pointerEventsEnabled", "showCurrentTime",
+        "channels", "layout", "ratio", "pointerEventsEnabled", "showCurrentTime", "currentTimePosition",
         "controllerExpanded", "themeMode", "pointColor", "chatFontSizeAdjustment",
         "autoRecordEnabled", "recordQuality", "recordFrameRate", "recordCodec",
         "recordSoundEnabled", "recordSoundType", "recordSoundVolume",
@@ -216,7 +218,7 @@ export default function SettingsArea({ onClose }) {
   useEffect(() => {
     setData(getLocalStorageDataString());
   }, [
-    themeMode, pointColor, chatFontSizeAdjustment, showCurrentTime,
+    themeMode, pointColor, chatFontSizeAdjustment, showCurrentTime, currentTimePosition,
     pointerEventsEnabled, autoRecordEnabled, recordQuality, recordFrameRate,
     recordCodec, recordSoundEnabled, recordSoundType, recordSoundVolume,
     getLocalStorageDataString,
@@ -350,6 +352,13 @@ export default function SettingsArea({ onClose }) {
       }
       return nextState;
     });
+  };
+
+  const handleChangeCurrentTimePosition = (event, newPosition) => {
+    if (newPosition !== null) {
+      setCurrentTimePosition(newPosition);
+      window.localStorage.setItem("currentTimePosition", JSON.stringify(newPosition));
+    }
   };
 
   const handleChangePointColor = (color) => {
@@ -498,6 +507,28 @@ export default function SettingsArea({ onClose }) {
           </SettingLabel>
           <SettingSwitch checked={showCurrentTime} onChange={handleToggleCurrentTime} />
         </SettingRow>
+
+        {/* 현재 시간 위치 */}
+        {showCurrentTime && (
+          <SettingRow>
+            <SettingLabel>현재 시간 위치</SettingLabel>
+            <SettingToggleGroup
+              value={currentTimePosition}
+              exclusive
+              onChange={handleChangeCurrentTimePosition}
+              aria-label="current time position"
+              pointcolor={pointColor}
+              size="small"
+            >
+              <ToggleButton value="left" aria-label="left" sx={{ minWidth: '35px' }}>
+                <SmallText>L</SmallText>
+              </ToggleButton>
+              <ToggleButton value="right" aria-label="right" sx={{ minWidth: '35px' }}>
+                <SmallText>R</SmallText>
+              </ToggleButton>
+            </SettingToggleGroup>
+          </SettingRow>
+        )}
 
         {/* 화면 조작 모드 */}
         <SettingRow>

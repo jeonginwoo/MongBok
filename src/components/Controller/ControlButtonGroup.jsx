@@ -30,9 +30,14 @@ import {
   pointColorAtom,
   chatFontSizeAdjustmentAtom,
   autoRecordEnabledAtom,
+  ratioAtom,
+  layoutTypeAtom,
+  viewCountAtom,
 } from "@/atoms/setting";
 import { snackbarAtom, isDraggingAtom, isRecordingAtom, settingsOpenAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
+import { canvas } from "@/data/canvas";
+import { useLayoutManager } from "@/hooks/useLayoutManager";
 
 const iconStyle = { fontSize: "2.4rem" };
 
@@ -79,6 +84,11 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
   const prevZone1LiveRef = React.useRef(undefined);
 
+  const [ratio, setRatio] = useAtom(ratioAtom);
+  const { selectRatio } = useLayoutManager();
+  const [layoutType, setLayoutType] = useAtom(layoutTypeAtom);
+  const viewCount = useAtomValue(viewCountAtom);
+
   const activePointColor =
     POINT_COLORS[pointColor]?.[themeMode] || POINT_COLORS["default"][themeMode];
 
@@ -108,7 +118,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     setIsRecording((prev) => !prev);
   };
 
-  const handleToggleController = () => {
+  const handleToggleController = useCallback(() => {
     setControllerExpanded((prev) => {
       const nextState = !prev;
       const validation = validateBoolean(nextState, "controllerExpanded");
@@ -122,9 +132,9 @@ export default function ControlButtonGroup({ fullscreen }) {
       }
       return nextState;
     });
-  };
+  }, [setControllerExpanded]);
 
-  const handleChangeTheme = (newMode) => {
+  const handleChangeTheme = useCallback((newMode) => {
     const validation = validateThemeMode(newMode);
     if (validation === true) {
       setThemeMode(newMode);
@@ -132,12 +142,12 @@ export default function ControlButtonGroup({ fullscreen }) {
     } else {
       console.error("테마 모드 유효성 검사 실패:", validation);
     }
-  };
+  }, [setThemeMode]);
 
-  const handleToggleTheme = () => {
+  const handleToggleTheme = useCallback(() => {
     const nextState = themeMode === "light" ? "dark" : "light";
     handleChangeTheme(nextState);
-  };
+  }, [themeMode, handleChangeTheme]);
 
   const handleChangePointerEvents = (event, newMode) => {
     if (newMode !== null) {
@@ -149,7 +159,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     }
   };
 
-  const handleTogglePointerEvents = () => {
+  const handleTogglePointerEvents = useCallback(() => {
     setPointerEventsEnabled((prev) => {
       const nextState = !prev;
       const validation = validateBoolean(nextState, "pointerEventsEnabled");
@@ -163,9 +173,9 @@ export default function ControlButtonGroup({ fullscreen }) {
       }
       return nextState;
     });
-  };
+  }, [setPointerEventsEnabled]);
 
-  const handleToggleCurrentTime = () => {
+  const handleToggleCurrentTime = useCallback(() => {
     setShowCurrentTime((prev) => {
       const nextState = !prev;
       const validation = validateBoolean(nextState, "showCurrentTime");
@@ -176,20 +186,20 @@ export default function ControlButtonGroup({ fullscreen }) {
       }
       return nextState;
     });
-  };
+  }, [setShowCurrentTime]);
 
   const handleChangePointColor = (color) => {
     setPointColor(color);
     window.localStorage.setItem("pointColor", JSON.stringify(color));
   };
 
-  const handleChangeChatFontSize = (event, newValue) => {
+  const handleChangeChatFontSize = useCallback((event, newValue) => {
     setChatFontSizeAdjustment(newValue);
     window.localStorage.setItem(
       "chatFontSizeAdjustment",
       JSON.stringify(newValue)
     );
-  };
+  }, [setChatFontSizeAdjustment]);
 
   const handleRefresh = useCallback(async () => {
     if (refreshing) return;
@@ -279,6 +289,29 @@ export default function ControlButtonGroup({ fullscreen }) {
           event.preventDefault();
           fullscreen();
           break;
+        case "ARROWLEFT":
+        case "ARROWRIGHT":
+          event.preventDefault();
+          const landscapeRatios = Object.entries(canvas)
+            .filter(([, orientations]) => orientations.landscape)
+            .map(([group]) => `${group}-landscape`);
+          const portraitRatios = Object.entries(canvas)
+            .filter(([, orientations]) => orientations.portrait)
+            .map(([group]) => `${group}-portrait`);
+          const allRatios = [...landscapeRatios, ...portraitRatios];
+          const currentIndex = allRatios.indexOf(ratio);
+          if (currentIndex === -1) return;
+          let nextIndex;
+          if (key === 'ARROWRIGHT') {
+            nextIndex = (currentIndex + 1) % allRatios.length;
+          } else {
+            nextIndex = (currentIndex - 1 + allRatios.length) % allRatios.length;
+          }
+          const nextRatio = allRatios[nextIndex];
+          if (nextRatio !== ratio) {
+            selectRatio(nextRatio);
+          }
+          break;
         case "ARROWUP":
           event.preventDefault();
           if (chatFontSizeAdjustment < 10) {
@@ -292,6 +325,25 @@ export default function ControlButtonGroup({ fullscreen }) {
           }
           break;
         default:
+          const keyNumber = parseInt(event.key, 10);
+          if (!isNaN(keyNumber)) {
+            const [ratioKey] = ratio.split("-");
+            const currentLayouts = canvas[ratioKey]?.[ratio.split("-")[1]]?.layouts?.[viewCount];
+            if (!currentLayouts) return;
+            const layoutKeys = Object.keys(currentLayouts);
+            let targetIndex;
+            if (keyNumber === 0 && layoutKeys.length > 0) {
+              targetIndex = layoutKeys.length - 1;
+            } else if (keyNumber > 0 && keyNumber <= layoutKeys.length) {
+              targetIndex = keyNumber - 1;
+            } else {
+              return;
+            }
+            const targetLayout = layoutKeys[targetIndex];
+            if (targetLayout !== layoutType) {
+              setLayoutType(targetLayout);
+            }
+          }
           break;
       }
     };
@@ -300,11 +352,20 @@ export default function ControlButtonGroup({ fullscreen }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
     handleToggleController,
+    setSettingsOpen,
+    handleToggleTheme,
     handleToggleCurrentTime,
     handleTogglePointerEvents,
     handleRefresh,
     fullscreen,
     isDragging,
+    chatFontSizeAdjustment,
+    handleChangeChatFontSize,
+    ratio,
+    selectRatio,
+    viewCount,
+    layoutType,
+    setLayoutType,
   ]);
 
   return (

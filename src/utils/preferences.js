@@ -8,6 +8,7 @@ const ALLOWED_KEYS = [
   "ratio",
   "pointerEventsEnabled",
   "showCurrentTime",
+  "currentTimePosition",
   "controllerExpanded",
   "themeMode",
   "pointColor",
@@ -39,6 +40,16 @@ export const validateRecordSoundVolume = (value) => {
   const num = Number(value);
   if (isNaN(num) || num < 0 || num > 200) {
     return `유효하지 않은 녹화 알림음 볼륨 값 '${value}'. 0에서 200 사이의 값이어야 합니다.`;
+  }
+  return true;
+};
+
+export const validateCurrentTimePosition = (value) => {
+  const allowed = ["left", "right"];
+  if (!allowed.includes(value)) {
+    return `유효하지 않은 현재 시간 위치 값 '${value}'. 허용되는 값은: ${allowed.join(
+      ", "
+    )} 입니다.`;
   }
   return true;
 };
@@ -348,6 +359,10 @@ export const validatePreferences = async (dataToValidate) => {
         case "showCurrentTime":
         case "controllerExpanded":
           validationResult = validateBoolean(value, key);
+          break;
+
+        case "currentTimePosition":
+          validationResult = validateCurrentTimePosition(value);
           break;
 
         case "chatFontSizeAdjustment":

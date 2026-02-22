@@ -25,6 +25,7 @@ import {
   ratioAtom,
   pointerEventsEnabledAtom,
   showCurrentTimeAtom,
+  currentTimePositionAtom,
 } from "@/atoms/setting";
 import { fitStyleAtom, isDraggingAtom } from "@/atoms/ui";
 import {
@@ -43,6 +44,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
   const layout = useAtomValue(layoutAtom);
   const pointerEventsEnabled = useAtomValue(pointerEventsEnabledAtom);
   const showCurrentTime = useAtomValue(showCurrentTimeAtom);
+  const currentTimePosition = useAtomValue(currentTimePositionAtom);
   const { selectRatio } = useLayoutManager();
   
   const canvasContentRef = useScreenRecorder();
@@ -312,7 +314,14 @@ export default function ViewArea({ canvasRef, fullscreen }) {
               />
             ))}
 
-          {showCurrentTime && <CurrentTime onClick={fullscreen} />}
+          {showCurrentTime && (
+            <CurrentTime
+              onClick={fullscreen}
+              sx={{
+                [currentTimePosition]: 0,
+              }}
+            />
+          )}
         </Box>
       </DndContext>
     </Box>

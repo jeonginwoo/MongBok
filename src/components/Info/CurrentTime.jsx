@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import dayjs from "dayjs";
 
-const CurrentTime = ({ onClick }) => {
+const CurrentTime = ({ onClick, sx }) => {
   const [time, setTime] = useState(() => dayjs());
 
   useEffect(() => {
@@ -36,7 +36,6 @@ const CurrentTime = ({ onClick }) => {
         padding: "0.6vmin 0.8vmin",
         borderRadius: "0.4vmin",
         bottom: "0",
-        right: "0",
         backgroundColor: "background.currentTime",
         color: "common.white",
         fontSize: "1.2vmin",
@@ -46,6 +45,7 @@ const CurrentTime = ({ onClick }) => {
           cursor: "pointer",
           backgroundColor: "background.hover",
         },
+        ...sx,
       }}
     >
       {formattedTime}

@@ -38,9 +38,9 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   },
 }));
 
-export default function LayoutToggleGroup() {
+export default function LayoutToggleGroup({ settingsMode }) {
   const [layoutType, setLayoutType] = useAtom(layoutTypeAtom);
-  const [ratioKey, setRatio] = useAtom(ratioAtom);
+  const [ratioKey] = useAtom(ratioAtom);
   const viewCount = useAtomValue(viewCountAtom);
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
 
@@ -51,48 +51,6 @@ export default function LayoutToggleGroup() {
       setLayoutType(newType);
     }
   };
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // 입력창(input, textarea)이나 편집 가능한 영역에서는 단축키 무시
-      const tagName = document.activeElement?.tagName;
-      const isInput =
-        tagName === "INPUT" ||
-        tagName === "TEXTAREA" ||
-        document.activeElement?.isContentEditable;
-      if (isInput) return;
-
-      // 현재 viewCount에 해당하는 레이아웃 키 가져오기
-      const currentLayouts = canvas[ratio]?.[orientation]?.layouts?.[viewCount];
-      if (!currentLayouts) return;
-
-      const layoutKeys = Object.keys(currentLayouts);
-      const keyNumber = parseInt(e.key, 10);
-
-      if (!isNaN(keyNumber)) {
-        let targetIndex;
-        if (keyNumber === 0 && layoutKeys.length > 0) {
-          targetIndex = layoutKeys.length - 1;
-        } else if (keyNumber > 0 && keyNumber <= layoutKeys.length) {
-          targetIndex = keyNumber - 1;
-        } else {
-          return;
-        }
-
-        const targetLayout = layoutKeys[targetIndex];
-
-        // 현재 레이아웃과 다를 경우에만 변경
-        if (targetLayout !== layoutType) {
-          setLayoutType(targetLayout);
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [ratio, orientation, viewCount, layoutType, setLayoutType]);
 
   useEffect(() => {
     if (canvas[ratio]?.[orientation]?.layouts?.[viewCount]) {
@@ -108,7 +66,7 @@ export default function LayoutToggleGroup() {
   const availableLayouts = canvas[ratio]?.[orientation]?.layouts?.[viewCount];
 
   return (
-    controllerExpanded && (
+    (controllerExpanded || settingsMode) && (
       <Box sx={{ display: "flex", gap: "0.6rem" }}>
         {availableLayouts && (
           <StyledToggleButtonGroup

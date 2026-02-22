@@ -49,6 +49,13 @@ export const showCurrentTimeAtom = atomWithStorage(
   storage
 );
 
+// 현재 시간 위치
+export const currentTimePositionAtom = atomWithStorage(
+  "currentTimePosition",
+  "right",
+  storage
+);
+
 // 자동 녹화 on/off
 export const autoRecordEnabledAtom = atomWithStorage(
   "autoRecordEnabled",
