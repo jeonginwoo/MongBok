@@ -50,6 +50,7 @@ import {
   layoutTypeAtom,
   ratioAtom,
   viewCountAtom,
+  channelsAtom,
 } from "@/atoms/setting";
 import { snackbarAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
@@ -59,7 +60,7 @@ import RatioSelector from "./Settings/RatioSelector";
 import LayoutToggleGroup from "@/components/Settings/LayoutToggleGroup";
 import Editor from "react-simple-code-editor";
 import Prism from "prismjs";
-import { SETTINGS_ORDER } from "@/data/settingsOrder";
+import { ALL_SETTINGS } from "@/data/settingsOrder";
 import "prismjs/components/prism-json";
 import { styled } from "@mui/material/styles";
 
@@ -174,9 +175,10 @@ export default function SettingsArea({ onClose }) {
   const [recordSoundEnabled, setRecordSoundEnabled] = useAtom(recordSoundEnabledAtom);
   const [recordSoundType, setRecordSoundType] = useAtom(recordSoundTypeAtom);
   const [recordSoundVolume, setRecordSoundVolume] = useAtom(recordSoundVolumeAtom);
-  const [layoutType, setLayoutType] = useAtom(layoutTypeAtom);
+  const layoutType = useAtomValue(layoutTypeAtom);
   const ratioKey = useAtomValue(ratioAtom);
   const viewCount = useAtomValue(viewCountAtom);
+  const channels = useAtomValue(channelsAtom);
 
   const [group, orientation] = ratioKey.split("-");
   const availableLayouts = canvas[group]?.[orientation]?.layouts?.[viewCount];
@@ -196,22 +198,30 @@ export default function SettingsArea({ onClose }) {
     POINT_COLORS[pointColor]?.[themeMode] || POINT_COLORS["default"][themeMode];
 
   const getLocalStorageDataString = useCallback(() => {
-    return JSON.stringify(
-      SETTINGS_ORDER.reduce((obj, key) => {
-        const value = window.localStorage.getItem(key);
-        if (value) {
-          try {
-            obj[key] = JSON.parse(value);
-          } catch {
-            obj[key] = value;
-          }
+    const settings = ALL_SETTINGS.reduce((obj, key) => {
+      const value = window.localStorage.getItem(key);
+      if (value) {
+        try {
+          obj[key] = JSON.parse(value);
+        } catch {
+          obj[key] = value;
         }
-        return obj;
-      }, {}),
-      null,
-      2
-    );
-  }, []);
+      }
+      return obj;
+    }, {});
+
+    // channelsAtom의 현재 상태를 직접 반영하여 localStorage 저장 지연 문제 해결
+    if (channels && Object.keys(channels).length > 0) {
+      settings.channels = Object.fromEntries(
+        Object.entries(channels).map(([id, channel]) => [
+          id,
+          { platform: channel.platform, zoneId: channel.zoneId ?? null },
+        ])
+      );
+    }
+
+    return JSON.stringify(settings, null, 2);
+  }, [channels]);
 
   useEffect(() => {
     setData(getLocalStorageDataString());
@@ -231,6 +241,7 @@ export default function SettingsArea({ onClose }) {
     recordSoundEnabled,
     recordSoundType,
     recordSoundVolume,
+    channels,
     getLocalStorageDataString,
   ]);
 
@@ -502,15 +513,17 @@ export default function SettingsArea({ onClose }) {
         </SettingRow>
 
         {/* 레이아웃 */}
-        <SettingRow>
-          <SettingLabel sx={{ whiteSpace: "nowrap" }}>
-            레이아웃{" "}
-            <HotkeySpan component="span" pointcolor={pointColor}>(1, 2, ...)</HotkeySpan>
-          </SettingLabel>
-          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-            <LayoutToggleGroup settingsMode />
-          </Box>
-        </SettingRow>
+        {layoutKeys.length > 0 && (
+          <SettingRow>
+            <SettingLabel sx={{ whiteSpace: "nowrap" }}>
+              레이아웃{" "}
+              <HotkeySpan component="span" pointcolor={pointColor}>(1, 2, ...)</HotkeySpan>
+            </SettingLabel>
+            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+              <LayoutToggleGroup settingsMode />
+            </Box>
+          </SettingRow>
+        )}
 
         {/* 현재 시간 표시 */}
         <SettingRow>
