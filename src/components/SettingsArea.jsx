@@ -494,7 +494,10 @@ export default function SettingsArea({ onClose }) {
 
         {/* 화면 비율 */}
         <SettingRow>
-          <SettingLabel>화면 비율</SettingLabel>
+          <SettingLabel>
+            화면 비율{" "}
+            <HotkeySpan component="span" pointcolor={pointColor}>(←, →)</HotkeySpan>
+          </SettingLabel>
           <RatioSelector />
         </SettingRow>
 
@@ -521,7 +524,10 @@ export default function SettingsArea({ onClose }) {
         {/* 현재 시간 위치 */}
         {showCurrentTime && (
           <SettingRow>
-            <SettingLabel>현재 시간 위치</SettingLabel>
+            <SettingLabel>
+              현재 시간 위치{" "}
+              <HotkeySpan component="span" pointcolor={pointColor}>(P)</HotkeySpan>
+            </SettingLabel>
             <SettingToggleGroup
               value={currentTimePosition}
               exclusive

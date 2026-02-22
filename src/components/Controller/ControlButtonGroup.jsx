@@ -33,6 +33,7 @@ import {
   ratioAtom,
   layoutTypeAtom,
   viewCountAtom,
+  currentTimePositionAtom,
 } from "@/atoms/setting";
 import { snackbarAtom, isDraggingAtom, isRecordingAtom, settingsOpenAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
@@ -88,6 +89,9 @@ export default function ControlButtonGroup({ fullscreen }) {
   const { selectRatio } = useLayoutManager();
   const [layoutType, setLayoutType] = useAtom(layoutTypeAtom);
   const viewCount = useAtomValue(viewCountAtom);
+  const [currentTimePosition, setCurrentTimePosition] = useAtom(
+    currentTimePositionAtom
+  );
 
   const activePointColor =
     POINT_COLORS[pointColor]?.[themeMode] || POINT_COLORS["default"][themeMode];
@@ -188,6 +192,14 @@ export default function ControlButtonGroup({ fullscreen }) {
     });
   }, [setShowCurrentTime]);
 
+  const handleToggleCurrentTimePosition = useCallback(() => {
+    setCurrentTimePosition((prev) => {
+      const nextState = prev === "left" ? "right" : "left";
+      window.localStorage.setItem("currentTimePosition", JSON.stringify(nextState));
+      return nextState;
+    });
+  }, [setCurrentTimePosition]);
+
   const handleChangePointColor = (color) => {
     setPointColor(color);
     window.localStorage.setItem("pointColor", JSON.stringify(color));
@@ -277,6 +289,10 @@ export default function ControlButtonGroup({ fullscreen }) {
           event.preventDefault();
           handleToggleCurrentTime();
           break;
+        case "P":
+          event.preventDefault();
+          handleToggleCurrentTimePosition();
+          break;
         case "V":
           event.preventDefault();
           handleTogglePointerEvents();
@@ -297,15 +313,16 @@ export default function ControlButtonGroup({ fullscreen }) {
             .map(([group]) => `${group}-landscape`);
           const portraitRatios = Object.entries(canvas)
             .filter(([, orientations]) => orientations.portrait)
-            .map(([group]) => `${group}-portrait`);
+            .map(([group]) => `${group}-portrait`)
+            .reverse();
           const allRatios = [...landscapeRatios, ...portraitRatios];
           const currentIndex = allRatios.indexOf(ratio);
           if (currentIndex === -1) return;
           let nextIndex;
           if (key === 'ARROWRIGHT') {
-            nextIndex = (currentIndex + 1) % allRatios.length;
-          } else {
             nextIndex = (currentIndex - 1 + allRatios.length) % allRatios.length;
+          } else {
+            nextIndex = (currentIndex + 1) % allRatios.length;
           }
           const nextRatio = allRatios[nextIndex];
           if (nextRatio !== ratio) {
@@ -355,6 +372,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     setSettingsOpen,
     handleToggleTheme,
     handleToggleCurrentTime,
+    handleToggleCurrentTimePosition,
     handleTogglePointerEvents,
     handleRefresh,
     fullscreen,
