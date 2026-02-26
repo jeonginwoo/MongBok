@@ -305,37 +305,36 @@ export default function ControlButtonGroup({ fullscreen }) {
           event.preventDefault();
           fullscreen();
           break;
-        case "ARROWLEFT":
-        case "ARROWRIGHT":
+        case "ARROWUP":
+        case "ARROWDOWN":
           event.preventDefault();
           const landscapeRatios = Object.entries(canvas)
             .filter(([, orientations]) => orientations.landscape)
             .map(([group]) => `${group}-landscape`);
           const portraitRatios = Object.entries(canvas)
             .filter(([, orientations]) => orientations.portrait)
-            .map(([group]) => `${group}-portrait`)
-            .reverse();
+            .map(([group]) => `${group}-portrait`);
           const allRatios = [...landscapeRatios, ...portraitRatios];
           const currentIndex = allRatios.indexOf(ratio);
           if (currentIndex === -1) return;
           let nextIndex;
-          if (key === 'ARROWRIGHT') {
-            nextIndex = (currentIndex - 1 + allRatios.length) % allRatios.length;
-          } else {
+          if (key === 'ARROWDOWN') {
             nextIndex = (currentIndex + 1) % allRatios.length;
+          } else {
+            nextIndex = (currentIndex - 1 + allRatios.length) % allRatios.length;
           }
           const nextRatio = allRatios[nextIndex];
           if (nextRatio !== ratio) {
             selectRatio(nextRatio);
           }
           break;
-        case "ARROWUP":
+        case "ARROWRIGHT":
           event.preventDefault();
           if (chatFontSizeAdjustment < 10) {
             handleChangeChatFontSize(null, chatFontSizeAdjustment + 1);
           }
           break;
-        case "ARROWDOWN":
+        case "ARROWLEFT":
           event.preventDefault();
           if (chatFontSizeAdjustment > -5) {
             handleChangeChatFontSize(null, chatFontSizeAdjustment - 1);

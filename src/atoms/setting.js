@@ -52,7 +52,7 @@ export const showCurrentTimeAtom = atomWithStorage(
 // 현재 시간 위치
 export const currentTimePositionAtom = atomWithStorage(
   "currentTimePosition",
-  "right",
+  "left",
   storage
 );
 

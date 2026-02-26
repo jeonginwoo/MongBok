@@ -51,6 +51,7 @@ import {
   ratioAtom,
   viewCountAtom,
   channelsAtom,
+  controllerExpandedAtom,
 } from "@/atoms/setting";
 import { snackbarAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
@@ -179,6 +180,7 @@ export default function SettingsArea({ onClose }) {
   const ratioKey = useAtomValue(ratioAtom);
   const viewCount = useAtomValue(viewCountAtom);
   const channels = useAtomValue(channelsAtom);
+  const controllerExpanded = useAtomValue(controllerExpandedAtom);
 
   const [group, orientation] = ratioKey.split("-");
   const availableLayouts = canvas[group]?.[orientation]?.layouts?.[viewCount];
@@ -242,6 +244,7 @@ export default function SettingsArea({ onClose }) {
     recordSoundType,
     recordSoundVolume,
     channels,
+    controllerExpanded,
     getLocalStorageDataString,
   ]);
 
@@ -507,7 +510,7 @@ export default function SettingsArea({ onClose }) {
         <SettingRow>
           <SettingLabel>
             화면 비율{" "}
-            <HotkeySpan component="span" pointcolor={pointColor}>(←, →)</HotkeySpan>
+            <HotkeySpan component="span" pointcolor={pointColor}>(⇅)</HotkeySpan>
           </SettingLabel>
           <RatioSelector />
         </SettingRow>
@@ -589,7 +592,7 @@ export default function SettingsArea({ onClose }) {
         <SettingRow>
           <SettingLabel>
             채팅창 글자 크기{" "}
-            <HotkeySpan component="span" pointcolor={pointColor}>(↑, ↓)</HotkeySpan>
+            <HotkeySpan component="span" pointcolor={pointColor}>(⇄)</HotkeySpan>
           </SettingLabel>
           <Box
             sx={{ px: 1, display: "flex", alignItems: "center", gap: 1 }}
