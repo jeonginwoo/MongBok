@@ -105,6 +105,7 @@ export default function useChzzkChat(channelId) {
   const [chatList, setChatList] = useState([]);
   const pendingChatListRef = useRef([]);
   const isUnloadingRef = useRef(false);
+  const isRefreshingRef = useRef(false);
   const [webSocketBuster, setWebSocketBuster] = useState(0);
   const messageCounterRef = useRef(0); // 메시지 카운터로 고유 ID 생성
 
@@ -181,9 +182,45 @@ export default function useChzzkChat(channelId) {
       return;
     }
 
-    isUnloadingRef.current = false;
     const ws = new WebSocket("wss://kr-ss1.chat.naver.com/chat");
-    let pingInterval;
+
+    const worker = new Worker(
+      URL.createObjectURL(
+        new Blob(
+          [
+            `
+            let timeout = null
+
+            onmessage = (e) => {
+              if (e.data === "startPingTimer") {
+                if (timeout != null) {
+                  clearTimeout(timeout)
+                }
+                timeout = setTimeout(function reservePing() {
+                  postMessage("ping")
+                  timeout = setTimeout(reservePing, 20000)
+                }, 20000)
+              }
+              if (e.data === "stop") {
+                if (timeout != null) {
+                  clearTimeout(timeout)
+                }
+              }
+            }
+            `,
+          ],
+          { type: "application/javascript" }
+        )
+      )
+    );
+
+    worker.onmessage = (e) => {
+      if (e.data === "ping") {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ ver: "2", cmd: ChatCmd.PING }));
+        }
+      }
+    };
 
     ws.onopen = () => {
       ws.send(
@@ -201,11 +238,11 @@ export default function useChzzkChat(channelId) {
           ver: "2",
         })
       );
+      isRefreshingRef.current = false;
     };
 
     ws.onclose = () => {
-      clearInterval(pingInterval);
-      if (!isUnloadingRef.current) {
+      if (!isUnloadingRef.current && !isRefreshingRef.current) {
         setTimeout(() => setWebSocketBuster(Date.now()), 1000);
       }
     };
@@ -218,14 +255,11 @@ export default function useChzzkChat(channelId) {
           ws.send(JSON.stringify({ ver: "2", cmd: ChatCmd.PONG }));
           break;
         case ChatCmd.CONNECT:
-            pingInterval = setInterval(() => {
-                if (ws.readyState === WebSocket.OPEN) {
-                    ws.send(JSON.stringify({ ver: "2", cmd: ChatCmd.PING }));
-                }
-            }, 20000);
+          worker.postMessage("startPingTimer");
           break;
         case ChatCmd.CHAT:
         case ChatCmd.CHEESE_CHAT: {
+          worker.postMessage("startPingTimer");
           const newChats = json.bdy
             .filter((chat) => {
               if (chat.msgStatusType === "HIDDEN") return false;
@@ -247,16 +281,26 @@ export default function useChzzkChat(channelId) {
           break;
         }
         case ChatCmd.BLIND:
+          worker.postMessage("startPingTimer");
           break;
       }
     };
 
+    worker.postMessage("startPingTimer");
+
     return () => {
-      isUnloadingRef.current = true;
+      isRefreshingRef.current = true;
+      worker.postMessage("stop");
+      worker.terminate();
       ws.close();
-      clearInterval(pingInterval);
     };
   }, [chatChannelId, accessToken, convertChat, webSocketBuster]);
+
+  useEffect(() => {
+    return () => {
+      isUnloadingRef.current = true;
+    };
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {

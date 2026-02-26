@@ -36,6 +36,13 @@ wss.on('connection', (ws) => {
   let currentLiveChatInstance = null;
   let currentLiveId = null;
 
+  // WebSocket keepalive ping
+  const keepaliveInterval = setInterval(() => {
+    if (ws.readyState === ws.OPEN) {
+      ws.ping();
+    }
+  }, 30000);
+
   ws.on('message', async (message) => {
     try {
       const data = JSON.parse(message.toString());
@@ -113,6 +120,7 @@ wss.on('connection', (ws) => {
   
   ws.on('close', () => {
     console.log('🔌 클라이언트 연결 종료');
+    clearInterval(keepaliveInterval);
     if (currentLiveChatInstance) {
       currentLiveChatInstance.stop();
       currentLiveChatInstance = null;

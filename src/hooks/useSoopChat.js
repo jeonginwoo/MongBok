@@ -36,6 +36,7 @@ export default function useSoopChat(channelId) {
   const [station, setStation] = useState(null);
   const [channelInfo, setChannelInfo] = useState(null);
   const isUnloadingRef = useRef(false);
+  const isRefreshingRef = useRef(false);
   const [webSocketBuster, setWebSocketBuster] = useState(0);
   const messageCounterRef = useRef(0); // 메시지 카운터로 고유 ID 생성
 
@@ -291,21 +292,58 @@ export default function useSoopChat(channelId) {
     const ws = new WebSocket(webSocketUrl, ["chat"]);
     ws.binaryType = "arraybuffer";
 
-    let pingInterval;
+    const worker = new Worker(
+      URL.createObjectURL(
+        new Blob(
+          [
+            `
+            let timeout = null
+
+            onmessage = (e) => {
+              if (e.data === "startPingTimer") {
+                if (timeout != null) {
+                  clearTimeout(timeout)
+                }
+                timeout = setTimeout(function reservePing() {
+                  postMessage("ping")
+                  timeout = setTimeout(reservePing, 60000)
+                }, 60000)
+              }
+              if (e.data === "stop") {
+                if (timeout != null) {
+                  clearTimeout(timeout)
+                }
+              }
+            }
+            `,
+          ],
+          { type: "application/javascript" }
+        )
+      )
+    );
+
+    worker.onmessage = (e) => {
+      if (e.data === "ping") {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send("\u001b\t000000000100\f");
+        }
+      }
+    };
 
     ws.onopen = () => {
       ws.send(new TextEncoder().encode("\u001b\t000100000600\f\f\f16\f"));
       setTimeout(() => ws.send(handshake), 100);
+      isRefreshingRef.current = false;
     };
 
     ws.onclose = () => {
-      clearInterval(pingInterval);
-      if (!isUnloadingRef.current) {
+      if (!isUnloadingRef.current && !isRefreshingRef.current) {
         setTimeout(() => setWebSocketBuster(Date.now()), 1000);
       }
     };
 
     ws.onmessage = (event) => {
+      worker.postMessage("startPingTimer");
       const data = event.data;
       const soopMessage = parseMessage(data);
       if (soopMessage[0].startsWith("0005")) {
@@ -315,16 +353,21 @@ export default function useSoopChat(channelId) {
       }
     };
 
-    pingInterval = setInterval(() => {
-      ws.send("\u001b\t000000000100\f");
-    }, 60000);
+    worker.postMessage("startPingTimer");
 
     return () => {
-      isUnloadingRef.current = true;
+      isRefreshingRef.current = true;
+      worker.postMessage("stop");
+      worker.terminate();
       ws.close();
-      clearInterval(pingInterval);
     };
   }, [channelInfo, convertChat, convertStickerChat, webSocketBuster]);
+
+  useEffect(() => {
+    return () => {
+      isUnloadingRef.current = true;
+    };
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {

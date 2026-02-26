@@ -8,13 +8,10 @@ const nicknameColors = [
   "#F7DC6F", "#BB8FCE", "#85C1E2", "#F8B739", "#52B788",
 ];
 
-const INTERNAL_MAX_LENGTH = 10000;
-
 export default function useYoutubeChat(channelId) {
   const [chatList, setChatList] = useState([]);
   const [liveId, setLiveId] = useState(null);
   const pendingChatListRef = useRef([]);
-  const animationFrameRef = useRef(null);
   const messageCounterRef = useRef(0); // 메시지 카운터로 고유 ID 생성
 
   // 채널의 현재 라이브 videoId 가져오기
@@ -200,10 +197,7 @@ export default function useYoutubeChat(channelId) {
             if (message.type === "chat") {
               const chat = convertChat(message.data);
               if (chat) {
-                pendingChatListRef.current = [
-                  ...pendingChatListRef.current,
-                  chat,
-                ].slice(-1 * INTERNAL_MAX_LENGTH);
+                pendingChatListRef.current.push(chat);
               }
             } else if (message.type === "error") {
               console.error("❌ [YouTube] 채팅 에러:", message.error);
@@ -244,22 +238,16 @@ export default function useYoutubeChat(channelId) {
     };
   }, [liveId, convertChat]);
 
-  // 채팅 리스트 업데이트 (애니메이션 프레임 사용)
+  // 채팅 리스트 업데이트
   useEffect(() => {
-    const updateChatList = () => {
+    const interval = setInterval(() => {
+      if (document.hidden) return;
       if (pendingChatListRef.current.length > 0) {
-        setChatList(pendingChatListRef.current);
+        const chatsToRender = pendingChatListRef.current.splice(0);
+        setChatList((prev) => [...prev, ...chatsToRender].slice(-100));
       }
-      animationFrameRef.current = requestAnimationFrame(updateChatList);
-    };
-
-    animationFrameRef.current = requestAnimationFrame(updateChatList);
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
+    }, 150);
+    return () => clearInterval(interval);
   }, []);
 
   return chatList;
