@@ -120,10 +120,7 @@ export async function GET(request, context) {
               }
             }
           } catch (infoErr) {
-            // 무시 — 아래에서 현재 시간 사용
           }
-
-          if (!startTime) startTime = new Date().toISOString();
 
           liveVideo = {
             title: liveTitle,

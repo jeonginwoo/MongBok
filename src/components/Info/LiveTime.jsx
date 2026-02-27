@@ -55,6 +55,8 @@ function LiveTime({ channel, isTag = false }) {
     return () => clearInterval(interval);
   }, [channel.openDate, channel.isLive]);
 
+  if (!channel.openDate) return null;
+
   if (isTag) {
     return <TagWrap color={color}>{time}</TagWrap>;
   }

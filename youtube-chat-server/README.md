@@ -91,7 +91,35 @@ npm install
 npm start
 ```
 
-서버가 `http://localhost:8080`에서 실행됩니다.
+서버가 `http://localhost:47200`에서 실행됩니다.
+
+### 4. 독립 실행 파일(.exe) 빌드 — Node.js 없이 실행
+
+아래 명령을 **한 번만** 실행하면 `dist/youtube-chat-server.exe`가 생성됩니다.  
+이후에는 `.exe`를 더블클릭하거나 바로 실행하면 됩니다.
+
+```bash
+cd youtube-chat-server
+npm install
+npm run build:all
+```
+
+생성된 파일 (`public/downloads/` 폴더에 저장됨):
+| 파일 | 설명 |
+|------|------|
+| `public/downloads/youtube-chat-server-win-x64.exe` | Windows 64비트 |
+| `public/downloads/youtube-chat-server-macos-x64` | macOS 64비트 |
+| `public/downloads/youtube-chat-server-linux-x64` | Linux 64비트 |
+
+특정 OS만 빌드하려면:
+```bash
+npm run build:win    # Windows만
+npm run build:mac    # macOS만
+npm run build:linux  # Linux만
+```
+
+> **빌드 원리**: esbuild로 모든 의존성을 단일 CJS 파일로 번들링한 뒤,  
+> `@yao-pkg/pkg`가 Node.js 런타임을 함께 포함한 .exe로 패키징합니다.
 
 ## 프론트엔드 설정
 
@@ -104,7 +132,7 @@ npm start
    ```
    - Railway: `wss://xxx.up.railway.app`
    - Render: `wss://xxx.onrender.com`
-   - 로컬 개발: `ws://localhost:8080`
+   - 로컬 개발: `ws://localhost:47200`
 
 3. Vercel 재배포
 

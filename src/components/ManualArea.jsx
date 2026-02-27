@@ -28,7 +28,12 @@ import {
   ImportExport as ImportExportIcon,
   FormatSize as FormatSizeIcon,
   FiberManualRecord as FiberManualRecordIcon,
+  Download as DownloadIcon,
+  DesktopWindows as WindowsIcon,
+  Apple as AppleIcon,
+  Terminal as LinuxIcon,
 } from "@mui/icons-material";
+import { Button } from "@mui/material";
 import { PLATFORM_COLORS } from "@/data/color";
 
 const Section = ({ title, children }) => (
@@ -271,6 +276,53 @@ export default function ManualArea() {
             />
           </List>
         </Section>
+        <Section title="6. YouTube 채팅 서버">
+          <Typography sx={{ lineHeight: 1.6, fontSize: "1.3rem", mb: 2 }}>
+            유튜브 채팅을 표시하려면 로컬에서 채팅 서버를 실행해야 합니다.
+            아래에서 운영체제에 맞는 실행 파일을 다운로드한 뒤 실행하면 됩니다.
+            Node.js 설치 없이 바로 사용할 수 있습니다.
+          </Typography>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+              <Button
+                variant="outlined"
+                startIcon={<WindowsIcon />}
+                endIcon={<DownloadIcon />}
+                href="/downloads/youtube-chat-server-win-x64.zip"
+                download
+                sx={{ fontSize: "1.3rem", textTransform: "none" }}
+              >
+                Windows (x64)
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<AppleIcon />}
+                endIcon={<DownloadIcon />}
+                href="/downloads/youtube-chat-server-macos-x64.zip"
+                download
+                sx={{ fontSize: "1.3rem", textTransform: "none" }}
+              >
+                macOS (x64)
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<LinuxIcon />}
+                endIcon={<DownloadIcon />}
+                href="/downloads/youtube-chat-server-linux-x64.zip"
+                download
+                sx={{ fontSize: "1.3rem", textTransform: "none" }}
+              >
+                Linux (x64)
+              </Button>
+            </Box>
+            <Typography sx={{ fontSize: "1.2rem", color: "text.secondary", lineHeight: 1.6 }}>
+              서버 실행 후 포트 <strong>47200</strong>에서 WebSocket을 수신합니다.
+              Windows의 경우 Defender나 백신에서 경고가 뜰 수 있으니 예외 추가 후 실행하세요.
+              macOS·Linux는 첫 실행 시 <code>chmod +x ./파일명</code> 으로 실행 권한을 부여해야 합니다.
+            </Typography>
+          </Box>
+        </Section>
+
         <Box sx={{ minHeight: 10, height: 10, width: '100%' }} />
       </Box>
     </Box>

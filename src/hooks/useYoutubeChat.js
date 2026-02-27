@@ -175,7 +175,7 @@ export default function useYoutubeChat(channelId) {
     messageCounterRef.current = 0;
     pendingChatListRef.current = [];
 
-    const wsUrl = process.env.NEXT_PUBLIC_YOUTUBE_CHAT_WS_URL || 'ws://localhost:8080';
+    const wsUrl = process.env.NEXT_PUBLIC_YOUTUBE_CHAT_WS_URL || 'ws://localhost:47200';
 
     let ws = null;
     let reconnectTimeout = null;
