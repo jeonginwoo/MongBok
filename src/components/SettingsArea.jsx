@@ -25,6 +25,8 @@ import {
   Check as CheckIcon,
   Close as CloseIcon,
   Settings as SettingsIcon,
+  FolderOpen as FolderOpenIcon,
+  ClearAll as ClearAllIcon,
 } from "@mui/icons-material";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
@@ -47,12 +49,15 @@ import {
   recordSoundEnabledAtom,
   recordSoundTypeAtom,
   recordSoundVolumeAtom,
+  recordSaveDirHandleAtom,
+  recordSaveDirNameAtom,
   layoutTypeAtom,
   ratioAtom,
   viewCountAtom,
   channelsAtom,
   controllerExpandedAtom,
 } from "@/atoms/setting";
+import { getRecordDirectory, setRecordDirectory, clearRecordDirectory } from "@/utils/recordDirectoryStorage";
 import { snackbarAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
 import { playNotificationSound } from "@/utils/audio";
@@ -176,6 +181,8 @@ export default function SettingsArea({ onClose }) {
   const [recordSoundEnabled, setRecordSoundEnabled] = useAtom(recordSoundEnabledAtom);
   const [recordSoundType, setRecordSoundType] = useAtom(recordSoundTypeAtom);
   const [recordSoundVolume, setRecordSoundVolume] = useAtom(recordSoundVolumeAtom);
+  const [recordSaveDirHandle, setRecordSaveDirHandle] = useAtom(recordSaveDirHandleAtom);
+  const [recordSaveDirName, setRecordSaveDirName] = useAtom(recordSaveDirNameAtom);
   const layoutType = useAtomValue(layoutTypeAtom);
   const ratioKey = useAtomValue(ratioAtom);
   const viewCount = useAtomValue(viewCountAtom);
@@ -195,6 +202,14 @@ export default function SettingsArea({ onClose }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isSliderHovered, setIsSliderHovered] = useState(false);
   const [isVolumeSliderHovered, setIsVolumeSliderHovered] = useState(false);
+
+  // 페이지 로드 시 IndexedDB에서 저장된 디렉토리 핸들 복원
+  useEffect(() => {
+    getRecordDirectory().then((handle) => {
+      if (handle) setRecordSaveDirHandle(handle);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const activePointColor =
     POINT_COLORS[pointColor]?.[themeMode] || POINT_COLORS["default"][themeMode];
@@ -255,6 +270,26 @@ export default function SettingsArea({ onClose }) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
+
+  const handlePickRecordDirectory = async () => {
+    if (!window.showDirectoryPicker) return;
+    try {
+      const handle = await window.showDirectoryPicker({ mode: "readwrite" });
+      await setRecordDirectory(handle);
+      setRecordSaveDirHandle(handle);
+      setRecordSaveDirName(handle.name);
+      window.localStorage.setItem("recordSaveDirName", JSON.stringify(handle.name));
+    } catch (e) {
+      if (e.name !== "AbortError") console.error("폴더 선택 실패:", e);
+    }
+  };
+
+  const handleClearRecordDirectory = async () => {
+    await clearRecordDirectory();
+    setRecordSaveDirHandle(null);
+    setRecordSaveDirName("");
+    window.localStorage.removeItem("recordSaveDirName");
+  };
 
   const handleToggleAutoRecord = () => {
     setAutoRecordEnabled((prev) => {
@@ -626,6 +661,50 @@ export default function SettingsArea({ onClose }) {
         </SettingRow>
 
         <Divider />
+
+        {/* 녹화 저장 위치 */}
+        <SettingRow>
+          <SettingLabel>녹화 저장 위치</SettingLabel>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            {recordSaveDirName ? (
+              <Tooltip slotProps={tooltipSlotProps} title={recordSaveDirName}>
+                <Box
+                  sx={{
+                    maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis",
+                    whiteSpace: "nowrap", fontSize: "1.2rem", color: "text.secondary",
+                  }}
+                >
+                  {recordSaveDirName}
+                </Box>
+              </Tooltip>
+            ) : (
+              <Box sx={{ fontSize: "1.2rem", color: "text.disabled" }}>미지정</Box>
+            )}
+            <Tooltip slotProps={tooltipSlotProps} title="폴더 선택">
+              <span>
+                <IconButton
+                  size="small"
+                  onClick={handlePickRecordDirectory}
+                  disabled={!window.showDirectoryPicker}
+                  sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1 }}
+                >
+                  <FolderOpenIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+            {recordSaveDirName && (
+              <Tooltip slotProps={tooltipSlotProps} title="위치 초기화">
+                <IconButton
+                  size="small"
+                  onClick={handleClearRecordDirectory}
+                  sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1 }}
+                >
+                  <ClearAllIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+        </SettingRow>
 
         {/* 자동 녹화 설정 */}
         <SettingRow>

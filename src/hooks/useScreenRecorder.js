@@ -1,8 +1,9 @@
 import { useRef, useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import { isRecordingAtom } from "@/atoms/ui";
-import { recordQualityAtom, recordFrameRateAtom, recordCodecAtom, recordSoundEnabledAtom, recordSoundTypeAtom, recordSoundVolumeAtom } from "@/atoms/setting";
+import { recordQualityAtom, recordFrameRateAtom, recordCodecAtom, recordSoundEnabledAtom, recordSoundTypeAtom, recordSoundVolumeAtom, recordSaveDirHandleAtom } from "@/atoms/setting";
 import { playNotificationSound } from "@/utils/audio";
+import { getRecordDirectory } from "@/utils/recordDirectoryStorage";
 import dayjs from "dayjs";
 
 export const useScreenRecorder = () => {
@@ -13,9 +14,11 @@ export const useScreenRecorder = () => {
   const recordSoundEnabled = useAtomValue(recordSoundEnabledAtom);
   const recordSoundType = useAtomValue(recordSoundTypeAtom);
   const recordSoundVolume = useAtomValue(recordSoundVolumeAtom);
+  const [recordSaveDirHandle, setRecordSaveDirHandle] = useAtom(recordSaveDirHandleAtom);
   const mediaRecorderRef = useRef(null);
   const streamRef = useRef(null);
   const chunksRef = useRef([]);
+  const writableStreamRef = useRef(null); // File System Access API: 디스크 직접 스트리밍용
   const contentRef = useRef(null);
   const latestIsRecordingRef = useRef(isRecording);
 
@@ -32,6 +35,10 @@ export const useScreenRecorder = () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
+      if (writableStreamRef.current) {
+        writableStreamRef.current.close().catch(() => {});
+        writableStreamRef.current = null;
+      }
     };
   }, []);
 
@@ -45,6 +52,60 @@ export const useScreenRecorder = () => {
             cropTarget = await window.CropTarget.fromElement(contentRef.current);
           } catch (e) {
             console.warn("Region Capture not supported or failed:", e);
+          }
+        }
+
+        // 파일명 미리 결정 (showSaveFilePicker에서 사용)
+        const fileName = `${dayjs().format("YYMMDD_HHmm")}.webm`;
+
+        // 1순위: 설정에서 지정된 디렉터리 핸들 사용
+        // 2순위: File System Access API showSaveFilePicker
+        // 3순위: 메모리 → 브라우저 다운로드 (폴백)
+        let dirHandle = recordSaveDirHandle;
+
+        // 아직 atom에 로드 안 된 경우 IndexedDB에서 직접 시도
+        if (!dirHandle) {
+          dirHandle = await getRecordDirectory();
+          if (dirHandle) {
+            setRecordSaveDirHandle(dirHandle);
+          }
+        }
+
+        if (dirHandle) {
+          // 지정 폴더에 파일 바로 생성
+          try {
+            // 권한 재확인 (페이지 재로드 후 권한이 만료될 수 있음)
+            const permission = await dirHandle.requestPermission({ mode: "readwrite" });
+            if (permission === "granted") {
+              const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
+              writableStreamRef.current = await fileHandle.createWritable();
+            } else {
+              // 권한 거부 → showSaveFilePicker 폴백
+              dirHandle = null;
+            }
+          } catch (e) {
+            console.warn("지정 폴더 파일 생성 실패, 수동 선택으로 전환합니다:", e);
+            dirHandle = null;
+          }
+        }
+
+        if (!dirHandle && !writableStreamRef.current) {
+          if (typeof window !== "undefined" && window.showSaveFilePicker) {
+            try {
+              const fileHandle = await window.showSaveFilePicker({
+                suggestedName: fileName,
+                types: [{ description: "WebM Video", accept: { "video/webm": [".webm"] } }],
+              });
+              writableStreamRef.current = await fileHandle.createWritable();
+            } catch (e) {
+              if (e.name === "AbortError") {
+                // 사용자가 저장 대화상자를 취소함
+                setIsRecording(false);
+                return;
+              }
+              // 기타 오류 → 메모리 방식으로 폴백
+              console.warn("File System Access API 사용 불가, 메모리 녹화로 전환합니다:", e);
+            }
           }
         }
 
@@ -132,37 +193,59 @@ export const useScreenRecorder = () => {
         mediaRecorderRef.current = recorder;
         chunksRef.current = [];
 
-        recorder.ondataavailable = (e) => {
-          if (e.data.size > 0) chunksRef.current.push(e.data);
+        recorder.ondataavailable = async (e) => {
+          if (e.data.size > 0) {
+            if (writableStreamRef.current) {
+              // 디스크 직접 스트리밍 (메모리 누적 없음)
+              try {
+                await writableStreamRef.current.write(e.data);
+              } catch (writeErr) {
+                console.error("디스크 쓰기 오류:", writeErr);
+              }
+            } else {
+              // 폴백: 메모리에 누적
+              chunksRef.current.push(e.data);
+            }
+          }
         };
 
-        const stopRecording = () => {
-          const blob = new Blob(chunksRef.current, { type: mimeType });
-          if (blob.size === 0) {
-            // 데이터가 없으면 저장하지 않고 종료
-            streamRef.current?.getTracks().forEach((track) => track.stop());
-            streamRef.current = null;
-            setIsRecording(false);
-            mediaRecorderRef.current = null;
-            return;
+        const stopRecording = async () => {
+          if (writableStreamRef.current) {
+            // File System Access API: 스트림 닫으면 파일이 완성됨
+            try {
+              await writableStreamRef.current.close();
+            } catch (e) {
+              console.error("파일 스트림 닫기 오류:", e);
+            }
+            writableStreamRef.current = null;
+          } else {
+            // 폴백: 메모리 Blob → 다운로드
+            const blob = new Blob(chunksRef.current, { type: mimeType });
+            if (blob.size === 0) {
+              streamRef.current?.getTracks().forEach((track) => track.stop());
+              streamRef.current = null;
+              setIsRecording(false);
+              mediaRecorderRef.current = null;
+              return;
+            }
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+
+            a.style.display = "none";
+            a.href = url;
+            a.download = `${dayjs().format("YYMMDD_HHmm")}.webm`;
+
+            document.body.appendChild(a);
+            a.click();
+
+            setTimeout(() => {
+              document.body.removeChild(a);
+              window.URL.revokeObjectURL(url);
+            }, 100);
           }
 
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          const fileName = `${dayjs().format("YYMMDD_HHmm")}.webm`;
-
-          a.style.display = "none";
-          a.href = url;
-          a.download = fileName;
-
-          document.body.appendChild(a);
-          a.click();
-
-          setTimeout(() => {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-          }, 100);
-
+          chunksRef.current = [];
           streamRef.current?.getTracks().forEach((track) => track.stop());
           streamRef.current = null;
           setIsRecording(false);
@@ -174,7 +257,7 @@ export const useScreenRecorder = () => {
           }
         };
 
-        recorder.onstop = stopRecording;
+        recorder.onstop = () => { stopRecording(); };
 
         // 브라우저 UI에서 '공유 중지' 누를 경우 처리
         stream.getVideoTracks()[0].onended = () => {

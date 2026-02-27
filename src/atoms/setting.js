@@ -168,3 +168,14 @@ export const selectedSearchPlatformAtom = atomWithStorage(
   "",
   storage
 );
+
+// 녹화 저장 폴더 핸들 (메모리 전용, IndexedDB에서 로드)
+// FileSystemDirectoryHandle은 JSON 직렬화 불가이므로 atomWithStorage 사용 불가
+export const recordSaveDirHandleAtom = atom(null);
+
+// 녹화 저장 폴더 이름 표시용 (localStorage 저장)
+export const recordSaveDirNameAtom = atomWithStorage(
+  "recordSaveDirName",
+  "",
+  storage
+);
