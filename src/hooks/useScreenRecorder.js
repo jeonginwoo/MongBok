@@ -55,7 +55,7 @@ export const useScreenRecorder = () => {
           }
         }
 
-        // 파일명 미리 결정 (showSaveFilePicker에서 사용)
+        // 파일명 미리 결정
         const fileName = `${dayjs().format("YYMMDD_HHmm")}.webm`;
 
         // 1순위: 설정에서 지정된 디렉터리 핸들 사용
@@ -71,41 +71,19 @@ export const useScreenRecorder = () => {
           }
         }
 
+        // dirHandle이 있으면 권한만 미리 확인 (파일 생성은 아직 하지 않음)
+        let dirPermissionGranted = false;
         if (dirHandle) {
-          // 지정 폴더에 파일 바로 생성
           try {
-            // 권한 재확인 (페이지 재로드 후 권한이 만료될 수 있음)
             const permission = await dirHandle.requestPermission({ mode: "readwrite" });
             if (permission === "granted") {
-              const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
-              writableStreamRef.current = await fileHandle.createWritable();
+              dirPermissionGranted = true;
             } else {
-              // 권한 거부 → showSaveFilePicker 폴백
               dirHandle = null;
             }
           } catch (e) {
-            console.warn("지정 폴더 파일 생성 실패, 수동 선택으로 전환합니다:", e);
+            console.warn("폴더 권한 확인 실패:", e);
             dirHandle = null;
-          }
-        }
-
-        if (!dirHandle && !writableStreamRef.current) {
-          if (typeof window !== "undefined" && window.showSaveFilePicker) {
-            try {
-              const fileHandle = await window.showSaveFilePicker({
-                suggestedName: fileName,
-                types: [{ description: "WebM Video", accept: { "video/webm": [".webm"] } }],
-              });
-              writableStreamRef.current = await fileHandle.createWritable();
-            } catch (e) {
-              if (e.name === "AbortError") {
-                // 사용자가 저장 대화상자를 취소함
-                setIsRecording(false);
-                return;
-              }
-              // 기타 오류 → 메모리 방식으로 폴백
-              console.warn("File System Access API 사용 불가, 메모리 녹화로 전환합니다:", e);
-            }
           }
         }
 
@@ -114,6 +92,7 @@ export const useScreenRecorder = () => {
           playNotificationSound(recordSoundType, recordSoundVolume);
         }
 
+        // 화면 공유 권한 요청 (허용 후에 파일 생성)
         const stream = await navigator.mediaDevices.getDisplayMedia({
           video: {
             displaySurface: "browser",
@@ -140,6 +119,38 @@ export const useScreenRecorder = () => {
         }
 
         streamRef.current = stream;
+
+        // 화면 공유 허용 후 파일 생성
+        if (dirHandle && dirPermissionGranted) {
+          try {
+            const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
+            writableStreamRef.current = await fileHandle.createWritable();
+          } catch (e) {
+            console.warn("지정 폴더 파일 생성 실패, 수동 선택으로 전환합니다:", e);
+          }
+        }
+
+        if (!writableStreamRef.current) {
+          if (typeof window !== "undefined" && window.showSaveFilePicker) {
+            try {
+              const fileHandle = await window.showSaveFilePicker({
+                suggestedName: fileName,
+                types: [{ description: "WebM Video", accept: { "video/webm": [".webm"] } }],
+              });
+              writableStreamRef.current = await fileHandle.createWritable();
+            } catch (e) {
+              if (e.name === "AbortError") {
+                // 사용자가 저장 대화상자를 취소함
+                stream.getTracks().forEach((track) => track.stop());
+                streamRef.current = null;
+                setIsRecording(false);
+                return;
+              }
+              // 기타 오류 → 메모리 방식으로 폴백
+              console.warn("File System Access API 사용 불가, 메모리 녹화로 전환합니다:", e);
+            }
+          }
+        }
 
         // 사용자가 선택한 스트림의 비디오 트랙을 가져옴
         const [videoTrack] = stream.getVideoTracks();
