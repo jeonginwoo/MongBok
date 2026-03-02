@@ -68,10 +68,10 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    cursor: "grab",
+    cursor: pointerEventsEnabled ? "default" : "grab",
     transition: isDragging ? "none" : "0.5s ease",
     boxSizing: "border-box",
-    touchAction: "none",
+    touchAction: pointerEventsEnabled ? "auto" : "none",
     ...zone?.style,
     zIndex: isDragging ? 310 : 110 + baseZIndex,
   });
@@ -88,7 +88,7 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
       : "";
 
   return (
-    <Box ref={setNodeRef} {...listeners} {...attributes} sx={style}>
+    <Box ref={setNodeRef} {...(!pointerEventsEnabled && listeners)} {...(!pointerEventsEnabled && attributes)} sx={style}>
       <Box
         ref={containerRef}
         sx={{
