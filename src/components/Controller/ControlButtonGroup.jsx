@@ -240,15 +240,84 @@ export default function ControlButtonGroup({ fullscreen }) {
     }
   }, [channels, refreshing, setChannels]);
 
+  // zoneId가 부여된 채널만 갱신 (자동 60초 주기)
+  const handleAutoRefreshZoned = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    setTimeToNextRefresh(60);
+
+    try {
+      const entries = Object.entries(channels).filter(([, item]) => item.zoneId !== null);
+      await Promise.all(
+        entries.map(async ([channelId, item]) => {
+          try {
+            const liveStatus = await getLiveStatus(channelId, item.platform);
+            setChannels((prev) => ({
+              ...prev,
+              [channelId]: { ...prev[channelId], ...liveStatus },
+            }));
+          } catch (err) {
+            console.error(`⚠️ ${channelId} 라이브 상태 갱신 실패:`, err);
+          }
+        })
+      );
+    } catch (err) {
+      console.error("❌ 라이브 상태 갱신 실패:", err);
+    } finally {
+      setTimeout(() => setRefreshing(false), 750);
+    }
+  }, [channels, refreshing, setChannels]);
+
+  // zoneId가 없는 채널만 갱신 (자동 10분 주기)
+  const handleAutoRefreshUnzoned = useCallback(async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+
+    try {
+      const entries = Object.entries(channels).filter(([, item]) => item.zoneId === null);
+      await Promise.all(
+        entries.map(async ([channelId, item]) => {
+          try {
+            const liveStatus = await getLiveStatus(channelId, item.platform);
+            setChannels((prev) => ({
+              ...prev,
+              [channelId]: { ...prev[channelId], ...liveStatus },
+            }));
+          } catch (err) {
+            console.error(`⚠️ ${channelId} 라이브 상태 갱신 실패:`, err);
+          }
+        })
+      );
+    } catch (err) {
+      console.error("❌ 라이브 상태 갱신 실패:", err);
+    } finally {
+      setTimeout(() => setRefreshing(false), 750);
+    }
+  }, [channels, refreshing, setChannels]);
+
+  // zoneId 채널: 60초마다 자동 갱신
   useEffect(() => {
     if (Object.keys(channels).length === 0) return;
+    if (!Object.values(channels).some((c) => c.zoneId !== null)) return;
 
     const interval = setInterval(() => {
-      handleRefresh();
+      handleAutoRefreshZoned();
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [handleRefresh, channels]);
+  }, [handleAutoRefreshZoned, channels]);
+
+  // zoneId 없는 채널: 10분마다 자동 갱신
+  useEffect(() => {
+    if (Object.keys(channels).length === 0) return;
+    if (!Object.values(channels).some((c) => c.zoneId === null)) return;
+
+    const interval = setInterval(() => {
+      handleAutoRefreshUnzoned();
+    }, 600000);
+
+    return () => clearInterval(interval);
+  }, [handleAutoRefreshUnzoned, channels]);
 
   useEffect(() => {
     if (Object.keys(channels).length === 0) return;
@@ -436,7 +505,7 @@ export default function ControlButtonGroup({ fullscreen }) {
                 <>
                   채널 정보 갱신{" "}
                   <HotkeySpan component="span" pointcolor={pointColor}>(R)</HotkeySpan>
-                  {" "}{timeToNextRefresh}
+                  {Object.values(channels).some((c) => c.zoneId !== null) && <>{" "}{timeToNextRefresh}</>}
                 </>
               }
             >

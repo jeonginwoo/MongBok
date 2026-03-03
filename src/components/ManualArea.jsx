@@ -217,7 +217,7 @@ export default function ManualArea() {
             <ManualListItem
               icon={<RefreshIcon sx={{ fontSize: '2rem' }} />}
               primary="채널 정보 새로고침 (단축키: R)"
-              secondary="모든 채널의 라이브 상태, 시청자 수 등의 정보를 즉시 새로고침합니다. (60초마다 자동 갱신되며, 방송 시작 감지 시 자동으로 플레이어를 불러옵니다.)"
+              secondary="모든 채널의 라이브 상태, 시청자 수 등의 정보를 즉시 새로고침합니다. 자동 갱신 주기는 화면에 배치된 채널은 60초, 목록에만 있는 채널은 10분입니다. 방송 시작 감지 시 자동으로 플레이어를 불러옵니다."
             />
             <ManualListItem
               icon={<FiberManualRecordIcon sx={{ fontSize: '2rem' }} />}
