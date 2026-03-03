@@ -9,8 +9,8 @@ import {
 import {
   Fullscreen as FullscreenIcon,
   Refresh as RefreshIcon,
-  FormatIndentIncrease as FormatIndentIncreaseIcon,
-  FormatIndentDecrease as FormatIndentDecreaseIcon,
+  ChevronRight as ChevronRightIcon,
+  ChevronLeft as ChevronLeftIcon,
   Settings as SettingsIcon,
   FiberManualRecord as FiberManualRecordIcon,
 } from "@mui/icons-material";
@@ -472,9 +472,9 @@ export default function ControlButtonGroup({ fullscreen }) {
       >
         <IconButton onClick={handleToggleController}>
           {controllerExpanded ? (
-            <FormatIndentIncreaseIcon sx={iconStyle} />
+            <ChevronRightIcon sx={iconStyle} />
           ) : (
-            <FormatIndentDecreaseIcon sx={iconStyle} />
+            <ChevronLeftIcon sx={iconStyle} />
           )}
         </IconButton>
       </Tooltip>
