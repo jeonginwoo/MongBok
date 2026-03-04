@@ -56,7 +56,7 @@ export const useScreenRecorder = () => {
         }
 
         // 파일명 미리 결정
-        const fileName = `${dayjs().format("YYMMDD_HHmm")}.webm`;
+        const fileName = `${dayjs().format("YYMMDD HHmm")}.webm`;
 
         // 1순위: 설정에서 지정된 디렉터리 핸들 사용
         // 2순위: File System Access API showSaveFilePicker

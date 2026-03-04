@@ -11,38 +11,47 @@ import {
   ratioAtom,
   viewCountAtom,
   controllerExpandedAtom,
+  pointColorAtom,
 } from "@/atoms/setting";
 
-const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
-  display: "flex",
-  flexWrap: "wrap",
-  gap: "0.6rem",
+const StyledToggleButtonGroup = styled(ToggleButtonGroup, {
+  shouldForwardProp: (prop) => prop !== "pointcolor",
+})(({ theme, pointcolor }) => {
+  const accentColor =
+    pointcolor === "default" ? "#5f5f5f" : theme.palette.primary.main;
 
-  "& .MuiToggleButtonGroup-grouped": {
-    padding: 0,
-    width: "3.2rem",
-    height: "3.2rem",
-    border: `0.1rem solid ${theme.palette.primary.main} !important`,
-    borderRadius: "0.4rem !important",
-    color: theme.palette.primary.main,
+  return {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "0.6rem",
 
-    "&.Mui-selected": {
-      backgroundColor: theme.palette.primary.main,
-      color: "#fff",
-      borderColor: `${theme.palette.primary.main} !important`,
-      "&:hover": {
-        backgroundColor: theme.palette.primary.main,
-        filter: "brightness(0.9)",
+    "& .MuiToggleButtonGroup-grouped": {
+      padding: 0,
+      width: "3.2rem",
+      height: "3.2rem",
+      border: `0.1rem solid ${accentColor} !important`,
+      borderRadius: "0.4rem !important",
+      color: accentColor,
+
+      "&.Mui-selected": {
+        backgroundColor: accentColor,
+        color: "#fff",
+        borderColor: `${accentColor} !important`,
+        "&:hover": {
+          backgroundColor: accentColor,
+          filter: "brightness(0.9)",
+        },
       },
     },
-  },
-}));
+  };
+});
 
 export default function LayoutToggleGroup({ settingsMode }) {
   const [layoutType, setLayoutType] = useAtom(layoutTypeAtom);
   const [ratioKey] = useAtom(ratioAtom);
   const viewCount = useAtomValue(viewCountAtom);
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
+  const pointColor = useAtomValue(pointColorAtom);
 
   const [ratio, orientation] = ratioKey.split("-");
 
@@ -74,6 +83,7 @@ export default function LayoutToggleGroup({ settingsMode }) {
             exclusive
             onChange={handleChange}
             aria-label="layout selection"
+            pointcolor={pointColor}
           >
             {Object.keys(availableLayouts).map((key, index) => (
               <ToggleButton
