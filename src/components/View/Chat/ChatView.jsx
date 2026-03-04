@@ -10,6 +10,7 @@ import { useTheme } from "@mui/material/styles";
 
 export default function ChatView({ chatList, layoutKey }) {
   const scrollRef = useRef(null);
+  const innerRef = useRef(null);
   const isAutoScrollEnabledRef = useRef(true);
   const [showScrollToBottomButton, setShowScrollToBottomButton] = useState(false);
   const layoutChangingRef = useRef(false);
@@ -97,6 +98,38 @@ export default function ChatView({ chatList, layoutKey }) {
     }
   }, [layoutKey]);
 
+  // Maintain bottom-anchored scroll position when content height changes (e.g. font size change)
+  useLayoutEffect(() => {
+    const scrollEl = scrollRef.current;
+    const innerEl = innerRef.current;
+    if (!scrollEl || !innerEl) return;
+
+    let prevHeight = innerEl.offsetHeight;
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (autoScrollingRef.current || layoutChangingRef.current) return;
+
+      const newHeight = innerEl.offsetHeight;
+      const delta = newHeight - prevHeight;
+      prevHeight = newHeight;
+
+      if (delta !== 0) {
+        autoScrollingRef.current = true;
+        if (isAutoScrollEnabledRef.current) {
+          scrollEl.scrollTop = scrollEl.scrollHeight;
+        } else {
+          scrollEl.scrollTop += delta;
+        }
+        requestAnimationFrame(() => {
+          autoScrollingRef.current = false;
+        });
+      }
+    });
+
+    resizeObserver.observe(innerEl);
+    return () => resizeObserver.disconnect();
+  }, []);
+
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden && scrollRef.current && isAutoScrollEnabledRef.current) {
@@ -145,13 +178,15 @@ export default function ChatView({ chatList, layoutKey }) {
         }}
       >
         <Box sx={{ flexGrow: 1 }} />
-        {chatList.map((chat) =>
-          chat.payAmount != null ? (
-            <CheeseChatRow key={chat.uid} chat={chat} />
-          ) : (
-            <ChatRow key={chat.uid} chat={chat} />
-          )
-        )}
+        <Box ref={innerRef}>
+          {chatList.map((chat) =>
+            chat.payAmount != null ? (
+              <CheeseChatRow key={chat.uid} chat={chat} />
+            ) : (
+              <ChatRow key={chat.uid} chat={chat} />
+            )
+          )}
+        </Box>
       </Box>
       {showScrollToBottomButton && (
         <IconButton
