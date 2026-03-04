@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   Box,
   IconButton,
@@ -84,6 +84,15 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
   const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
   const prevZone1LiveRef = React.useRef(undefined);
+  const channelsRef = useRef(channels);
+  const refreshingRef = useRef(refreshing);
+  useEffect(() => { channelsRef.current = channels; }, [channels]);
+  useEffect(() => { refreshingRef.current = refreshing; }, [refreshing]);
+
+  const hasUnzonedChannels = useMemo(
+    () => Object.values(channels).some((c) => c.zoneId === null),
+    [channels]
+  );
 
   const [ratio, setRatio] = useAtom(ratioAtom);
   const { selectRatio } = useLayoutManager();
@@ -270,11 +279,11 @@ export default function ControlButtonGroup({ fullscreen }) {
 
   // zoneId가 없는 채널만 갱신 (자동 10분 주기)
   const handleAutoRefreshUnzoned = useCallback(async () => {
-    if (refreshing) return;
+    if (refreshingRef.current) return;
     setRefreshing(true);
 
     try {
-      const entries = Object.entries(channels).filter(([, item]) => item.zoneId === null);
+      const entries = Object.entries(channelsRef.current).filter(([, item]) => item.zoneId === null);
       await Promise.all(
         entries.map(async ([channelId, item]) => {
           try {
@@ -293,7 +302,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     } finally {
       setTimeout(() => setRefreshing(false), 750);
     }
-  }, [channels, refreshing, setChannels]);
+  }, [setChannels]); // channels/refreshing은 ref로 참조하므로 deps 불필요
 
   // zoneId 채널: 60초마다 자동 갱신
   useEffect(() => {
@@ -309,15 +318,14 @@ export default function ControlButtonGroup({ fullscreen }) {
 
   // zoneId 없는 채널: 10분마다 자동 갱신
   useEffect(() => {
-    if (Object.keys(channels).length === 0) return;
-    if (!Object.values(channels).some((c) => c.zoneId === null)) return;
+    if (!hasUnzonedChannels) return;
 
     const interval = setInterval(() => {
       handleAutoRefreshUnzoned();
     }, 600000);
 
     return () => clearInterval(interval);
-  }, [handleAutoRefreshUnzoned, channels]);
+  }, [handleAutoRefreshUnzoned, hasUnzonedChannels]);
 
   useEffect(() => {
     if (Object.keys(channels).length === 0) return;
