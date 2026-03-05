@@ -56,3 +56,12 @@
 - **Framework**: Next.js 14 (App Router)
 - **Styling**: Material-UI (MUI), Emotion
 - **State Management**: Jotai
+
+## 📜 라이선스 (License)
+
+This project is licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE).
+
+### Third-party
+
+This project includes code derived from [chazzy](https://github.com/AiOO/chazzy), which is licensed under AGPL-3.0.  
+Modified portions include chat integration logic for Chzzk, SOOP, and YouTube.
