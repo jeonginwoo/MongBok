@@ -7,6 +7,42 @@ import axios from 'axios';
 // axios 기본 User-Agent 설정 (YouTube 차단 방지)
 axios.defaults.headers.common['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
+// ARGB 정수 → #RRGGBB 변환
+function argbToHex(colorNum) {
+  if (!colorNum || typeof colorNum !== 'number') return null;
+  const hex = colorNum.toString(16).padStart(8, '0').slice(2).toUpperCase();
+  return /^[0-9A-F]{6}$/.test(hex) ? `#${hex}` : null;
+}
+
+// YouTube get_live_chat API 응답에서 슈퍼챗 원본 데이터를 가로채 보관
+// 라이브러리가 superchat 필드를 누락하거나 색상을 잘못 파싱하는 경우를 보완
+const superchatRawCache = new Map();
+
+axios.interceptors.response.use((response) => {
+  try {
+    if (!response.config.url?.includes('get_live_chat')) return response;
+    const actions = response.data?.continuationContents?.liveChatContinuation?.actions;
+    if (!Array.isArray(actions)) return response;
+    actions.forEach((action) => {
+      const r = action?.addChatItemAction?.item?.liveChatPaidMessageRenderer;
+      if (!r?.id) return;
+      const amount = r.purchaseAmountText?.simpleText;
+      if (!amount) return;
+      // headerBackgroundColor를 우선 사용 (vibrant color), 없으면 body 사용
+      const color =
+        argbToHex(r.headerBackgroundColor) ||
+        argbToHex(r.bodyBackgroundColor) ||
+        '#1565C0';
+      superchatRawCache.set(r.id, { amount, color });
+      // 캐시 크기 제한
+      if (superchatRawCache.size > 200) {
+        superchatRawCache.delete(superchatRawCache.keys().next().value);
+      }
+    });
+  } catch (_) {}
+  return response;
+});
+
 const app = express();
 const PORT = process.env.PORT || 47200;
 
@@ -69,6 +105,24 @@ wss.on('connection', (ws) => {
           });
           
           liveChat.on('chat', (chatItem) => {
+            // 캐시에서 슈퍼챗 원본 데이터 조회 (라이브러리 파싱 실패 보완)
+            const raw = superchatRawCache.get(chatItem.id);
+            if (raw) {
+              if (!chatItem.superchat) {
+                // 라이브러리가 superchat 필드 설정 안 한 경우
+                chatItem.superchat = raw;
+              } else {
+                // 라이브러리가 설정했지만 색상이 잘못된 경우 headerColor로 교체
+                if (!chatItem.superchat.color || !/^#[0-9A-Fa-f]{6}$/i.test(chatItem.superchat.color)) {
+                  chatItem.superchat.color = raw.color;
+                }
+              }
+              superchatRawCache.delete(chatItem.id);
+            }
+            // 최종 방어: superchat이 있는데 색상이 여전히 이상한 경우
+            if (chatItem.superchat && !/^#[0-9A-Fa-f]{6}$/i.test(chatItem.superchat.color || '')) {
+              chatItem.superchat.color = '#1565C0';
+            }
             ws.send(JSON.stringify({ type: 'chat', data: chatItem }));
           });
           

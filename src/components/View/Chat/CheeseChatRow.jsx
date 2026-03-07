@@ -2,29 +2,13 @@ import { Fragment, memo } from "react";
 import urlRegexSafe from "url-regex-safe";
 import CheeseIcon from "./CheeseIcon";
 import Box from "@mui/material/Box";
-import { CHEESE_COLORS } from "@/data/color";
+import { getCheeseColor } from "@/data/color";
 import Image from "next/image";
 
 function CheeseChatRow({ chat }) {
   const { nickname, badges, emojis, message, payAmount } = chat;
 
-  const tier = (() => {
-    if (payAmount === 0) {
-      return "tier0";
-    } else if (payAmount >= 1000000) {
-      return "tier5";
-    } else if (payAmount >= 500000) {
-      return "tier4";
-    } else if (payAmount >= 100000) {
-      return "tier3";
-    } else if (payAmount >= 10000) {
-      return "tier2";
-    } else {
-      return "tier1";
-    }
-  })();
-
-  const tierColor = CHEESE_COLORS[tier] || CHEESE_COLORS.tier0;
+  const tierColor = getCheeseColor(payAmount);
 
   return (
     <Box

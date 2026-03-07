@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { defaultEmojis, afreecaNicknameColors } from "../data/soopConstants";
 import useSoopEmoticons from "./useSoopEmoticons";
+import { CHAT_MAX_COUNT, CHAT_RENDER_INTERVAL } from "@/atoms/setting";
 
 function parseMessage(message) {
   return new TextDecoder().decode(message).substring(1).trim().split("\f");
@@ -373,9 +374,9 @@ export default function useSoopChat(channelId) {
     const interval = setInterval(() => {
       if (pendingChatListRef.current.length > 0) {
         const chatsToRender = pendingChatListRef.current.splice(0);
-        setChatList((prev) => [...prev, ...chatsToRender].slice(-100));
+        setChatList((prev) => [...prev, ...chatsToRender].slice(-CHAT_MAX_COUNT));
       }
-    }, 150);
+    }, CHAT_RENDER_INTERVAL);
     return () => clearInterval(interval);
   }, []);
 

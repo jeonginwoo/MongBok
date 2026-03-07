@@ -87,11 +87,15 @@ export default function ChatRow({ chat }) {
             fontWeight: 600,
             color: '#FFD500',
           }),
+          // 매니저일 때 파란색
+          ...(isModerator && !isOwner && {
+            color: '#5E84F1',
+          }),
         }}
       >
         {nickname}
       </Box>
-      <Box component="span" className="message" sx={{ verticalAlign: "middle", color: messageColor }}>
+      <Box component="span" className="message" sx={{ verticalAlign: "middle", color: isModerator ? '#5E84F1' : messageColor }}>
         {message.map((part, i) => (
           <Fragment key={i}>
             {part.type === "text" ? (

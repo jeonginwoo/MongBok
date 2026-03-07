@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { CHAT_MAX_COUNT, CHAT_RENDER_INTERVAL } from "@/atoms/setting";
 
 const nicknameColors = [
   "#ECA843", "#EEA05D", "#EA723D", "#EAA35F", "#E98158", "#E97F58",
@@ -307,7 +308,7 @@ export default function useChzzkChat(channelId) {
       if (document.hidden) return;
       if (pendingChatListRef.current.length > 0) {
         const chatsToRender = pendingChatListRef.current.splice(0);
-        setChatList((prev) => [...prev, ...chatsToRender].slice(-100));
+        setChatList((prev) => [...prev, ...chatsToRender].slice(-CHAT_MAX_COUNT));
       }
     }, 150);
     return () => clearInterval(interval);

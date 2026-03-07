@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { youtube_channel_client } from "@/api/client";
+import { CHAT_MAX_COUNT, CHAT_RENDER_INTERVAL } from "@/atoms/setting";
 
 const nicknameColors = [
   "#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8",
@@ -75,15 +76,14 @@ export default function useYoutubeChat(channelId) {
     
     // Owner는 배지 없음 (실제 YouTube도 배지 없이 닉네임만 강조)
     
-    // Moderator 배지
+    // Moderator 배지 (렌치 아이콘)
     if (chatItem.isModerator) {
-      // SVG 데이터 URI로 moderator 배지 생성
-      badges.push('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTguMDUgMEw5Ljk5IDUuOTFMMTYgNy4wOUwxMS40NSAxMS41NEwxMi45NCAxOEw4LjA1IDEzLjk5TDMuMTYgMThMNC42NSAxMS41NEwwIDcuMDlMNi4xMSA1LjkxTDguMDUgMFoiIGZpbGw9IiM1RTg0RjEiLz4KPC9zdmc+');
+      badges.push("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%235E84F1' d='M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z'/%3E%3C/svg%3E");
     }
     
-    // Verified 배지
+    // Verified 배지 (체크마크 원형)
     if (chatItem.isVerified) {
-      badges.push('https://yt3.ggpht.com/lNH4w2c4bEuGkGl_pRF4YtbA4_UQTZqkwvM6Mn9TF3D7QdD7M1i1_VFYwPQmFztDKChqsWPp=s88');
+      badges.push("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%23909090' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E");
     }
     
     // chazzy 스타일의 badges 배열이 있는 경우 (대체 데이터 소스)
@@ -162,6 +162,12 @@ export default function useYoutubeChat(channelId) {
       message: parsedMessage,
       isOwner: chatItem.isOwner || false,
       isModerator: chatItem.isModerator || false,
+      ...(chatItem.superchat && {
+        superChat: {
+          amount: chatItem.superchat.amount,
+          color: chatItem.superchat.color,
+        },
+      }),
     };
   }, []);
 
@@ -244,9 +250,9 @@ export default function useYoutubeChat(channelId) {
       if (document.hidden) return;
       if (pendingChatListRef.current.length > 0) {
         const chatsToRender = pendingChatListRef.current.splice(0);
-        setChatList((prev) => [...prev, ...chatsToRender].slice(-100));
+        setChatList((prev) => [...prev, ...chatsToRender].slice(-CHAT_MAX_COUNT));
       }
-    }, 150);
+    }, CHAT_RENDER_INTERVAL);
     return () => clearInterval(interval);
   }, []);
 

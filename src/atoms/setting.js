@@ -76,6 +76,12 @@ export const themeModeAtom = atomWithStorage("themeMode", "dark", storage);
 // 포인트 컬러
 export const pointColorAtom = atomWithStorage("pointColor", "default", storage);
 
+// 채팅 최대 개수
+export const CHAT_MAX_COUNT = 500;
+
+// 채팅 렌더링 주기 (ms)
+export const CHAT_RENDER_INTERVAL = 150;
+
 // 채팅창 폰트 크기 조절
 export const CHAT_FONT_SIZE_STEP = 0.05;
 export const chatFontSizeAdjustmentAtom = atomWithStorage(

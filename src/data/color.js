@@ -16,13 +16,24 @@ export const PLATFORM_COLORS = {
   },
 };
 
+// YouTube 슈퍼챗 티어별 색상 (금액 기준, KRW)
+export const SUPERCHAT_COLORS = {
+  tier1: "#1565C0",  // 파랑  — ₩1,000 ~  ₩1,999
+  tier2: "#00B8D4",  // 하늘  — ₩2,000 ~  ₩4,999
+  tier3: "#00BFA5",  // 초록  — ₩5,000 ~  ₩9,999
+  tier4: "#FFCA28",  // 노랑  — ₩10,000 ~ ₩19,999
+  tier5: "#E65100",  // 주황  — ₩20,000 ~ ₩49,999
+  tier6: "#C2185B",  // 분홍  — ₩50,000 ~ ₩99,999
+  tier7: "#D0021B",  // 빨강  — ₩100,000+
+};
+
 export const CHEESE_COLORS = {
-  tier0: "rgb(131, 131, 131)",
-  tier1: "rgb(87, 79, 168)",
-  tier2: "rgb(45, 123, 139)",
-  tier3: "rgb(35, 129, 90)",
-  tier4: "rgb(209, 142, 60)",
-  tier5: "rgb(197, 73, 82)",
+  tier0: "rgb(131, 131, 131)",  // 회색   — 0 치즈 (비활성/숨김)
+  tier1: "rgb(87, 79, 168)",    // 보라   — 1 ~ 9,999 치즈
+  tier2: "rgb(45, 123, 139)",   // 청록   — 10,000 ~ 99,999 치즈
+  tier3: "rgb(35, 129, 90)",    // 초록   — 100,000 ~ 499,999 치즈
+  tier4: "rgb(209, 142, 60)",   // 주황   — 500,000 ~ 999,999 치즈
+  tier5: "rgb(197, 73, 82)",    // 빨강   — 1,000,000+ 치즈
 };
 
 export const POINT_COLORS = {
@@ -210,3 +221,39 @@ export const palettes = {
     },
   }
 };
+
+// ----------------------------------------------------------
+
+/** hex 배경색의 밝기에 따라 '#000' 또는 '#fff' 반환 (W3C 상대 휘도 기준) */
+export function getTextColor(hexColor) {
+  const r = parseInt(hexColor.slice(1, 3), 16) / 255;
+  const g = parseInt(hexColor.slice(3, 5), 16) / 255;
+  const b = parseInt(hexColor.slice(5, 7), 16) / 255;
+  const toLinear = (c) => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  const L = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+  return L > 0.179 ? '#000' : '#fff';
+}
+
+
+/** 금액 문자열에서 숫자 추출 후 티어 색상 반환 */
+export function getSuperChatColor(amountStr) {
+  const num = parseFloat((amountStr || '').replace(/[^0-9.]/g, '').replace(/,/g, ''));
+  if (!num || num < 2000)  return SUPERCHAT_COLORS.tier1;  // ₩1,000 ~ ₩1,999 파랑
+  if (num < 5000)          return SUPERCHAT_COLORS.tier2;  // ₩2,000 ~ ₩4,999 하늘
+  if (num < 10000)         return SUPERCHAT_COLORS.tier3;  // ₩5,000 ~ ₩9,999 초록
+  if (num < 20000)         return SUPERCHAT_COLORS.tier4;  // ₩10,000 ~ ₩19,999 노랑
+  if (num < 50000)         return SUPERCHAT_COLORS.tier5;  // ₩20,000 ~ ₩49,999 주황
+  if (num < 100000)        return SUPERCHAT_COLORS.tier6;  // ₩50,000 ~ ₩99,999 분홍
+  return SUPERCHAT_COLORS.tier7;                           // ₩100,000+ 빨강
+}
+
+
+/** 치즈 금액(숫자)으로 티어 색상 반환 */
+export function getCheeseColor(payAmount) {
+  if (payAmount === 0)        return CHEESE_COLORS.tier0;  // 0 치즈 (비활성/숨김)
+  if (payAmount < 10000)      return CHEESE_COLORS.tier1;  // 1 ~ 9,999 치즈
+  if (payAmount < 100000)     return CHEESE_COLORS.tier2;  // 10,000 ~ 99,999 치즈
+  if (payAmount < 500000)     return CHEESE_COLORS.tier3;  // 100,000 ~ 499,999 치즈
+  if (payAmount < 1000000)    return CHEESE_COLORS.tier4;  // 500,000 ~ 999,999 치즈
+  return CHEESE_COLORS.tier5;                              // 1,000,000+ 치즈
+}

@@ -6,6 +6,7 @@ import IconButton from "@mui/material/IconButton";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ChatRow from "./ChatRow";
 import CheeseChatRow from "./CheeseChatRow";
+import SuperChatRow from "./SuperChatRow";
 import { useTheme } from "@mui/material/styles";
 
 export default function ChatView({ chatList, layoutKey }) {
@@ -113,13 +114,9 @@ export default function ChatView({ chatList, layoutKey }) {
       const delta = newHeight - prevHeight;
       prevHeight = newHeight;
 
-      if (delta !== 0) {
+      if (delta !== 0 && isAutoScrollEnabledRef.current) {
         autoScrollingRef.current = true;
-        if (isAutoScrollEnabledRef.current) {
-          scrollEl.scrollTop = scrollEl.scrollHeight;
-        } else {
-          scrollEl.scrollTop += delta;
-        }
+        scrollEl.scrollTop = scrollEl.scrollHeight;
         requestAnimationFrame(() => {
           autoScrollingRef.current = false;
         });
@@ -182,6 +179,8 @@ export default function ChatView({ chatList, layoutKey }) {
           {chatList.map((chat) =>
             chat.payAmount != null ? (
               <CheeseChatRow key={chat.uid} chat={chat} />
+            ) : chat.superChat != null ? (
+              <SuperChatRow key={chat.uid} chat={chat} />
             ) : (
               <ChatRow key={chat.uid} chat={chat} />
             )

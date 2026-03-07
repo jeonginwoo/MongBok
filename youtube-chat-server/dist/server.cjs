@@ -35486,6 +35486,32 @@ var {
 
 // server.js
 axios_default.defaults.headers.common["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+function argbToHex(colorNum) {
+  if (!colorNum || typeof colorNum !== "number") return null;
+  const hex = colorNum.toString(16).padStart(8, "0").slice(2).toUpperCase();
+  return /^[0-9A-F]{6}$/.test(hex) ? `#${hex}` : null;
+}
+var superchatRawCache = /* @__PURE__ */ new Map();
+axios_default.interceptors.response.use((response) => {
+  try {
+    if (!response.config.url?.includes("get_live_chat")) return response;
+    const actions = response.data?.continuationContents?.liveChatContinuation?.actions;
+    if (!Array.isArray(actions)) return response;
+    actions.forEach((action) => {
+      const r = action?.addChatItemAction?.item?.liveChatPaidMessageRenderer;
+      if (!r?.id) return;
+      const amount = r.purchaseAmountText?.simpleText;
+      if (!amount) return;
+      const color = argbToHex(r.headerBackgroundColor) || argbToHex(r.bodyBackgroundColor) || "#1565C0";
+      superchatRawCache.set(r.id, { amount, color });
+      if (superchatRawCache.size > 200) {
+        superchatRawCache.delete(superchatRawCache.keys().next().value);
+      }
+    });
+  } catch (_) {
+  }
+  return response;
+});
 var app = (0, import_express.default)();
 var PORT = process.env.PORT || 47200;
 app.use((0, import_cors.default)());
@@ -35525,6 +35551,20 @@ wss.on("connection", (ws) => {
             ws.send(JSON.stringify({ type: "start", id }));
           });
           liveChat.on("chat", (chatItem) => {
+            const raw = superchatRawCache.get(chatItem.id);
+            if (raw) {
+              if (!chatItem.superchat) {
+                chatItem.superchat = raw;
+              } else {
+                if (!chatItem.superchat.color || !/^#[0-9A-Fa-f]{6}$/i.test(chatItem.superchat.color)) {
+                  chatItem.superchat.color = raw.color;
+                }
+              }
+              superchatRawCache.delete(chatItem.id);
+            }
+            if (chatItem.superchat && !/^#[0-9A-Fa-f]{6}$/i.test(chatItem.superchat.color || "")) {
+              chatItem.superchat.color = "#1565C0";
+            }
             ws.send(JSON.stringify({ type: "chat", data: chatItem }));
           });
           liveChat.on("end", (reason) => {
