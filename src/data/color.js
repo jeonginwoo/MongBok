@@ -248,6 +248,19 @@ export function getSuperChatColor(amountStr) {
 }
 
 
+/** 별풍선 개수(숫자)로 티어 색상 반환 (1개 = 100원, 슈퍼챗 기준 동일) */
+export function getBalloonColor(balloonCount) {
+  const krw = balloonCount * 100;        // 1개 = 100원
+  if (!krw || krw < 2000)  return SUPERCHAT_COLORS.tier1;  // ~19개   파랑
+  if (krw < 5000)          return SUPERCHAT_COLORS.tier2;  // 20~49개  하늘
+  if (krw < 10000)         return SUPERCHAT_COLORS.tier3;  // 50~99개  초록
+  if (krw < 20000)         return SUPERCHAT_COLORS.tier4;  // 100~199개 노랑
+  if (krw < 50000)         return SUPERCHAT_COLORS.tier5;  // 200~499개 주황
+  if (krw < 100000)        return SUPERCHAT_COLORS.tier6;  // 500~999개 분홍
+  return SUPERCHAT_COLORS.tier7;                           // 1,000개+  빨강
+}
+
+
 /** 치즈 금액(숫자)으로 티어 색상 반환 */
 export function getCheeseColor(payAmount) {
   if (payAmount === 0)        return CHEESE_COLORS.tier0;  // 0 치즈 (비활성/숨김)

@@ -281,6 +281,39 @@ export default function useSoopChat(channelId) {
     [channelInfo, combinedEmoticons]
   );
 
+  const convertBalloonChat = useCallback(
+    (soopMessage) => {
+      // 0018 메시지 구조: [2]=userId, [3]=nickname, [4]=별풍선 개수
+      const balloonAmount = parseInt(soopMessage[4], 10) || 0;
+      const userId = soopMessage[2];
+      const nickname = soopMessage[3];
+
+      const color =
+        afreecaNicknameColors[
+          userId
+            .split("")
+            .map((c) => c.charCodeAt(0))
+            .reduce((a, b) => a + b, 0) % afreecaNicknameColors.length
+        ];
+
+      messageCounterRef.current += 1;
+      const uniqueId = `${userId}-${new Date().getTime()}-balloon-${messageCounterRef.current}`;
+
+      return {
+        uid: uniqueId,
+        time: new Date().getTime(),
+        userId,
+        nickname,
+        badges: [],
+        color,
+        emojis: combinedEmoticons,
+        message: [],
+        balloonAmount,
+      };
+    },
+    [combinedEmoticons]
+  );
+
   useEffect(() => {
     if (!channelInfo) return;
 
@@ -348,7 +381,24 @@ export default function useSoopChat(channelId) {
       const data = event.data;
       const soopMessage = parseMessage(data);
       if (soopMessage[0].startsWith("0005")) {
-        pendingChatListRef.current.push(convertChat(soopMessage));
+        const userId = soopMessage[2];
+        const pending = pendingChatListRef.current;
+        let balloonItem = null;
+        for (let i = pending.length - 1; i >= 0; i--) {
+          if (pending[i].balloonAmount != null && pending[i].userId === userId && pending[i].message.length === 0) {
+            balloonItem = pending[i];
+            break;
+          }
+        }
+        if (balloonItem) {
+          const chatData = convertChat(soopMessage);
+          balloonItem.message = chatData.message;
+          balloonItem.badges = chatData.badges;
+        } else {
+          pending.push(convertChat(soopMessage));
+        }
+      } else if (soopMessage[0].startsWith("0018")) {
+        pendingChatListRef.current.push(convertBalloonChat(soopMessage));
       } else if (soopMessage[0].startsWith("0109")) {
         pendingChatListRef.current.push(convertStickerChat(soopMessage));
       }
@@ -362,7 +412,7 @@ export default function useSoopChat(channelId) {
       worker.terminate();
       ws.close();
     };
-  }, [channelInfo, convertChat, convertStickerChat, webSocketBuster]);
+  }, [channelInfo, convertChat, convertBalloonChat, convertStickerChat, webSocketBuster]);
 
   useEffect(() => {
     return () => {
@@ -371,10 +421,22 @@ export default function useSoopChat(channelId) {
   }, []);
 
   useEffect(() => {
+    const BALLOON_WAIT_MS = 500;
     const interval = setInterval(() => {
       if (pendingChatListRef.current.length > 0) {
-        const chatsToRender = pendingChatListRef.current.splice(0);
-        setChatList((prev) => [...prev, ...chatsToRender].slice(-CHAT_MAX_COUNT));
+        const now = Date.now();
+        const chatsToRender = pendingChatListRef.current.filter(
+          (item) =>
+            item.balloonAmount == null ||
+            item.message.length > 0 ||
+            now - item.time > BALLOON_WAIT_MS
+        );
+        if (chatsToRender.length > 0) {
+          pendingChatListRef.current = pendingChatListRef.current.filter(
+            (item) => !chatsToRender.includes(item)
+          );
+          setChatList((prev) => [...prev, ...chatsToRender].slice(-CHAT_MAX_COUNT));
+        }
       }
     }, CHAT_RENDER_INTERVAL);
     return () => clearInterval(interval);

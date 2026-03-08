@@ -7,6 +7,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ChatRow from "./ChatRow";
 import CheeseChatRow from "./CheeseChatRow";
 import SuperChatRow from "./SuperChatRow";
+import BalloonChatRow from "./BalloonChatRow";
 import { useTheme } from "@mui/material/styles";
 
 export default function ChatView({ chatList, layoutKey }) {
@@ -181,6 +182,8 @@ export default function ChatView({ chatList, layoutKey }) {
               <CheeseChatRow key={chat.uid} chat={chat} />
             ) : chat.superChat != null ? (
               <SuperChatRow key={chat.uid} chat={chat} />
+            ) : chat.balloonAmount != null ? (
+              <BalloonChatRow key={chat.uid} chat={chat} />
             ) : (
               <ChatRow key={chat.uid} chat={chat} />
             )
