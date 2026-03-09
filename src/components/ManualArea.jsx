@@ -1,15 +1,5 @@
 import React from "react";
-import {
-  Box,
-  Typography,
-  Paper,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-} from "@mui/material";
-import { lighten } from "@mui/material/styles";
+import { Box, Typography, Divider, Button } from "@mui/material";
 import {
   Settings as SettingsIcon,
   Search as SearchIcon,
@@ -18,78 +8,61 @@ import {
   AspectRatio as AspectRatioIcon,
   ViewQuilt as ViewQuiltIcon,
   DragIndicator as DragIndicatorIcon,
-  Mouse as MouseIcon,
   FormatIndentIncrease as FormatIndentIncreaseIcon,
-  Brightness4 as Brightness4Icon,
-  AccessTime as AccessTimeIcon,
   Refresh as RefreshIcon,
   Fullscreen as FullscreenIcon,
   Info as InfoIcon,
   ImportExport as ImportExportIcon,
-  FormatSize as FormatSizeIcon,
   FiberManualRecord as FiberManualRecordIcon,
   Download as DownloadIcon,
-  DesktopWindows as WindowsIcon,
+  Window as WindowsIcon,
   Apple as AppleIcon,
-  Terminal as LinuxIcon,
 } from "@mui/icons-material";
-import { Button } from "@mui/material";
 import { PLATFORM_COLORS } from "@/data/color";
 
 const Section = ({ title, children }) => (
-  <Paper
-    elevation={3}
-    sx={{
-      p: 3,
-      mb: 4,
-      backgroundColor: "background.level1",
-      borderRadius: "1.2rem",
-      borderLeft: "0.5rem solid",
-      borderColor: (theme) => theme.palette.primary.main,
-    }}
-  >
+  <Box sx={{ mb: 4 }}>
     <Typography
-      variant="h4"
+      variant="h5"
       component="h2"
-      gutterBottom
-      sx={{
-        fontWeight: "bold",
-        fontSize: "2.4rem",
-      }}
+      sx={{ fontWeight: 700, fontSize: "1.6rem", mb: 1.5 }}
     >
       {title}
     </Typography>
-    <Divider sx={{ mb: 2 }} />
+    <Divider sx={{ mb: 2, borderColor: "primary.main", opacity: 0.4 }} />
     {children}
-  </Paper>
+  </Box>
 );
 
-const ManualListItem = ({ icon, primary, secondary, nested }) => (
-  <ListItem sx={{ py: 1.5, alignItems: "flex-start", pl: nested ? 10 : 2 }}>
-    <ListItemIcon
+const Item = ({ icon, primary, secondary }) => (
+  <Box sx={{ display: "flex", gap: 2, mb: 2.5, alignItems: "flex-start" }}>
+    <Box
       sx={{
-        minWidth: "6.0rem",
-        color: (theme) => theme.palette.primary.brand,
-        mt: 1,
+        color: "primary.main",
+        mt: "0.2rem",
+        flexShrink: 0,
+        display: "flex",
       }}
     >
       {icon}
-    </ListItemIcon>
-    <ListItemText
-      primary={primary}
-      secondary={secondary}
-      primaryTypographyProps={{
-        fontWeight: "bold",
-        fontSize: "1.45rem",
-        marginBottom: "0.4rem",
-      }}
-      secondaryTypographyProps={{
-        lineHeight: 1.5,
-        fontSize: "1.2rem",
-        color: "text.secondary",
-      }}
-    />
-  </ListItem>
+    </Box>
+    <Box>
+      <Typography sx={{ fontWeight: 600, fontSize: "1.35rem", mb: 0.4 }}>
+        {primary}
+      </Typography>
+      <Box component="ul" sx={{ m: 0, pl: "1.4rem", listStyleType: "disc" }}>
+        {(Array.isArray(secondary) ? secondary : [secondary]).map((line, i) => (
+          <Box
+            component="li"
+            key={i}
+            sx={{ fontSize: "1.2rem", color: "text.secondary", lineHeight: 1.65 }}
+          >
+            {line}
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  </Box>
 );
 
 export default function ManualArea() {
@@ -97,233 +70,223 @@ export default function ManualArea() {
     <Box
       sx={{
         flex: "1 1 auto",
-        display: "flex",
-        justifyContent: "center",
+        overflowY: "scroll",
         backgroundColor: "background.default",
         color: "text.primary",
-        overflowY: "scroll",
-        p: { xs: 1, sm: 2, md: 4 },
+        p: { xs: 2, sm: 3, md: 5 },
       }}
     >
-      <Box
-        sx={{
-          maxWidth: 800,
-          width: "100%",
-          pb: { xs: 8, sm: 8, md: 8 },
-        }}
-      >
+      <Box sx={{ maxWidth: 680, mx: "auto", pb: 8 }}>
+
         <Typography
-          variant="h2"
           component="h1"
-          textAlign="center"
-          gutterBottom
           sx={{
-            fontWeight: "bold",
-            my: 4,
-            fontSize: { xs: "2.5rem", sm: "3rem", md: "3.5rem" },
+            fontWeight: 800,
+            fontSize: { xs: "2.4rem", sm: "3rem" },
+            letterSpacing: "-0.03em",
+            mb: 0.5,
             background: (theme) => theme.palette.primary.gradient,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
-            textShadow: "0.1rem 0.1rem 0.3rem rgba(0,0,0,0.1)",
           }}
         >
-          스퓨즈 사용 설명서
+          스퓨즈 가이드
+        </Typography>
+        <Typography sx={{ color: "text.secondary", fontSize: "1.3rem", mb: 5 }}>
+          멀티 스트리밍 뷰어 사용 설명서
         </Typography>
 
-        <Section title="1. 주요 기능">
-          <Typography sx={{ lineHeight: 1.6, fontSize: "1.3rem" }}>
-            스퓨즈(S-Fuz)는 여러 스트리밍 플랫폼의 방송을 한 화면에서 동시에
-            시청할 수 있는 서비스입니다. 현재{" "}
-            <strong style={{ color: PLATFORM_COLORS.chzzk.main }}>치지직</strong>,{" "}
-            <strong style={{ color: PLATFORM_COLORS.soop.main }}>숲</strong>,{" "}
-            <strong style={{ color: PLATFORM_COLORS.youtube.main }}>유튜브</strong>{" "}
-            플랫폼을 지원하며, 다음과 같은 주요 기능을 제공합니다.
-          </Typography>
-          <List>
-            <ListItem sx={{ py: 0.5, fontSize: "1.25rem" }}>
-              - 여러 방송을 원하는 레이아웃으로 자유롭게 배치하여 시청
-            </ListItem>
-            <ListItem sx={{ py: 0.5, fontSize: "1.25rem" }}>
-              - 각 방송의 실시간 채팅을 한 화면에서 확인
-            </ListItem>
-            <ListItem sx={{ py: 0.5, fontSize: "1.25rem" }}>
-              - 사용자 편의를 위한 다양한 화면 제어 기능
-            </ListItem>
-          </List>
+        {/* 채널 관리 */}
+        <Section title="채널 관리">
+          <Item
+            icon={<SearchIcon />}
+            primary="채널 검색"
+            secondary={[
+              "우측 컨트롤러 상단의 검색창에서 원하는 채널을 검색할 수 있습니다.",
+              "검색어 입력 후 Enter를 누르거나, 0.5초 동안 입력이 없으면 자동으로 검색됩니다.",
+              "검색 결과는 각 플랫폼에서 상위 5개가 출력됩니다.",
+            ]}
+          />
+          <Item
+            icon={<AddToPhotosIcon />}
+            primary="채널 추가"
+            secondary="검색 결과 목록에서 원하는 채널을 클릭하면 채널 목록에 추가됩니다."
+          />
+          <Item
+            icon={<DeleteForeverIcon />}
+            primary="채널 삭제"
+            secondary={[
+              "채널 목록에서 각 채널에 마우스를 올리면 나타나는 휴지통 아이콘을 클릭하여 삭제할 수 있습니다.",
+              "모바일에서는 해당 위치를 클릭하면 됩니다.",
+            ]}
+          />
+          <Item
+            icon={<DragIndicatorIcon />}
+            primary="채널 배치 및 정렬"
+            secondary={[
+              "목록의 채널을 클릭하면 화면에 배치됩니다.",
+              "배치된 채널은 드래그하여 순서를 변경할 수 있고, 다시 클릭하면 목록으로 돌아갑니다.",
+              "목록에 대기 중인 채널은 시청자순 → 채널명순으로 자동 정렬됩니다.",
+            ]}
+          />
+          <Item
+            icon={<ImportExportIcon />}
+            primary="채널 수동 추가"
+            secondary={[
+              "검색 상위 5개에 없는 채널은 설정 > 설정 동기화에서 직접 추가할 수 있습니다.",
+              '채널 목록에 추가할 항목을 channels 항목에 "채널ID": { "platform": "플랫폼명" } 형식으로 입력하면 됩니다.',
+              "플랫폼명은 chzzk / soop / youtube 중 하나입니다.",
+            ]}
+          />
         </Section>
 
-        <Section title="2. 채널 관리">
-          <List>
-            <ManualListItem
-              icon={<SearchIcon sx={{ fontSize: '2rem' }} />}
-              primary="채널 검색"
-              secondary="우측 컨트롤러 상단의 검색창에서 원하는 채널을 검색할 수 있습니다. 검색어 입력 후 Enter를 누르거나, 0.5초 동안 입력이 없으면 자동으로 검색됩니다. 검색 결과는 각 플랫폼에서 상위 5개가 출력됩니다."
-            />
-            <ManualListItem
-              icon={<AddToPhotosIcon sx={{ fontSize: '2rem' }} />}
-              primary="채널 추가"
-              secondary="검색 결과 목록에서 원하는 채널을 클릭하면 채널 목록에 추가됩니다. 추가된 채널은 컨트롤러의 채널 목록에서 확인할 수 있습니다."
-            />
-            <ManualListItem
-              icon={<DeleteForeverIcon sx={{ fontSize: '2rem' }} />}
-              primary="채널 삭제"
-              secondary="채널 목록에서 각 채널에 마우스를 올렸을 때 나타나는 우측의 휴지통 아이콘을 클릭하여 목록에서 삭제할 수 있습니다. 모바일에서는 휴지통이 안보이지만 해당 위치 클릭하면 삭제할 수 있습니다."
-            />
-            <ManualListItem
-              icon={<DragIndicatorIcon sx={{ fontSize: '2rem' }} />}
-              primary="채널 활성화 및 정렬"
-              secondary="목록의 채널을 클릭하면 상단으로 이동(활성화)되어 화면에 표시됩니다. 활성화된 채널은 드래그하여 순서를 변경할 수 있으며, 다시 클릭하면 목록으로 돌아갑니다. 비활성화된 채널은 1순위-시청자순, 2순위-채널명 으로 자동 정렬됩니다."
-            />
-            <ManualListItem
-              icon={<ImportExportIcon sx={{ fontSize: '2rem' }} />}
-              primary="채널 수동 추가 (검색 결과에 없는 경우)"
-              secondary='검색 결과 상위 5개에 포함되지 않는 채널은 설정 > 설정 동기화를 통해 직접 추가할 수 있습니다. 현재 설정을 복사한 뒤, channels 항목에 추가하려는 채널을 직접 입력하면 됩니다. 형식은 다음과 같습니다: "채널ID": { "platform": "플랫폼명" } — 플랫폼명은 chzzk / soop / youtube 중 하나입니다. 채널ID는 각 플랫폼의 채널 URL에서 확인할 수 있습니다.'
-            />
-          </List>
+        {/* 화면 레이아웃 */}
+        <Section title="화면 레이아웃">
+          <Item
+            icon={<AspectRatioIcon />}
+            primary="화면 비율 선택 (↑ / ↓)"
+            secondary={[
+              "컨트롤러의 비율 버튼으로 전체 화면 비율(예: 16:9, 9:16)을 선택합니다.",
+              "모바일에서는 기기 방향에 따라 자동 전환됩니다.",
+            ]}
+          />
+          <Item
+            icon={<ViewQuiltIcon />}
+            primary="레이아웃 유형 선택 (1, 2, 3…)"
+            secondary="배치된 방송 개수에 따라 선택 가능한 레이아웃이 버튼으로 표시됩니다."
+          />
+          <Item
+            icon={<DragIndicatorIcon />}
+            primary="방송 · 채팅창 위치 변경"
+            secondary={[
+              "채널을 드래그하여 빈 공간(Drop Zone)으로 옮기면 배치됩니다.",
+              "이미 방송이 있는 공간으로 드래그하면 두 방송의 위치가 교체됩니다.",
+              "채팅창도 동일하게 위치를 변경할 수 있습니다.",
+            ]}
+          />
         </Section>
 
-        <Section title="3. 화면 레이아웃 설정">
-          <List>
-            <ManualListItem
-              icon={<AspectRatioIcon sx={{ fontSize: '2rem' }} />}
-              primary="전체 화면 비율 선택 (단축키: ↑, ↓)"
-              secondary="컨트롤러의 비율 버튼을 클릭하여 원하는 전체 화면 비율(예: 16:9, 9:16)을 선택할 수 있습니다. 모바일 기기에서는 기기 방향에 따라 가로/세로 모드가 자동으로 전환됩니다."
-            />
-            <ManualListItem
-              icon={<ViewQuiltIcon sx={{ fontSize: '2rem' }} />}
-              primary="레이아웃 유형 선택 (단축키: 1, 2, 3...)"
-              secondary="화면에 표시 중인 방송 개수에 따라 선택 가능한 레이아웃 유형이 버튼으로 표시됩니다. 원하는 레이아웃을 선택하여 방송 화면 배치를 변경할 수 있습니다."
-            />
-            <ManualListItem
-              icon={<DragIndicatorIcon sx={{ fontSize: '2rem' }} />}
-              primary="방송 및 채팅창 위치 변경 (드래그 앤 드롭)"
-              secondary="채널 목록에서 원하는 채널을 드래그하여 화면의 빈 공간(Drop Zone)으로 옮기면 해당 위치에 방송이 표시됩니다. 이미 방송이 있는 공간으로 드래그하면 두 방송의 위치가 서로 교체됩니다. 채팅창 또한 동일한 방식으로 위치를 변경할 수 있습니다."
-            />
-          </List>
+        {/* 컨트롤러 */}
+        <Section title="컨트롤러">
+          <Item
+            icon={<FormatIndentIncreaseIcon />}
+            primary="사이드바 펴기/접기 (C)"
+            secondary="컨트롤러 영역을 펴거나 접어 방송 화면을 넓게 볼 수 있습니다."
+          />
+          <Item
+            icon={<SettingsIcon />}
+            primary="설정 (S)"
+            secondary="테마, 화면, 녹화, 동기화 설정을 변경할 수 있습니다."
+          />
+          <Item
+            icon={<RefreshIcon />}
+            primary="채널 정보 새로고침 (R)"
+            secondary={[
+              "모든 채널의 라이브 상태와 시청자 수를 즉시 갱신합니다.",
+              "배치된 채널은 60초, 목록의 채널은 10분마다 자동 갱신됩니다.",
+            ]}
+          />
+          <Item
+            icon={<FiberManualRecordIcon />}
+            primary="방송 화면 녹화"
+            secondary={[
+              "녹화 시작 시 브라우저 팝업에서 '이 탭'을 선택하면 방송 화면만 녹화됩니다.",
+              "설정에서 '자동 녹화 (1번 Zone)'를 켜면 1번 구역 방송 상태에 따라 자동으로 녹화가 시작/종료됩니다.",
+            ]}
+          />
+          <Item
+            icon={<FullscreenIcon />}
+            primary="전체 화면 (F)"
+            secondary="방송 화면을 전체 화면으로 전환합니다."
+          />
         </Section>
 
-        <Section title="4. 컨트롤러 기능">
-          <List>
-            <ManualListItem
-              icon={<FormatIndentIncreaseIcon sx={{ fontSize: '2rem' }} />}
-              primary="사이드바 펴기/접기 (단축키: C)"
-              secondary="컨트롤러(사이드바) 영역을 펴거나 접습니다. 넓은 화면으로 시청하고 싶을 때 유용합니다."
-            />
-            <ManualListItem
-              icon={<SettingsIcon sx={{ fontSize: '2rem' }} />}
-              primary="설정 (단축키: S)"
-              secondary="테마, 화면, 녹화, 동기화 관련 설정기능이 포함된 설정창을 엽니다."
-            />
-            <ManualListItem
-              icon={<RefreshIcon sx={{ fontSize: '2rem' }} />}
-              primary="채널 정보 새로고침 (단축키: R)"
-              secondary="모든 채널의 라이브 상태, 시청자 수 등의 정보를 즉시 새로고침합니다. 자동 갱신 주기는 화면에 배치된 채널은 60초, 목록에만 있는 채널은 10분입니다. 방송 시작 감지 시 자동으로 플레이어를 새로고침 합니다."
-            />
-            <ManualListItem
-              icon={<FiberManualRecordIcon sx={{ fontSize: '2rem' }} />}
-              primary="방송 화면 녹화"
-              secondary="컨트롤러의 녹화 버튼(●)을 클릭하여 현재 시청 중인 방송 화면(Canvas 영역)을 녹화할 수 있습니다. 녹화 시작 시 브라우저 팝업에서 '이 탭 (Current Tab)'을 선택해야 사이드바 등을 제외한 순수 방송 화면만 깔끔하게 녹화됩니다. 설정 메뉴에서 '자동 녹화 (1번 Zone)' 기능을 켜면, 가장 큰 화면(1번 구역)의 방송 상태에 따라 자동으로 녹화가 시작/종료됩니다. 녹화가 완료되면 파일이 브라우저의 기본 다운로드 경로에 저장됩니다."
-            />
-            <ManualListItem
-              icon={<FullscreenIcon sx={{ fontSize: '2rem' }} />}
-              primary="전체 화면 (단축키: F)"
-              secondary="현재 시청 중인 방송을 전체 화면으로 전환합니다."
-            />
-          </List>
+        {/* 참고사항 */}
+        <Section title="참고사항">
+          <Item
+            icon={
+              <Box sx={{ width: 20, height: 20, borderRadius: "50%", background: PLATFORM_COLORS.soop.profile, mt: "0.1rem" }} />
+            }
+            primary="숲 (SOOP)"
+            secondary="같은 방송을 동시에 두 곳에 띄울 수 없습니다. 방송 종료 시간은 API에서 제공하지 않아 '?'로 표시됩니다."
+          />
+          <Item
+            icon={
+              <Box sx={{ width: 20, height: 20, borderRadius: "50%", background: PLATFORM_COLORS.chzzk.profile, mt: "0.1rem" }} />
+            }
+            primary="치지직 (CHZZK)"
+            secondary={[
+              "라이브 플레이어만 단독으로 가져올 수 없어 페이지 전체를 불러옵니다.",
+              "화면을 꽉 채우려면 '화면 조작 모드(V)'로 전환 후 플레이어의 '넓은 화면 보기'와 '채팅창 닫기'를 직접 클릭해야 합니다.",
+            ]}
+          />
+          <Item
+            icon={
+              <Box sx={{ width: 20, height: 20, borderRadius: "50%", background: PLATFORM_COLORS.youtube.profile, mt: "0.1rem" }} />
+            }
+            primary="유튜브 (YouTube)"
+            secondary={[
+              "동시 라이브가 여러 개인 경우 시청자 수가 가장 많은 방송이 표시됩니다.",
+              "라이브 VOD가 없거나 삭제된 경우 '최신 라이브 정보 없음'으로 표시됩니다.",
+            ]}
+          />
+          <Item
+            icon={<InfoIcon />}
+            primary="채팅 작성 불가"
+            secondary="채팅 참여는 각 플랫폼 사이트에서 직접 해야 합니다."
+          />
+          <Item
+            icon={<InfoIcon />}
+            primary="광고 및 성인 콘텐츠"
+            secondary="보안 정책상 로그인이 차단되어, 구독 중이라도 광고가 나올 수 있고 19세 이상 콘텐츠는 시청할 수 없습니다."
+          />
+          <Item
+            icon={<InfoIcon />}
+            primary="모바일 환경"
+            secondary="PC 사용을 권장합니다. 모바일에서는 '데스크탑 사이트 보기'를 켜고 사용하세요."
+          />
+          <Item
+            icon={<InfoIcon />}
+            primary="메모리 사용량"
+            secondary="4~5개 채널 동시 시청 시 약 2~3GB의 메모리가 사용될 수 있습니다."
+          />
         </Section>
 
-        <Section title="5. 참고사항">
-          <List>
-            <ManualListItem
-              icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
-              primary="숲(SOOP) 플랫폼"
-              secondary="숲 플랫폼은 같은 방송을 동시에 띄울 수 없습니다. 방송 종료 시간을 API로 제공하지 않아 '?'로 표시됩니다."
-            />
-            <ManualListItem
-              icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
-              primary="치지직(CHZZK) 플랫폼"
-              secondary="치지직은 별도의 라이브 플레이어만 가져올 수 없어 페이지 전체를 불러옵니다. 이로 인해 화면을 꽉 채워서 보려면, '화면 조작 모드(V)'로 변경 후 플레이어의 '넓은 화면 보기'와 '채팅창 닫기'를 직접 클릭해야 합니다."
-            />
-            <ManualListItem
-              icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
-              primary="유튜브(YouTube) 플랫폼"
-              secondary="유튜브 채널이 동시에 여러 라이브를 진행 중인 경우, 시청자 수가 가장 많은 라이브 방송이 자동으로 표시됩니다. 오프라인 채널의 마지막 방송 시작/종료 시간은 채널에 라이브 VOD가 남아 있을 때만 표시됩니다. VOD를 삭제했거나 라이브를 한 적이 없는 경우 '최신 라이브 정보 없음'으로 표시됩니다."
-            />
-            <ManualListItem
-              icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
-              primary="채팅 기능 없음"
-              secondary="본 서비스에는 채팅 작성 기능이 없으므로, 채팅 참여를 위해서는 각 플랫폼 사이트를 이용해야 합니다."
-            />
-            <ManualListItem
-              icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
-              primary="광고 및 19세 이상 콘텐츠"
-              secondary="보안 정책상 로그인 기능이 차단되어 있어, 구독 중이라도 광고가 나올 수 있으며 19세 이상 콘텐츠는 시청할 수 없습니다."
-            />
-            <ManualListItem
-              icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
-              primary="모바일 환경"
-              secondary="본 서비스는 기본적으로 PC 사용을 권장하며, 모바일 환경에서는 브라우저의 '데스크탑 사이트 보기' 설정을 권장합니다. 기기 해상도에 따라 화면 비율이나 폰트 크기 조절이 필요할 수 있습니다."
-            />
-            <ManualListItem
-              icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
-              primary="라이브 진행 시간"
-              secondary="라이브 진행 시간이 채널 정보에 표시됩니다. 24시간 이상일 경우 일(D) 단위로, 1년 이상일 경우 연(Y) 단위로 표시됩니다."
-            />
-            <ManualListItem
-              icon={<InfoIcon sx={{ fontSize: "2rem" }} />}
-              primary="메모리 사용량"
-              secondary="4~5개 채널을 동시에 시청할 경우, 약 2~3GB 가량의 메모리가 사용될 수 있습니다."
-            />
-          </List>
-        </Section>
-        <Section title="6. YouTube 채팅 서버">
-          <Typography sx={{ lineHeight: 1.6, fontSize: "1.3rem", mb: 2 }}>
+        {/* YouTube 채팅 서버 */}
+        <Section title="YouTube 채팅 서버">
+          <Typography sx={{ fontSize: "1.25rem", color: "text.secondary", lineHeight: 1.65, mb: 2.5 }}>
             유튜브 채팅을 표시하려면 로컬에서 채팅 서버를 실행해야 합니다.
-            아래에서 운영체제에 맞는 실행 파일을 다운로드한 뒤 실행하면 됩니다.
-            Node.js 설치 없이 바로 사용할 수 있습니다.
+            Node.js 없이 바로 실행할 수 있습니다.
+            서버 실행 후 포트 <strong>47200</strong>에서 WebSocket을 수신합니다.
           </Typography>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, mb: 2 }}>
+            {[
+              { icon: <WindowsIcon />, label: "Windows", href: "/downloads/youtube-chat-server-win-x64.zip" },
+              { icon: <AppleIcon />, label: "macOS", href: "/downloads/youtube-chat-server-macos-x64.zip" },
+            ].map(({ icon, label, href }) => (
               <Button
+                key={label}
                 variant="outlined"
-                startIcon={<WindowsIcon />}
-                endIcon={<DownloadIcon />}
-                href="/downloads/youtube-chat-server-win-x64.zip"
+                href={href}
                 download
-                sx={{ fontSize: "1.3rem", textTransform: "none" }}
-              >
-                Windows (x64)
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={<AppleIcon />}
+                startIcon={icon}
                 endIcon={<DownloadIcon />}
-                href="/downloads/youtube-chat-server-macos-x64.zip"
-                download
-                sx={{ fontSize: "1.3rem", textTransform: "none" }}
+                sx={{ fontSize: "1.2rem", textTransform: "none", borderRadius: "0.8rem" }}
               >
-                macOS (x64)
+                {label}
               </Button>
-              <Button
-                variant="outlined"
-                startIcon={<LinuxIcon />}
-                endIcon={<DownloadIcon />}
-                href="/downloads/youtube-chat-server-linux-x64.zip"
-                download
-                sx={{ fontSize: "1.3rem", textTransform: "none" }}
-              >
-                Linux (x64)
-              </Button>
-            </Box>
-            <Typography sx={{ fontSize: "1.2rem", color: "text.secondary", lineHeight: 1.6 }}>
-              서버 실행 후 포트 <strong>47200</strong>에서 WebSocket을 수신합니다.
-              Windows의 경우 Defender나 백신에서 경고가 뜰 수 있으니 예외 추가 후 실행하세요.
-              macOS·Linux는 첫 실행 시 <code>chmod +x ./파일명</code> 으로 실행 권한을 부여해야 합니다.
-            </Typography>
+            ))}
           </Box>
+          <Typography sx={{ fontSize: "1.15rem", color: "text.secondary", lineHeight: 1.65 }}>
+            Windows는 Defender·백신 경고 시 예외 추가 후 실행하세요.
+            macOS·Linux는 첫 실행 전{" "}
+            <Box component="code" sx={{ fontSize: "1.1rem", fontFamily: "monospace", px: "0.4rem", py: "0.05rem", borderRadius: "0.3rem", backgroundColor: "action.hover" }}>
+              chmod +x ./파일명
+            </Box>
+            {" "}으로 실행 권한을 부여해야 합니다.
+          </Typography>
         </Section>
 
-        <Box sx={{ minHeight: 10, height: 10, width: '100%' }} />
       </Box>
     </Box>
   );

@@ -151,7 +151,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     const validation = validateThemeMode(newMode);
     if (validation === true) {
       setThemeMode(newMode);
-      window.localStorage.setItem("themeMode", newMode);
+      window.localStorage.setItem("themeMode", JSON.stringify(newMode));
     } else {
       console.error("테마 모드 유효성 검사 실패:", validation);
     }

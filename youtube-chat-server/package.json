@@ -9,10 +9,9 @@
     "dev": "node --watch server.js",
     "bundle": "esbuild server.js --bundle --platform=node --target=node20 --outfile=dist/server.cjs",
     "zip": "node zip-builds.mjs",
-    "build:all": "npm run bundle && pkg dist/server.cjs --targets node20-win-x64 --output ../public/downloads/youtube-chat-server-win-x64 && pkg dist/server.cjs --targets node20-macos-x64 --output ../public/downloads/youtube-chat-server-macos-x64 && pkg dist/server.cjs --targets node20-linux-x64 --output ../public/downloads/youtube-chat-server-linux-x64 && npm run zip",
+    "build:all": "npm run bundle && pkg dist/server.cjs --targets node20-win-x64 --output ../public/downloads/youtube-chat-server-win-x64 && pkg dist/server.cjs --targets node20-macos-x64 --output ../public/downloads/youtube-chat-server-macos-x64 && npm run zip",
     "build:win": "npm run bundle && pkg dist/server.cjs --targets node20-win-x64 --output ../public/downloads/youtube-chat-server-win-x64 && npm run zip",
-    "build:mac": "npm run bundle && pkg dist/server.cjs --targets node20-macos-x64 --output ../public/downloads/youtube-chat-server-macos-x64 && npm run zip",
-    "build:linux": "npm run bundle && pkg dist/server.cjs --targets node20-linux-x64 --output ../public/downloads/youtube-chat-server-linux-x64 && npm run zip"
+    "build:mac": "npm run bundle && pkg dist/server.cjs --targets node20-macos-x64 --output ../public/downloads/youtube-chat-server-macos-x64 && npm run zip"
   },
   "keywords": [
     "youtube",
