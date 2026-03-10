@@ -25,7 +25,8 @@
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "ws": "^8.16.0",
-    "youtube-chat": "^2.2.0"
+    "youtube-chat": "^2.2.0",
+    "youtubei.js": "^14.0.0"
   },
   "devDependencies": {
     "@yao-pkg/pkg": "^5.12.0",

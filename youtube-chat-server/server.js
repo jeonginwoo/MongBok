@@ -4,6 +4,27 @@ import { LiveChat } from 'youtube-chat';
 import cors from 'cors';
 import axios from 'axios';
 
+// Innertube 인스턴스 캐싱
+let cachedYoutube = null;
+let youtubeInitPromise = null;
+
+async function getYoutubeInstance() {
+  if (cachedYoutube) return cachedYoutube;
+  if (youtubeInitPromise) return youtubeInitPromise;
+  youtubeInitPromise = (async () => {
+    try {
+      const { Innertube } = await import('youtubei.js');
+      cachedYoutube = await Innertube.create();
+      console.log('✅ [YouTube] Innertube 초기화 완료');
+      return cachedYoutube;
+    } catch (e) {
+      youtubeInitPromise = null;
+      throw e;
+    }
+  })();
+  return youtubeInitPromise;
+}
+
 // axios 기본 User-Agent 설정 (YouTube 차단 방지)
 axios.defaults.headers.common['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
@@ -53,6 +74,159 @@ app.use(express.json());
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// YouTube 채널 정보 조회 (Vercel 대신 로컬 IP로 YouTube 호출)
+app.get('/channel/:channelId', async (req, res) => {
+  try {
+    const { channelId } = req.params;
+    const youtube = await getYoutubeInstance();
+
+    const channel = await youtube.getChannel(channelId).catch((err) => {
+      console.error('youtube channel fetch error:', err);
+      return null;
+    });
+
+    if (!channel) {
+      return res.status(404).json({ error: 'Channel not found' });
+    }
+
+    const channelName =
+      channel.header?.author?.name ||
+      channel.metadata?.title ||
+      channel.header?.page_header_view_model?.title?.dynamic_text_view_model?.text?.content ||
+      'Unknown';
+
+    let liveVideo = null;
+    let isLive = false;
+    let viewerCount = 0;
+    let liveTitle = '';
+    let startTime = null;
+    let lastLiveInfo = null;
+
+    const extractViewerCount = (video) => {
+      if (typeof video.view_count === 'number') return { isLive: true, count: video.view_count };
+      const textSources = [
+        typeof video.view_count === 'string' ? video.view_count : video.view_count?.text,
+        video.viewers?.text,
+        video.short_view_count_text?.text,
+      ];
+      for (const text of textSources) {
+        if (!text) continue;
+        const lower = text.toLowerCase();
+        if (lower.includes('watching')) {
+          const match = text.match(/([\d,.]+)([KMB])?/);
+          if (match) {
+            let num = parseFloat(match[1].replace(/,/g, ''));
+            if (match[2] === 'K') num *= 1000;
+            else if (match[2] === 'M') num *= 1000000;
+            else if (match[2] === 'B') num *= 1000000000;
+            return { isLive: true, count: Math.floor(num) };
+          }
+          return { isLive: true, count: 0 };
+        }
+        if (lower.includes('views')) return { isLive: false, count: 0 };
+      }
+      return { isLive: false, count: 0 };
+    };
+
+    try {
+      const livePage = await channel.getLiveStreams();
+
+      if (livePage.videos && livePage.videos.length > 0) {
+        let bestLive = null;
+        let bestCount = -1;
+
+        for (const video of livePage.videos) {
+          const { isLive: currentlyLive, count } = extractViewerCount(video);
+          if (currentlyLive && count > bestCount) {
+            bestCount = count;
+            bestLive = video;
+          }
+        }
+
+        if (bestLive) {
+          isLive = true;
+          viewerCount = bestCount;
+          liveTitle = bestLive.title?.text || '';
+
+          try {
+            const info = await youtube.getInfo(bestLive.id);
+            if (info.basic_info?.start_timestamp) {
+              const timestamp = info.basic_info.start_timestamp;
+              if (typeof timestamp === 'string') {
+                const date = new Date(timestamp);
+                if (!isNaN(date.getTime())) startTime = date.toISOString();
+              } else if (typeof timestamp === 'number') {
+                const MAX_TIMESTAMP = 4102444800;
+                if (timestamp >= 0 && timestamp <= MAX_TIMESTAMP) {
+                  startTime = new Date(timestamp * 1000).toISOString();
+                }
+              } else if (timestamp instanceof Date) {
+                startTime = timestamp.toISOString();
+              }
+            }
+          } catch (_) {}
+
+          liveVideo = { title: liveTitle, id: bestLive.id, views: viewerCount, startTime };
+        }
+
+        if (!isLive && livePage.videos.length > 0) {
+          const completedCandidates = livePage.videos.filter((v) => {
+            const textSources = [
+              typeof v.view_count === 'string' ? v.view_count : v.view_count?.text,
+              v.viewers?.text,
+              v.short_view_count_text?.text,
+            ];
+            return textSources.some((t) => t && t.toLowerCase().includes('views'));
+          });
+
+          const candidate = completedCandidates[0] ?? livePage.videos[0];
+          if (candidate?.id) {
+            try {
+              const info = await youtube.getInfo(candidate.id);
+              const ts = info.basic_info?.start_timestamp;
+              const dur = info.basic_info?.duration;
+              let lastStart = null;
+              if (typeof ts === 'string') {
+                const d = new Date(ts);
+                if (!isNaN(d.getTime())) lastStart = d.toISOString();
+              } else if (typeof ts === 'number' && ts > 0 && ts <= 4102444800) {
+                lastStart = new Date(ts * 1000).toISOString();
+              } else if (ts instanceof Date) {
+                lastStart = ts.toISOString();
+              }
+              if (lastStart) {
+                const lastEnd =
+                  typeof dur === 'number' && dur > 0
+                    ? new Date(new Date(lastStart).getTime() + dur * 1000).toISOString()
+                    : null;
+                lastLiveInfo = { startTime: lastStart, closeDate: lastEnd };
+              }
+            } catch (_) {}
+          }
+        }
+      }
+    } catch (_) {}
+
+    res.json({
+      channel: {
+        id: channelId,
+        name: channelName,
+        url: `https://www.youtube.com/channel/${channelId}`,
+        iconURL: channel.header?.author?.best_thumbnail?.url || channel.metadata?.avatar?.[0]?.url || '',
+        subscribers: channel.header?.subscribers?.text || '0',
+        verified: channel.header?.author?.is_verified || false,
+      },
+      liveVideo,
+      isLive,
+      viewerCount,
+      lastLiveInfo,
+    });
+  } catch (error) {
+    console.error('❌ [YouTube] 채널 정보 가져오기 실패:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // HTTP 서버 시작

@@ -110,29 +110,59 @@ const getSoopLiveStatus = async (channelId) => {
 };
 
 // ✅ 유튜브 라이브 상태 조회
+const processYoutubeChannelData = (data) => {
+  const { channel, liveVideo, isLive, viewerCount, lastLiveInfo } = data;
+  return {
+    name: channel.name ?? "",
+    imageUrl: channel.iconURL ?? "",
+    liveTitle: liveVideo?.title ?? "",
+    openDate: liveVideo?.startTime ?? lastLiveInfo?.startTime ?? null,
+    closeDate: lastLiveInfo?.closeDate ?? null,
+    isLive: isLive ?? false,
+    userCount: viewerCount ?? 0,
+    liveVideoId: liveVideo?.id ?? null,
+    liveCategory: null,
+    tags: [],
+  };
+};
+
+const getLocalChatServerUrl = () => {
+  if (typeof window === "undefined") return null;
+  const wsUrl = process.env.NEXT_PUBLIC_YOUTUBE_CHAT_WS_URL || "ws://localhost:47200";
+  return wsUrl.replace(/^ws(s?):\/\//, "http$1://");
+};
+
 const getYoutubeLiveStatus = async (channelId) => {
+  // 로컬 채팅 서버가 실행 중이면 우선 사용 (로컬 IP → YouTube 차단 없음)
+  const localUrl = getLocalChatServerUrl();
+  if (localUrl) {
+    try {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 15000);
+      const res = await fetch(`${localUrl}/channel/${channelId}`, { signal: controller.signal });
+      clearTimeout(tid);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.channel) return processYoutubeChannelData(data);
+        console.error("❌ [YouTube] 로컬 서버: 채널 데이터 없음", data);
+      } else {
+        const body = await res.text().catch(() => "");
+        console.error(`❌ [YouTube] 로컬 서버 오류 (${res.status}):`, body);
+      }
+    } catch (e) {
+      if (e.name !== "AbortError") {
+        // 서버 미실행(connection refused) → fallback
+      } else {
+        console.error("❌ [YouTube] 로컬 서버 요청 타임아웃");
+      }
+    }
+  }
+
   try {
     const response = await youtube_channel_client.get(`/${channelId}`);
     const data = response.data;
-
-    if (!data.channel) {
-      throw new Error("Channel not found");
-    }
-
-    const { channel, liveVideo, isLive, viewerCount, lastLiveInfo } = data;
-
-    return {
-      name: channel.name ?? "",
-      imageUrl: channel.iconURL ?? "",
-      liveTitle: liveVideo?.title ?? "",
-      openDate: liveVideo?.startTime ?? lastLiveInfo?.startTime ?? null,
-      closeDate: lastLiveInfo?.closeDate ?? null,
-      isLive: isLive ?? false,
-      userCount: viewerCount ?? 0,
-      liveVideoId: liveVideo?.id ?? null,
-      liveCategory: null,
-      tags: [],
-    };
+    if (!data.channel) throw new Error("Channel not found");
+    return processYoutubeChannelData(data);
   } catch (error) {
     console.error("❌ [YouTube] 라이브 상태 가져오기 실패:", error);
     throw error;
@@ -184,6 +214,23 @@ export const getAllChannelsData = async (localStorageData) => {
         };
       } catch (error) {
         console.error(`⚠️ ${channelId} 데이터 불러오기 실패:`, error);
+        // 실패해도 채널은 목록에 표시 (기본값으로)
+        result[channelId] = {
+          id: channelId,
+          name: "",
+          imageUrl: "",
+          liveTitle: "",
+          openDate: null,
+          closeDate: null,
+          isLive: false,
+          userCount: 0,
+          liveVideoId: null,
+          liveCategory: null,
+          tags: [],
+          isVisible: item.zoneId != null,
+          zoneId: item.zoneId ?? null,
+          platform: item.platform,
+        };
       }
     })
   );
