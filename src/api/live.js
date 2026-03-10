@@ -133,38 +133,36 @@ const getLocalChatServerUrl = () => {
 };
 
 const getYoutubeLiveStatus = async (channelId) => {
-  // 로컬 채팅 서버가 실행 중이면 우선 사용 (로컬 IP → YouTube 차단 없음)
   const localUrl = getLocalChatServerUrl();
-  if (localUrl) {
-    try {
-      const controller = new AbortController();
-      const tid = setTimeout(() => controller.abort(), 15000);
-      const res = await fetch(`${localUrl}/channel/${channelId}`, { signal: controller.signal });
-      clearTimeout(tid);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.channel) return processYoutubeChannelData(data);
-        console.error("❌ [YouTube] 로컬 서버: 채널 데이터 없음", data);
-      } else {
-        const body = await res.text().catch(() => "");
-        console.error(`❌ [YouTube] 로컬 서버 오류 (${res.status}):`, body);
-      }
-    } catch (e) {
-      if (e.name !== "AbortError") {
-        // 서버 미실행(connection refused) → fallback
-      } else {
-        console.error("❌ [YouTube] 로컬 서버 요청 타임아웃");
-      }
+  const controller = new AbortController();
+  const tid = setTimeout(() => controller.abort(), 30000);
+  try {
+    const res = await fetch(`${localUrl}/channel/${channelId}`, { signal: controller.signal });
+    clearTimeout(tid);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.channel) return processYoutubeChannelData(data);
+      console.error("❌ [YouTube] 로컬 서버: 채널 데이터 없음", data);
+    } else {
+      const body = await res.text().catch(() => "");
+      console.error(`❌ [YouTube] 로컬 서버 오류 (${res.status}):`, body);
     }
+  } catch (e) {
+    clearTimeout(tid);
+    if (e.name === "AbortError") {
+      console.error("❌ [YouTube] 로컬 서버 요청 타임아웃");
+    }
+    // connection refused 등 → fallback
   }
 
+  // 로컬 서버 실패 시 Vercel API로 채널 기본 정보 조회 (스트리밍 시간 제외 가능)
   try {
     const response = await youtube_channel_client.get(`/${channelId}`);
     const data = response.data;
     if (!data.channel) throw new Error("Channel not found");
     return processYoutubeChannelData(data);
   } catch (error) {
-    console.error("❌ [YouTube] 라이브 상태 가져오기 실패:", error);
+    console.error("❌ [YouTube] 채널 정보 가져오기 실패:", error);
     throw error;
   }
 };

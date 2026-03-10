@@ -217,7 +217,7 @@ export default function SettingsArea({ onClose }) {
   const getLocalStorageDataString = useCallback(() => {
     const settings = ALL_SETTINGS.reduce((obj, key) => {
       if (key === "layout") {
-        if (layoutType) obj[key] = layoutType;
+        if (viewCount > 0 && layoutType) obj[key] = layoutType;
         return obj;
       }
       const value = window.localStorage.getItem(key);
@@ -242,7 +242,7 @@ export default function SettingsArea({ onClose }) {
     }
 
     return JSON.stringify(settings, null, 2);
-  }, [channels, layoutType]);
+  }, [channels, layoutType, viewCount]);
 
   useEffect(() => {
     setData(getLocalStorageDataString());

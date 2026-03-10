@@ -27,6 +27,8 @@ for (const { src, zip } of files) {
 
     output.on("close", () => {
       console.log(`✅ ${zip} (${(archive.pointer() / 1024 / 1024).toFixed(1)} MB)`);
+      unlinkSync(srcPath);
+      console.log(`🗑️  ${src} 삭제됨`);
       resolve();
     });
     archive.on("error", reject);

@@ -32,6 +32,7 @@ import {
   autoRecordEnabledAtom,
   ratioAtom,
   layoutTypeAtom,
+  layoutHistoryAtom,
   viewCountAtom,
   currentTimePositionAtom,
 } from "@/atoms/setting";
@@ -96,7 +97,8 @@ export default function ControlButtonGroup({ fullscreen }) {
 
   const [ratio, setRatio] = useAtom(ratioAtom);
   const { selectRatio } = useLayoutManager();
-  const [layoutType, setLayoutType] = useAtom(layoutTypeAtom);
+  const layoutType = useAtomValue(layoutTypeAtom);
+  const [, setLayoutHistory] = useAtom(layoutHistoryAtom);
   const viewCount = useAtomValue(viewCountAtom);
   const [currentTimePosition, setCurrentTimePosition] = useAtom(
     currentTimePositionAtom
@@ -434,7 +436,8 @@ export default function ControlButtonGroup({ fullscreen }) {
             }
             const targetLayout = layoutKeys[targetIndex];
             if (targetLayout !== layoutType) {
-              setLayoutType(targetLayout);
+              const historyKey = `${ratio}-${viewCount}`;
+              setLayoutHistory((prev) => ({ ...prev, [historyKey]: targetLayout }));
             }
           }
           break;
@@ -459,7 +462,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     selectRatio,
     viewCount,
     layoutType,
-    setLayoutType,
+    setLayoutHistory,
   ]);
 
   return (

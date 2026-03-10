@@ -26,6 +26,21 @@ async function getYoutubeInstance() {
 }
 
 const SERVER_VERSION = "1.0.0";
+
+const raceTimeout = (promise, ms) =>
+  Promise.race([promise, new Promise((resolve) => setTimeout(() => resolve(null), ms))]);
+
+const parseTimestamp = (ts) => {
+  if (typeof ts === 'string') {
+    const d = new Date(ts);
+    return !isNaN(d.getTime()) ? d.toISOString() : null;
+  } else if (typeof ts === 'number' && ts >= 0 && ts <= 4102444800) {
+    return new Date(ts * 1000).toISOString();
+  } else if (ts instanceof Date) {
+    return ts.toISOString();
+  }
+  return null;
+};
 const APP_URL = process.env.APP_URL || "https://s-fuz.vercel.app";
 
 // axios 기본 User-Agent 설정 (YouTube 차단 방지)
@@ -133,84 +148,64 @@ app.get('/channel/:channelId', async (req, res) => {
       return { isLive: false, count: 0 };
     };
 
-    try {
-      const livePage = await channel.getLiveStreams();
+    const livePage = await raceTimeout(channel.getLiveStreams().catch(() => null), 10000);
 
-      if (livePage.videos && livePage.videos.length > 0) {
-        let bestLive = null;
-        let bestCount = -1;
+    if (livePage?.videos?.length > 0) {
+      let bestLive = null;
+      let bestCount = -1;
 
-        for (const video of livePage.videos) {
-          const { isLive: currentlyLive, count } = extractViewerCount(video);
-          if (currentlyLive && count > bestCount) {
-            bestCount = count;
-            bestLive = video;
-          }
+      for (const video of livePage.videos) {
+        const { isLive: currentlyLive, count } = extractViewerCount(video);
+        if (currentlyLive && count > bestCount) {
+          bestCount = count;
+          bestLive = video;
         }
+      }
 
-        if (bestLive) {
-          isLive = true;
-          viewerCount = bestCount;
-          liveTitle = bestLive.title?.text || '';
+      if (bestLive) {
+        isLive = true;
+        viewerCount = bestCount;
+        liveTitle = bestLive.title?.text || '';
 
-          try {
-            const info = await youtube.getInfo(bestLive.id);
-            if (info.basic_info?.start_timestamp) {
-              const timestamp = info.basic_info.start_timestamp;
-              if (typeof timestamp === 'string') {
-                const date = new Date(timestamp);
-                if (!isNaN(date.getTime())) startTime = date.toISOString();
-              } else if (typeof timestamp === 'number') {
-                const MAX_TIMESTAMP = 4102444800;
-                if (timestamp >= 0 && timestamp <= MAX_TIMESTAMP) {
-                  startTime = new Date(timestamp * 1000).toISOString();
-                }
-              } else if (timestamp instanceof Date) {
-                startTime = timestamp.toISOString();
-              }
+        const infoForStart = await raceTimeout(
+          youtube.getInfo(bestLive.id).catch(() => null),
+          5000
+        );
+        startTime = infoForStart ? parseTimestamp(infoForStart.basic_info?.start_timestamp) : null;
+
+        liveVideo = { title: liveTitle, id: bestLive.id, views: viewerCount, startTime };
+      }
+
+      if (!isLive) {
+        const completedCandidates = livePage.videos.filter((v) => {
+          const textSources = [
+            typeof v.view_count === 'string' ? v.view_count : v.view_count?.text,
+            v.viewers?.text,
+            v.short_view_count_text?.text,
+          ];
+          return textSources.some((t) => t && t.toLowerCase().includes('views'));
+        });
+
+        const candidate = completedCandidates[0] ?? livePage.videos[0];
+        if (candidate?.id) {
+          const infoForLast = await raceTimeout(
+            youtube.getInfo(candidate.id).catch(() => null),
+            5000
+          );
+          if (infoForLast) {
+            const lastStart = parseTimestamp(infoForLast.basic_info?.start_timestamp);
+            if (lastStart) {
+              const dur = infoForLast.basic_info?.duration;
+              const lastEnd =
+                typeof dur === 'number' && dur > 0
+                  ? new Date(new Date(lastStart).getTime() + dur * 1000).toISOString()
+                  : null;
+              lastLiveInfo = { startTime: lastStart, closeDate: lastEnd };
             }
-          } catch (_) {}
-
-          liveVideo = { title: liveTitle, id: bestLive.id, views: viewerCount, startTime };
-        }
-
-        if (!isLive && livePage.videos.length > 0) {
-          const completedCandidates = livePage.videos.filter((v) => {
-            const textSources = [
-              typeof v.view_count === 'string' ? v.view_count : v.view_count?.text,
-              v.viewers?.text,
-              v.short_view_count_text?.text,
-            ];
-            return textSources.some((t) => t && t.toLowerCase().includes('views'));
-          });
-
-          const candidate = completedCandidates[0] ?? livePage.videos[0];
-          if (candidate?.id) {
-            try {
-              const info = await youtube.getInfo(candidate.id);
-              const ts = info.basic_info?.start_timestamp;
-              const dur = info.basic_info?.duration;
-              let lastStart = null;
-              if (typeof ts === 'string') {
-                const d = new Date(ts);
-                if (!isNaN(d.getTime())) lastStart = d.toISOString();
-              } else if (typeof ts === 'number' && ts > 0 && ts <= 4102444800) {
-                lastStart = new Date(ts * 1000).toISOString();
-              } else if (ts instanceof Date) {
-                lastStart = ts.toISOString();
-              }
-              if (lastStart) {
-                const lastEnd =
-                  typeof dur === 'number' && dur > 0
-                    ? new Date(new Date(lastStart).getTime() + dur * 1000).toISOString()
-                    : null;
-                lastLiveInfo = { startTime: lastStart, closeDate: lastEnd };
-              }
-            } catch (_) {}
           }
         }
       }
-    } catch (_) {}
+    }
 
     res.json({
       channel: {
