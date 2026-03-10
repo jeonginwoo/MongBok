@@ -415,6 +415,29 @@ export const updatePreferences = (parsedData) => {
       } catch (e) {}
     }
 
+    // "layout" 키는 layoutHistory의 현재 비율+뷰카운트 슬롯에 저장
+    if (key === "layout") {
+      let ratio = parsedData.ratio;
+      if (!ratio) {
+        try { ratio = JSON.parse(window.localStorage.getItem("ratio")); } catch {}
+      }
+      let channelsData = parsedData.channels;
+      if (!channelsData) {
+        try { channelsData = JSON.parse(window.localStorage.getItem("channels")); } catch {}
+      }
+      const viewCount = channelsData && typeof channelsData === "object"
+        ? Object.values(channelsData).filter((ch) => ch.zoneId !== null).length
+        : 0;
+      if (ratio) {
+        const historyKey = `${ratio}-${viewCount}`;
+        let history = {};
+        try { history = JSON.parse(window.localStorage.getItem("layoutHistory")) || {}; } catch {}
+        history[historyKey] = value;
+        window.localStorage.setItem("layoutHistory", JSON.stringify(history));
+      }
+      continue;
+    }
+
     if (value === undefined) {
       window.localStorage.removeItem(key);
     } else {

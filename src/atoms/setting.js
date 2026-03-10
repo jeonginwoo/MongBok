@@ -29,9 +29,6 @@ channelsAtom.onMount = (setAtom) => {
   }
 };
 
-// layoutType
-export const layoutTypeAtom = atomWithStorage("layout", "layout1", storage);
-
 // ratio
 export const ratioAtom = atomWithStorage("ratio", "16:9-landscape", storage);
 
@@ -96,6 +93,19 @@ export const chatFontSizeAdjustmentAtom = atomWithStorage(
 export const viewCountAtom = atom((get) => {
   const channels = get(channelsAtom);
   return Object.values(channels).filter((c) => c.isVisible).length;
+});
+
+// 비율+뷰카운트별 마지막 선택 레이아웃 히스토리 (설정 동기화 제외)
+export const layoutHistoryAtom = atomWithStorage("layoutHistory", {}, storage);
+
+// layoutType (비율+뷰카운트별 히스토리에서 파생)
+export const layoutTypeAtom = atom((get) => {
+  const history = get(layoutHistoryAtom);
+  const ratioKey = get(ratioAtom);
+  const viewCount = get(viewCountAtom);
+  if (viewCount === 0) return "layout1";
+  const historyKey = `${ratioKey}-${viewCount}`;
+  return history[historyKey] ?? "layout1";
 });
 
 // Viewer 채널 수에 따른 레이아웃

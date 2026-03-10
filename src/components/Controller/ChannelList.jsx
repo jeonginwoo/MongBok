@@ -26,7 +26,6 @@ import { updatePreferences, validateChannels } from "@/utils/preferences";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 import {
   channelsAtom,
-  layoutTypeAtom,
   controllerExpandedAtom,
   ratioAtom,
 } from "@/atoms/setting";
@@ -35,7 +34,6 @@ import { snackbarAtom } from "@/atoms/ui";
 export default function ChannelList() {
   const [activeId, setActiveId] = useState(null);
   const [channels, setChannels] = useAtom(channelsAtom);
-  const setLayoutType = useSetAtom(layoutTypeAtom);
   const setSnackbar = useSetAtom(snackbarAtom);
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
   const ratioKey = useAtomValue(ratioAtom);
@@ -150,10 +148,6 @@ export default function ChannelList() {
 
       return updated;
     });
-
-    setLayoutType("layout1");
-    // window.localStorage.setItem("layout", "layout1");
-    updatePreferences({ layout: "layout1" });
   };
 
   const handleDelete = async (id) => {

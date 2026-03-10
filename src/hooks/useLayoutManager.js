@@ -1,7 +1,6 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   ratioAtom,
-  layoutTypeAtom,
   viewCountAtom,
   channelsAtom,
 } from "@/atoms/setting";
@@ -17,7 +16,6 @@ export const getRatioConfig = (ratioKey) => {
 
 export const useLayoutManager = () => {
   const [ratio, setRatio] = useAtom(ratioAtom);
-  const [layoutType, setLayoutType] = useAtom(layoutTypeAtom);
   const viewCount = useAtomValue(viewCountAtom);
   const setChannels = useSetAtom(channelsAtom);
 
@@ -29,22 +27,7 @@ export const useLayoutManager = () => {
     const newRatioConfig = getRatioConfig(newRatioKey);
     if (!newRatioConfig) return;
 
-    // Case 1: Same viewCount and layoutType exist
-    // if (newRatioConfig.layouts?.[viewCount]?.[layoutType]) {
-    //   setRatio(newRatioKey);
-    //   return;
-    // }
-
-    // Case 2: Only same viewCount exists
-    if (newRatioConfig.layouts?.[viewCount]) {
-      setRatio(newRatioKey);
-      setLayoutType("layout1");
-      return;
-    }
-
-    // Case 3: viewCount doesn't exist (e.g. current viewCount > new maxViewCount)
     setRatio(newRatioKey);
-    setLayoutType("layout1");
 
     const maxViewCount = newRatioConfig.maxViewCount ?? 1;
 
