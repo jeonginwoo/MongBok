@@ -90950,6 +90950,8 @@ async function getYoutubeInstance() {
   })();
   return youtubeInitPromise;
 }
+var SERVER_VERSION = "1.0.0";
+var APP_URL = process.env.APP_URL || "https://s-fuz.vercel.app";
 axios_default.defaults.headers.common["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 function argbToHex(colorNum) {
   if (!colorNum || typeof colorNum !== "number") return null;
@@ -90982,7 +90984,7 @@ var PORT = process.env.PORT || 47200;
 app.use((0, import_cors.default)());
 app.use(import_express.default.json());
 app.get("/health", (req, res) => {
-  res.json({ status: "ok", timestamp: (/* @__PURE__ */ new Date()).toISOString() });
+  res.json({ status: "ok", version: SERVER_VERSION, timestamp: (/* @__PURE__ */ new Date()).toISOString() });
 });
 app.get("/channel/:channelId", async (req, res) => {
   try {
@@ -91118,7 +91120,18 @@ app.get("/channel/:channelId", async (req, res) => {
   }
 });
 var server = app.listen(PORT, () => {
-  console.log(`\u2705 YouTube Chat Server running on port ${PORT}`);
+  console.log(`\u2705 YouTube Chat Server v${SERVER_VERSION} running on port ${PORT}`);
+  axios_default.get(`${APP_URL}/api/youtube/server-version`).then(({ data: data2 }) => {
+    const required = data2?.requiredVersion;
+    if (required && required !== SERVER_VERSION) {
+      console.warn(`\u26A0\uFE0F  \uBC84\uC804 \uBD88\uC77C\uCE58! \uD604\uC7AC: v${SERVER_VERSION} / \uD544\uC694: v${required}`);
+      console.warn(`\u26A0\uFE0F  \uCD5C\uC2E0 \uBC84\uC804\uC744 \uB2E4\uC6B4\uB85C\uB4DC\uD574\uC8FC\uC138\uC694: ${APP_URL}`);
+    } else {
+      console.log("\u2705 \uC11C\uBC84 \uBC84\uC804\uC774 \uCD5C\uC2E0\uC785\uB2C8\uB2E4.");
+    }
+  }).catch(() => {
+    console.log("\u2139\uFE0F  \uBC84\uC804 \uD655\uC778 \uC2E4\uD328 (\uB124\uD2B8\uC6CC\uD06C \uC5C6\uC74C \uB610\uB294 \uC57C\uD558 \uC911)");
+  });
 });
 var wss = new import_websocket_server.default({ server });
 wss.on("connection", (ws) => {

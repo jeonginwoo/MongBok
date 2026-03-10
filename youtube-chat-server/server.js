@@ -25,6 +25,9 @@ async function getYoutubeInstance() {
   return youtubeInitPromise;
 }
 
+const SERVER_VERSION = "1.0.0";
+const APP_URL = process.env.APP_URL || "https://s-fuz.vercel.app";
+
 // axios 기본 User-Agent 설정 (YouTube 차단 방지)
 axios.defaults.headers.common['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
@@ -73,7 +76,7 @@ app.use(express.json());
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', version: SERVER_VERSION, timestamp: new Date().toISOString() });
 });
 
 // YouTube 채널 정보 조회 (Vercel 대신 로컬 IP로 YouTube 호출)
@@ -231,7 +234,22 @@ app.get('/channel/:channelId', async (req, res) => {
 
 // HTTP 서버 시작
 const server = app.listen(PORT, () => {
-  console.log(`✅ YouTube Chat Server running on port ${PORT}`);
+  console.log(`✅ YouTube Chat Server v${SERVER_VERSION} running on port ${PORT}`);
+
+  // 앱 배포 서버에서 필요 버전 확인
+  axios.get(`${APP_URL}/api/youtube/server-version`)
+    .then(({ data }) => {
+      const required = data?.requiredVersion;
+      if (required && required !== SERVER_VERSION) {
+        console.warn(`⚠️  버전 불일치! 현재: v${SERVER_VERSION} / 필요: v${required}`);
+        console.warn(`⚠️  최신 버전을 다운로드해주세요: ${APP_URL}`);
+      } else {
+        console.log('✅ 서버 버전이 최신입니다.');
+      }
+    })
+    .catch(() => {
+      console.log('ℹ️  버전 확인 실패 (네트워크 없음 또는 야하 중)');
+    });
 });
 
 // WebSocket 서버 생성

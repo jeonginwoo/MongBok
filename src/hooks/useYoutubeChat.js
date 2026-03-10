@@ -1,8 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSetAtom } from "jotai";
 import { youtube_channel_client } from "@/api/client";
 import { CHAT_MAX_COUNT, CHAT_RENDER_INTERVAL } from "@/atoms/setting";
+import { snackbarAtom } from "@/atoms/ui";
+import { REQUIRED_SERVER_VERSION } from "@/app/api/youtube/server-version/route";
 
 const nicknameColors = [
   "#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8",
@@ -14,6 +17,8 @@ export default function useYoutubeChat(channelId) {
   const [liveId, setLiveId] = useState(null);
   const pendingChatListRef = useRef([]);
   const messageCounterRef = useRef(0); // 메시지 카운터로 고유 ID 생성
+  const setSnackbar = useSetAtom(snackbarAtom);
+  const versionCheckedRef = useRef(false);
 
   // 채널의 현재 라이브 videoId 가져오기
   useEffect(() => {
@@ -194,6 +199,23 @@ export default function useYoutubeChat(channelId) {
         ws.onopen = () => {
           console.log("✅ [YouTube] 채팅 연결 성공");
           ws.send(JSON.stringify({ type: 'start', liveId }));
+          // 최초 1회만 버전 체크
+          if (!versionCheckedRef.current) {
+            versionCheckedRef.current = true;
+            const httpUrl = wsUrl.replace(/^ws(s?):\/\//, "http$1://");
+            fetch(`${httpUrl}/health`)
+              .then((r) => r.json())
+              .then((data) => {
+                if (data.version !== REQUIRED_SERVER_VERSION) {
+                  setSnackbar({
+                    open: true,
+                    message: `유튜브 채팅 서버 버전이 맞지 않습니다. (현재: ${data.version ?? "알 수 없음"} / 필요: ${REQUIRED_SERVER_VERSION}) 최신 버전으로 업데이트해주세요.`,
+                    severity: "warning",
+                  });
+                }
+              })
+              .catch(() => {});
+          }
         };
 
         ws.onmessage = (event) => {
