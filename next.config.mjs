@@ -1,5 +1,13 @@
+import { readFileSync } from 'fs';
+const { version: REQUIRED_SERVER_VERSION } = JSON.parse(
+  readFileSync('./youtube-chat-server/package.json', 'utf8')
+);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_REQUIRED_SERVER_VERSION: REQUIRED_SERVER_VERSION,
+  },
   async rewrites() {
     return [
       {

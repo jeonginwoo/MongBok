@@ -318,6 +318,7 @@ export default function useSoopChat(channelId) {
     if (!channelInfo) return;
 
     const { CHDOMAIN, CHPT, BJID, CHATNO, FTK } = channelInfo;
+    if (!CHDOMAIN || !CHPT || !BJID) return;
     const webSocketUrl = `wss://${CHDOMAIN}:${CHPT}/Websocket/${BJID}`;
     const payload = `\f${CHATNO}\f${FTK}\f0\f\f`;
     const key = payload.length.toString().padStart(6, "0");

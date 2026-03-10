@@ -1,13 +1,13 @@
 {
   "name": "youtube-chat-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "WebSocket server for YouTube live chat streaming",
   "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "bundle": "esbuild server.js --bundle --platform=node --target=node20 --outfile=dist/server.cjs",
+    "bundle": "node bundle.mjs",
     "zip": "node zip-builds.mjs",
     "build:all": "npm run bundle && pkg dist/server.cjs --targets node20-win-x64 --output ../public/downloads/youtube-chat-server-win-x64 && pkg dist/server.cjs --targets node20-macos-x64 --output ../public/downloads/youtube-chat-server-macos-x64 && npm run zip",
     "build:win": "npm run bundle && pkg dist/server.cjs --targets node20-win-x64 --output ../public/downloads/youtube-chat-server-win-x64 && npm run zip",
@@ -23,6 +23,7 @@
   "dependencies": {
     "axios": "^1.6.0",
     "cors": "^2.8.5",
+    "dotenv": "^17.3.1",
     "express": "^4.18.2",
     "ws": "^8.16.0",
     "youtube-chat": "^2.2.0",

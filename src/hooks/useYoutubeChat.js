@@ -5,7 +5,7 @@ import { useSetAtom } from "jotai";
 import { youtube_channel_client } from "@/api/client";
 import { CHAT_MAX_COUNT, CHAT_RENDER_INTERVAL } from "@/atoms/setting";
 import { snackbarAtom } from "@/atoms/ui";
-import { REQUIRED_SERVER_VERSION } from "@/app/api/youtube/server-version/route";
+const REQUIRED_SERVER_VERSION = process.env.NEXT_PUBLIC_REQUIRED_SERVER_VERSION;
 
 const nicknameColors = [
   "#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8",

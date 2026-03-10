@@ -3,6 +3,20 @@ import { WebSocketServer } from 'ws';
 import { LiveChat } from 'youtube-chat';
 import cors from 'cors';
 import axios from 'axios';
+import { createRequire } from 'module';
+import { readFileSync } from 'fs';
+import 'dotenv/config';
+
+// __SERVER_VERSION__: 빌드 시 bundle.mjs의 esbuild define으로 주입
+// dev 모드(node server.js)에서는 package.json에서 직접 읽음
+let SERVER_VERSION;
+try {
+  SERVER_VERSION = __SERVER_VERSION__; // eslint-disable-line no-undef
+} catch {
+  SERVER_VERSION = JSON.parse(
+    readFileSync(new URL('./package.json', import.meta.url), 'utf8')
+  ).version;
+}
 
 // Innertube 인스턴스 캐싱
 let cachedYoutube = null;
@@ -13,7 +27,8 @@ async function getYoutubeInstance() {
   if (youtubeInitPromise) return youtubeInitPromise;
   youtubeInitPromise = (async () => {
     try {
-      const { Innertube } = await import('youtubei.js');
+      const { Innertube, Log } = await import('youtubei.js');
+      Log.setLevel(Log.Level.ERROR);
       cachedYoutube = await Innertube.create();
       console.log('✅ [YouTube] Innertube 초기화 완료');
       return cachedYoutube;
@@ -24,8 +39,6 @@ async function getYoutubeInstance() {
   })();
   return youtubeInitPromise;
 }
-
-const SERVER_VERSION = "1.0.0";
 
 const raceTimeout = (promise, ms) =>
   Promise.race([promise, new Promise((resolve) => setTimeout(() => resolve(null), ms))]);
@@ -245,6 +258,16 @@ const server = app.listen(PORT, () => {
     .catch(() => {
       console.log('ℹ️  버전 확인 실패 (네트워크 없음 또는 야하 중)');
     });
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`❌ 포트 ${PORT}이 이미 사용 중입니다.`);
+    console.error(`❌ 실행 중인 다른 채팅 서버를 먼저 종료한 뒤 다시 실행해주세요.`);
+  } else {
+    console.error('❌ 서버 오류:', err.message);
+  }
+  process.exit(1);
 });
 
 // WebSocket 서버 생성

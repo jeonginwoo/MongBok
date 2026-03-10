@@ -1,3 +1,4 @@
+var __importMetaUrl__ = require("url").pathToFileURL(__filename).href;
 var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -31820,6 +31821,446 @@ var require_lib3 = __commonJS({
   }
 });
 
+// node_modules/dotenv/package.json
+var require_package = __commonJS({
+  "node_modules/dotenv/package.json"(exports2, module2) {
+    module2.exports = {
+      name: "dotenv",
+      version: "17.3.1",
+      description: "Loads environment variables from .env file",
+      main: "lib/main.js",
+      types: "lib/main.d.ts",
+      exports: {
+        ".": {
+          types: "./lib/main.d.ts",
+          require: "./lib/main.js",
+          default: "./lib/main.js"
+        },
+        "./config": "./config.js",
+        "./config.js": "./config.js",
+        "./lib/env-options": "./lib/env-options.js",
+        "./lib/env-options.js": "./lib/env-options.js",
+        "./lib/cli-options": "./lib/cli-options.js",
+        "./lib/cli-options.js": "./lib/cli-options.js",
+        "./package.json": "./package.json"
+      },
+      scripts: {
+        "dts-check": "tsc --project tests/types/tsconfig.json",
+        lint: "standard",
+        pretest: "npm run lint && npm run dts-check",
+        test: "tap run tests/**/*.js --allow-empty-coverage --disable-coverage --timeout=60000",
+        "test:coverage": "tap run tests/**/*.js --show-full-coverage --timeout=60000 --coverage-report=text --coverage-report=lcov",
+        prerelease: "npm test",
+        release: "standard-version"
+      },
+      repository: {
+        type: "git",
+        url: "git://github.com/motdotla/dotenv.git"
+      },
+      homepage: "https://github.com/motdotla/dotenv#readme",
+      funding: "https://dotenvx.com",
+      keywords: [
+        "dotenv",
+        "env",
+        ".env",
+        "environment",
+        "variables",
+        "config",
+        "settings"
+      ],
+      readmeFilename: "README.md",
+      license: "BSD-2-Clause",
+      devDependencies: {
+        "@types/node": "^18.11.3",
+        decache: "^4.6.2",
+        sinon: "^14.0.1",
+        standard: "^17.0.0",
+        "standard-version": "^9.5.0",
+        tap: "^19.2.0",
+        typescript: "^4.8.4"
+      },
+      engines: {
+        node: ">=12"
+      },
+      browser: {
+        fs: false
+      }
+    };
+  }
+});
+
+// node_modules/dotenv/lib/main.js
+var require_main = __commonJS({
+  "node_modules/dotenv/lib/main.js"(exports2, module2) {
+    var fs2 = require("fs");
+    var path2 = require("path");
+    var os2 = require("os");
+    var crypto3 = require("crypto");
+    var packageJson = require_package();
+    var version3 = packageJson.version;
+    var TIPS = [
+      "\u{1F510} encrypt with Dotenvx: https://dotenvx.com",
+      "\u{1F510} prevent committing .env to code: https://dotenvx.com/precommit",
+      "\u{1F510} prevent building .env in docker: https://dotenvx.com/prebuild",
+      "\u{1F916} agentic secret storage: https://dotenvx.com/as2",
+      "\u26A1\uFE0F secrets for agents: https://dotenvx.com/as2",
+      "\u{1F6E1}\uFE0F auth for agents: https://vestauth.com",
+      "\u{1F6E0}\uFE0F  run anywhere with `dotenvx run -- yourcommand`",
+      "\u2699\uFE0F  specify custom .env file path with { path: '/custom/path/.env' }",
+      "\u2699\uFE0F  enable debug logging with { debug: true }",
+      "\u2699\uFE0F  override existing env vars with { override: true }",
+      "\u2699\uFE0F  suppress all logs with { quiet: true }",
+      "\u2699\uFE0F  write to custom object with { processEnv: myObject }",
+      "\u2699\uFE0F  load multiple .env files with { path: ['.env.local', '.env'] }"
+    ];
+    function _getRandomTip() {
+      return TIPS[Math.floor(Math.random() * TIPS.length)];
+    }
+    function parseBoolean(value) {
+      if (typeof value === "string") {
+        return !["false", "0", "no", "off", ""].includes(value.toLowerCase());
+      }
+      return Boolean(value);
+    }
+    function supportsAnsi() {
+      return process.stdout.isTTY;
+    }
+    function dim(text) {
+      return supportsAnsi() ? `\x1B[2m${text}\x1B[0m` : text;
+    }
+    var LINE = /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/mg;
+    function parse6(src) {
+      const obj = {};
+      let lines = src.toString();
+      lines = lines.replace(/\r\n?/mg, "\n");
+      let match;
+      while ((match = LINE.exec(lines)) != null) {
+        const key = match[1];
+        let value = match[2] || "";
+        value = value.trim();
+        const maybeQuote = value[0];
+        value = value.replace(/^(['"`])([\s\S]*)\1$/mg, "$2");
+        if (maybeQuote === '"') {
+          value = value.replace(/\\n/g, "\n");
+          value = value.replace(/\\r/g, "\r");
+        }
+        obj[key] = value;
+      }
+      return obj;
+    }
+    function _parseVault(options) {
+      options = options || {};
+      const vaultPath = _vaultPath(options);
+      options.path = vaultPath;
+      const result = DotenvModule.configDotenv(options);
+      if (!result.parsed) {
+        const err = new Error(`MISSING_DATA: Cannot parse ${vaultPath} for an unknown reason`);
+        err.code = "MISSING_DATA";
+        throw err;
+      }
+      const keys = _dotenvKey(options).split(",");
+      const length = keys.length;
+      let decrypted;
+      for (let i = 0; i < length; i++) {
+        try {
+          const key = keys[i].trim();
+          const attrs = _instructions(result, key);
+          decrypted = DotenvModule.decrypt(attrs.ciphertext, attrs.key);
+          break;
+        } catch (error2) {
+          if (i + 1 >= length) {
+            throw error2;
+          }
+        }
+      }
+      return DotenvModule.parse(decrypted);
+    }
+    function _warn(message) {
+      console.error(`[dotenv@${version3}][WARN] ${message}`);
+    }
+    function _debug(message) {
+      console.log(`[dotenv@${version3}][DEBUG] ${message}`);
+    }
+    function _log(message) {
+      console.log(`[dotenv@${version3}] ${message}`);
+    }
+    function _dotenvKey(options) {
+      if (options && options.DOTENV_KEY && options.DOTENV_KEY.length > 0) {
+        return options.DOTENV_KEY;
+      }
+      if (process.env.DOTENV_KEY && process.env.DOTENV_KEY.length > 0) {
+        return process.env.DOTENV_KEY;
+      }
+      return "";
+    }
+    function _instructions(result, dotenvKey) {
+      let uri;
+      try {
+        uri = new URL(dotenvKey);
+      } catch (error2) {
+        if (error2.code === "ERR_INVALID_URL") {
+          const err = new Error("INVALID_DOTENV_KEY: Wrong format. Must be in valid uri format like dotenv://:key_1234@dotenvx.com/vault/.env.vault?environment=development");
+          err.code = "INVALID_DOTENV_KEY";
+          throw err;
+        }
+        throw error2;
+      }
+      const key = uri.password;
+      if (!key) {
+        const err = new Error("INVALID_DOTENV_KEY: Missing key part");
+        err.code = "INVALID_DOTENV_KEY";
+        throw err;
+      }
+      const environment = uri.searchParams.get("environment");
+      if (!environment) {
+        const err = new Error("INVALID_DOTENV_KEY: Missing environment part");
+        err.code = "INVALID_DOTENV_KEY";
+        throw err;
+      }
+      const environmentKey = `DOTENV_VAULT_${environment.toUpperCase()}`;
+      const ciphertext = result.parsed[environmentKey];
+      if (!ciphertext) {
+        const err = new Error(`NOT_FOUND_DOTENV_ENVIRONMENT: Cannot locate environment ${environmentKey} in your .env.vault file.`);
+        err.code = "NOT_FOUND_DOTENV_ENVIRONMENT";
+        throw err;
+      }
+      return { ciphertext, key };
+    }
+    function _vaultPath(options) {
+      let possibleVaultPath = null;
+      if (options && options.path && options.path.length > 0) {
+        if (Array.isArray(options.path)) {
+          for (const filepath of options.path) {
+            if (fs2.existsSync(filepath)) {
+              possibleVaultPath = filepath.endsWith(".vault") ? filepath : `${filepath}.vault`;
+            }
+          }
+        } else {
+          possibleVaultPath = options.path.endsWith(".vault") ? options.path : `${options.path}.vault`;
+        }
+      } else {
+        possibleVaultPath = path2.resolve(process.cwd(), ".env.vault");
+      }
+      if (fs2.existsSync(possibleVaultPath)) {
+        return possibleVaultPath;
+      }
+      return null;
+    }
+    function _resolveHome(envPath) {
+      return envPath[0] === "~" ? path2.join(os2.homedir(), envPath.slice(1)) : envPath;
+    }
+    function _configVault(options) {
+      const debug2 = parseBoolean(process.env.DOTENV_CONFIG_DEBUG || options && options.debug);
+      const quiet = parseBoolean(process.env.DOTENV_CONFIG_QUIET || options && options.quiet);
+      if (debug2 || !quiet) {
+        _log("Loading env from encrypted .env.vault");
+      }
+      const parsed = DotenvModule._parseVault(options);
+      let processEnv = process.env;
+      if (options && options.processEnv != null) {
+        processEnv = options.processEnv;
+      }
+      DotenvModule.populate(processEnv, parsed, options);
+      return { parsed };
+    }
+    function configDotenv(options) {
+      const dotenvPath = path2.resolve(process.cwd(), ".env");
+      let encoding = "utf8";
+      let processEnv = process.env;
+      if (options && options.processEnv != null) {
+        processEnv = options.processEnv;
+      }
+      let debug2 = parseBoolean(processEnv.DOTENV_CONFIG_DEBUG || options && options.debug);
+      let quiet = parseBoolean(processEnv.DOTENV_CONFIG_QUIET || options && options.quiet);
+      if (options && options.encoding) {
+        encoding = options.encoding;
+      } else {
+        if (debug2) {
+          _debug("No encoding is specified. UTF-8 is used by default");
+        }
+      }
+      let optionPaths = [dotenvPath];
+      if (options && options.path) {
+        if (!Array.isArray(options.path)) {
+          optionPaths = [_resolveHome(options.path)];
+        } else {
+          optionPaths = [];
+          for (const filepath of options.path) {
+            optionPaths.push(_resolveHome(filepath));
+          }
+        }
+      }
+      let lastError;
+      const parsedAll = {};
+      for (const path3 of optionPaths) {
+        try {
+          const parsed = DotenvModule.parse(fs2.readFileSync(path3, { encoding }));
+          DotenvModule.populate(parsedAll, parsed, options);
+        } catch (e) {
+          if (debug2) {
+            _debug(`Failed to load ${path3} ${e.message}`);
+          }
+          lastError = e;
+        }
+      }
+      const populated = DotenvModule.populate(processEnv, parsedAll, options);
+      debug2 = parseBoolean(processEnv.DOTENV_CONFIG_DEBUG || debug2);
+      quiet = parseBoolean(processEnv.DOTENV_CONFIG_QUIET || quiet);
+      if (debug2 || !quiet) {
+        const keysCount = Object.keys(populated).length;
+        const shortPaths = [];
+        for (const filePath of optionPaths) {
+          try {
+            const relative = path2.relative(process.cwd(), filePath);
+            shortPaths.push(relative);
+          } catch (e) {
+            if (debug2) {
+              _debug(`Failed to load ${filePath} ${e.message}`);
+            }
+            lastError = e;
+          }
+        }
+        _log(`injecting env (${keysCount}) from ${shortPaths.join(",")} ${dim(`-- tip: ${_getRandomTip()}`)}`);
+      }
+      if (lastError) {
+        return { parsed: parsedAll, error: lastError };
+      } else {
+        return { parsed: parsedAll };
+      }
+    }
+    function config(options) {
+      if (_dotenvKey(options).length === 0) {
+        return DotenvModule.configDotenv(options);
+      }
+      const vaultPath = _vaultPath(options);
+      if (!vaultPath) {
+        _warn(`You set DOTENV_KEY but you are missing a .env.vault file at ${vaultPath}. Did you forget to build it?`);
+        return DotenvModule.configDotenv(options);
+      }
+      return DotenvModule._configVault(options);
+    }
+    function decrypt(encrypted, keyStr) {
+      const key = Buffer.from(keyStr.slice(-64), "hex");
+      let ciphertext = Buffer.from(encrypted, "base64");
+      const nonce = ciphertext.subarray(0, 12);
+      const authTag = ciphertext.subarray(-16);
+      ciphertext = ciphertext.subarray(12, -16);
+      try {
+        const aesgcm = crypto3.createDecipheriv("aes-256-gcm", key, nonce);
+        aesgcm.setAuthTag(authTag);
+        return `${aesgcm.update(ciphertext)}${aesgcm.final()}`;
+      } catch (error2) {
+        const isRange = error2 instanceof RangeError;
+        const invalidKeyLength = error2.message === "Invalid key length";
+        const decryptionFailed = error2.message === "Unsupported state or unable to authenticate data";
+        if (isRange || invalidKeyLength) {
+          const err = new Error("INVALID_DOTENV_KEY: It must be 64 characters long (or more)");
+          err.code = "INVALID_DOTENV_KEY";
+          throw err;
+        } else if (decryptionFailed) {
+          const err = new Error("DECRYPTION_FAILED: Please check your DOTENV_KEY");
+          err.code = "DECRYPTION_FAILED";
+          throw err;
+        } else {
+          throw error2;
+        }
+      }
+    }
+    function populate(processEnv, parsed, options = {}) {
+      const debug2 = Boolean(options && options.debug);
+      const override = Boolean(options && options.override);
+      const populated = {};
+      if (typeof parsed !== "object") {
+        const err = new Error("OBJECT_REQUIRED: Please check the processEnv argument being passed to populate");
+        err.code = "OBJECT_REQUIRED";
+        throw err;
+      }
+      for (const key of Object.keys(parsed)) {
+        if (Object.prototype.hasOwnProperty.call(processEnv, key)) {
+          if (override === true) {
+            processEnv[key] = parsed[key];
+            populated[key] = parsed[key];
+          }
+          if (debug2) {
+            if (override === true) {
+              _debug(`"${key}" is already defined and WAS overwritten`);
+            } else {
+              _debug(`"${key}" is already defined and was NOT overwritten`);
+            }
+          }
+        } else {
+          processEnv[key] = parsed[key];
+          populated[key] = parsed[key];
+        }
+      }
+      return populated;
+    }
+    var DotenvModule = {
+      configDotenv,
+      _configVault,
+      _parseVault,
+      config,
+      decrypt,
+      parse: parse6,
+      populate
+    };
+    module2.exports.configDotenv = DotenvModule.configDotenv;
+    module2.exports._configVault = DotenvModule._configVault;
+    module2.exports._parseVault = DotenvModule._parseVault;
+    module2.exports.config = DotenvModule.config;
+    module2.exports.decrypt = DotenvModule.decrypt;
+    module2.exports.parse = DotenvModule.parse;
+    module2.exports.populate = DotenvModule.populate;
+    module2.exports = DotenvModule;
+  }
+});
+
+// node_modules/dotenv/lib/env-options.js
+var require_env_options = __commonJS({
+  "node_modules/dotenv/lib/env-options.js"(exports2, module2) {
+    var options = {};
+    if (process.env.DOTENV_CONFIG_ENCODING != null) {
+      options.encoding = process.env.DOTENV_CONFIG_ENCODING;
+    }
+    if (process.env.DOTENV_CONFIG_PATH != null) {
+      options.path = process.env.DOTENV_CONFIG_PATH;
+    }
+    if (process.env.DOTENV_CONFIG_QUIET != null) {
+      options.quiet = process.env.DOTENV_CONFIG_QUIET;
+    }
+    if (process.env.DOTENV_CONFIG_DEBUG != null) {
+      options.debug = process.env.DOTENV_CONFIG_DEBUG;
+    }
+    if (process.env.DOTENV_CONFIG_OVERRIDE != null) {
+      options.override = process.env.DOTENV_CONFIG_OVERRIDE;
+    }
+    if (process.env.DOTENV_CONFIG_DOTENV_KEY != null) {
+      options.DOTENV_KEY = process.env.DOTENV_CONFIG_DOTENV_KEY;
+    }
+    module2.exports = options;
+  }
+});
+
+// node_modules/dotenv/lib/cli-options.js
+var require_cli_options = __commonJS({
+  "node_modules/dotenv/lib/cli-options.js"(exports2, module2) {
+    var re = /^dotenv_config_(encoding|path|quiet|debug|override|DOTENV_KEY)=(.+)$/;
+    module2.exports = function optionMatcher(args) {
+      const options = args.reduce(function(acc, cur) {
+        const matches = cur.match(re);
+        if (matches) {
+          acc[matches[1]] = matches[2];
+        }
+        return acc;
+      }, {});
+      if (!("quiet" in options)) {
+        options.quiet = "true";
+      }
+      return options;
+    };
+  }
+});
+
 // node_modules/tslib/tslib.es6.mjs
 function __setFunctionName(f, name, prefix) {
   if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
@@ -34619,7 +35060,7 @@ var require_urlencoded2 = __commonJS({
 });
 
 // node_modules/@fastify/busboy/lib/main.js
-var require_main = __commonJS({
+var require_main2 = __commonJS({
   "node_modules/@fastify/busboy/lib/main.js"(exports2, module2) {
     "use strict";
     var WritableStream = require("node:stream").Writable;
@@ -36562,7 +37003,7 @@ var require_formdata = __commonJS({
 var require_body = __commonJS({
   "node_modules/undici/lib/fetch/body.js"(exports2, module2) {
     "use strict";
-    var Busboy = require_main();
+    var Busboy = require_main2();
     var util3 = require_util();
     var {
       ReadableStreamFrom,
@@ -87150,7 +87591,7 @@ __export(node_exports, {
   YTShorts: () => ytshorts_exports,
   default: () => node_default2
 });
-var import_web, import_undici, import_crypto2, import_path, import_os, import_promises, import_url2, import_meta, _Cache_instances, _Cache_persistent_directory, _Cache_persistent, _Cache_createCache, meta_url, is_cjs, __dirname__, homepage, version2, bugs, repo_url, Cache, node_default2;
+var import_web, import_undici, import_crypto2, import_path, import_os, import_promises, import_url2, _Cache_instances, _Cache_persistent_directory, _Cache_persistent, _Cache_createCache, meta_url, is_cjs, __dirname__, homepage, version2, bugs, repo_url, Cache, node_default2;
 var init_node = __esm({
   "node_modules/youtubei.js/dist/src/platform/node.js"() {
     init_tslib_es6();
@@ -87166,8 +87607,7 @@ var init_node = __esm({
     init_jinter();
     init_lib();
     init_lib();
-    import_meta = {};
-    meta_url = import_meta.url;
+    meta_url = __importMetaUrl__;
     is_cjs = !meta_url;
     __dirname__ = is_cjs ? __dirname : import_path.default.dirname((0, import_url2.fileURLToPath)(meta_url));
     ({ homepage, version: version2, bugs } = { "homepage": "https://github.com/LuanRT/YouTube.js#readme", "version": "14.0.0", "bugs": { "url": "https://github.com/LuanRT/YouTube.js/issues" } });
@@ -90932,6 +91372,28 @@ var {
 } = axios_default;
 
 // server.js
+var import_fs = require("fs");
+
+// node_modules/dotenv/config.js
+(function() {
+  require_main().config(
+    Object.assign(
+      {},
+      require_env_options(),
+      require_cli_options()(process.argv)
+    )
+  );
+})();
+
+// server.js
+var SERVER_VERSION;
+try {
+  SERVER_VERSION = "1.0.1";
+} catch {
+  SERVER_VERSION = JSON.parse(
+    (0, import_fs.readFileSync)(new URL("./package.json", __importMetaUrl__), "utf8")
+  ).version;
+}
 var cachedYoutube = null;
 var youtubeInitPromise = null;
 async function getYoutubeInstance() {
@@ -90939,7 +91401,8 @@ async function getYoutubeInstance() {
   if (youtubeInitPromise) return youtubeInitPromise;
   youtubeInitPromise = (async () => {
     try {
-      const { Innertube: Innertube2 } = await Promise.resolve().then(() => (init_node(), node_exports));
+      const { Innertube: Innertube2, Log } = await Promise.resolve().then(() => (init_node(), node_exports));
+      Log.setLevel(Log.Level.ERROR);
       cachedYoutube = await Innertube2.create();
       console.log("\u2705 [YouTube] Innertube \uCD08\uAE30\uD654 \uC644\uB8CC");
       return cachedYoutube;
@@ -90950,7 +91413,18 @@ async function getYoutubeInstance() {
   })();
   return youtubeInitPromise;
 }
-var SERVER_VERSION = "1.0.0";
+var raceTimeout = (promise, ms) => Promise.race([promise, new Promise((resolve) => setTimeout(() => resolve(null), ms))]);
+var parseTimestamp = (ts) => {
+  if (typeof ts === "string") {
+    const d = new Date(ts);
+    return !isNaN(d.getTime()) ? d.toISOString() : null;
+  } else if (typeof ts === "number" && ts >= 0 && ts <= 4102444800) {
+    return new Date(ts * 1e3).toISOString();
+  } else if (ts instanceof Date) {
+    return ts.toISOString();
+  }
+  return null;
+};
 var APP_URL = process.env.APP_URL || "https://s-fuz.vercel.app";
 axios_default.defaults.headers.common["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 function argbToHex(colorNum) {
@@ -91029,76 +91503,53 @@ app.get("/channel/:channelId", async (req, res) => {
       }
       return { isLive: false, count: 0 };
     };
-    try {
-      const livePage = await channel.getLiveStreams();
-      if (livePage.videos && livePage.videos.length > 0) {
-        let bestLive = null;
-        let bestCount = -1;
-        for (const video of livePage.videos) {
-          const { isLive: currentlyLive, count } = extractViewerCount(video);
-          if (currentlyLive && count > bestCount) {
-            bestCount = count;
-            bestLive = video;
-          }
+    const livePage = await raceTimeout(channel.getLiveStreams().catch(() => null), 1e4);
+    if (livePage?.videos?.length > 0) {
+      let bestLive = null;
+      let bestCount = -1;
+      for (const video of livePage.videos) {
+        const { isLive: currentlyLive, count } = extractViewerCount(video);
+        if (currentlyLive && count > bestCount) {
+          bestCount = count;
+          bestLive = video;
         }
-        if (bestLive) {
-          isLive = true;
-          viewerCount = bestCount;
-          liveTitle = bestLive.title?.text || "";
-          try {
-            const info2 = await youtube.getInfo(bestLive.id);
-            if (info2.basic_info?.start_timestamp) {
-              const timestamp = info2.basic_info.start_timestamp;
-              if (typeof timestamp === "string") {
-                const date = new Date(timestamp);
-                if (!isNaN(date.getTime())) startTime = date.toISOString();
-              } else if (typeof timestamp === "number") {
-                const MAX_TIMESTAMP = 4102444800;
-                if (timestamp >= 0 && timestamp <= MAX_TIMESTAMP) {
-                  startTime = new Date(timestamp * 1e3).toISOString();
-                }
-              } else if (timestamp instanceof Date) {
-                startTime = timestamp.toISOString();
-              }
-            }
-          } catch (_) {
-          }
-          liveVideo = { title: liveTitle, id: bestLive.id, views: viewerCount, startTime };
-        }
-        if (!isLive && livePage.videos.length > 0) {
-          const completedCandidates = livePage.videos.filter((v) => {
-            const textSources = [
-              typeof v.view_count === "string" ? v.view_count : v.view_count?.text,
-              v.viewers?.text,
-              v.short_view_count_text?.text
-            ];
-            return textSources.some((t) => t && t.toLowerCase().includes("views"));
-          });
-          const candidate = completedCandidates[0] ?? livePage.videos[0];
-          if (candidate?.id) {
-            try {
-              const info2 = await youtube.getInfo(candidate.id);
-              const ts = info2.basic_info?.start_timestamp;
-              const dur = info2.basic_info?.duration;
-              let lastStart = null;
-              if (typeof ts === "string") {
-                const d = new Date(ts);
-                if (!isNaN(d.getTime())) lastStart = d.toISOString();
-              } else if (typeof ts === "number" && ts > 0 && ts <= 4102444800) {
-                lastStart = new Date(ts * 1e3).toISOString();
-              } else if (ts instanceof Date) {
-                lastStart = ts.toISOString();
-              }
-              if (lastStart) {
-                const lastEnd = typeof dur === "number" && dur > 0 ? new Date(new Date(lastStart).getTime() + dur * 1e3).toISOString() : null;
-                lastLiveInfo = { startTime: lastStart, closeDate: lastEnd };
-              }
-            } catch (_) {
+      }
+      if (bestLive) {
+        isLive = true;
+        viewerCount = bestCount;
+        liveTitle = bestLive.title?.text || "";
+        const infoForStart = await raceTimeout(
+          youtube.getInfo(bestLive.id).catch(() => null),
+          5e3
+        );
+        startTime = infoForStart ? parseTimestamp(infoForStart.basic_info?.start_timestamp) : null;
+        liveVideo = { title: liveTitle, id: bestLive.id, views: viewerCount, startTime };
+      }
+      if (!isLive) {
+        const completedCandidates = livePage.videos.filter((v) => {
+          const textSources = [
+            typeof v.view_count === "string" ? v.view_count : v.view_count?.text,
+            v.viewers?.text,
+            v.short_view_count_text?.text
+          ];
+          return textSources.some((t) => t && t.toLowerCase().includes("views"));
+        });
+        const candidate = completedCandidates[0] ?? livePage.videos[0];
+        if (candidate?.id) {
+          const infoForLast = await raceTimeout(
+            youtube.getInfo(candidate.id).catch(() => null),
+            5e3
+          );
+          if (infoForLast) {
+            const lastStart = parseTimestamp(infoForLast.basic_info?.start_timestamp);
+            if (lastStart) {
+              const dur = infoForLast.basic_info?.duration;
+              const lastEnd = typeof dur === "number" && dur > 0 ? new Date(new Date(lastStart).getTime() + dur * 1e3).toISOString() : null;
+              lastLiveInfo = { startTime: lastStart, closeDate: lastEnd };
             }
           }
         }
       }
-    } catch (_) {
     }
     res.json({
       channel: {

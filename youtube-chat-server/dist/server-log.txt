@@ -1,0 +1,30 @@
+node:events:497
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::47200
+    at Server.setupListenHandle [as _listen2] (node:net:1904:16)
+    at listenInCluster (node:net:1961:12)
+    at Server.listen (node:net:2063:7)
+    at Function.listen (C:\snapshot\dist\server.cjs)
+    at Object.<anonymous> (C:\snapshot\dist\server.cjs)
+    at Module._compile (pkg/prelude/bootstrap.js:1930:22)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1548:10)
+    at Module.load (node:internal/modules/cjs/loader:1288:32)
+    at Module._load (node:internal/modules/cjs/loader:1104:12)
+    at Function.runMain (pkg/prelude/bootstrap.js:1983:12)
+Emitted 'error' event on WebSocketServer2 instance at:
+    at Server.emit (node:events:519:28)
+    at emitErrorNT (node:net:1940:8)
+    at processTicksAndRejections (node:internal/process/task_queues:82:21)
+    at process.runNextTicks [as _tickCallback] (node:internal/process/task_queues:64:3)
+    at Function.runMain (pkg/prelude/bootstrap.js:1984:13)
+    at node:internal/main/run_main_module:28:49 {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 47200
+}
+
+Node.js v20.18.0
