@@ -1,6 +1,6 @@
 {
   "name": "youtube-chat-server",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "WebSocket server for YouTube live chat streaming",
   "main": "server.js",
   "type": "module",

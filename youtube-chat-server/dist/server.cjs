@@ -91373,6 +91373,7 @@ var {
 
 // server.js
 var import_fs = require("fs");
+var import_readline = __toESM(require("readline"), 1);
 
 // node_modules/dotenv/config.js
 (function() {
@@ -91386,9 +91387,23 @@ var import_fs = require("fs");
 })();
 
 // server.js
+function fatalExit(label, err) {
+  const msg = `
+[${label}] ${err?.stack || err}
+`;
+  process.stderr.write(msg);
+  try {
+    (0, import_fs.writeFileSync)("./crash.log", (/* @__PURE__ */ new Date()).toISOString() + msg, { flag: "a" });
+  } catch (_) {
+  }
+  console.log("10\uCD08 \uD6C4 \uC790\uB3D9\uC73C\uB85C \uC885\uB8CC\uB429\uB2C8\uB2E4...");
+  setTimeout(() => process.exit(1), 1e4);
+}
+process.on("uncaughtException", (err) => fatalExit("uncaughtException", err));
+process.on("unhandledRejection", (reason) => fatalExit("unhandledRejection", reason));
 var SERVER_VERSION;
 try {
-  SERVER_VERSION = "1.0.1";
+  SERVER_VERSION = "1.0.2";
 } catch {
   SERVER_VERSION = JSON.parse(
     (0, import_fs.readFileSync)(new URL("./package.json", __importMetaUrl__), "utf8")
@@ -91584,7 +91599,29 @@ var server = app.listen(PORT, () => {
     console.log("\u2139\uFE0F  \uBC84\uC804 \uD655\uC778 \uC2E4\uD328 (\uB124\uD2B8\uC6CC\uD06C \uC5C6\uC74C \uB610\uB294 \uC57C\uD558 \uC911)");
   });
 });
+server.on("error", (err) => {
+  if (err.code === "EADDRINUSE") {
+    console.error(`
+\u274C \uD3EC\uD2B8 ${PORT}\uC774 \uC774\uBBF8 \uC0AC\uC6A9 \uC911\uC785\uB2C8\uB2E4.`);
+    console.error(`\u274C \uC2E4\uD589 \uC911\uC778 \uB2E4\uB978 \uCC44\uD305 \uC11C\uBC84\uB97C \uBA3C\uC800 \uC885\uB8CC\uD55C \uB4A4 \uB2E4\uC2DC \uC2E4\uD589\uD574\uC8FC\uC138\uC694.
+`);
+  } else {
+    console.error("\u274C \uC11C\uBC84 \uC624\uB958:", err.message);
+  }
+  if (process.stdin.isTTY) {
+    const rl = import_readline.default.createInterface({ input: process.stdin, output: process.stdout });
+    rl.question("Press Enter to exit...", () => {
+      rl.close();
+      process.exit(1);
+    });
+  } else {
+    console.log("10\uCD08 \uD6C4 \uC790\uB3D9\uC73C\uB85C \uC885\uB8CC\uB429\uB2C8\uB2E4...");
+    setTimeout(() => process.exit(1), 1e4);
+  }
+});
 var wss = new import_websocket_server.default({ server });
+wss.on("error", () => {
+});
 wss.on("connection", (ws) => {
   console.log("\u{1F50C} \uD074\uB77C\uC774\uC5B8\uD2B8 \uC5F0\uACB0\uB428");
   let currentLiveChatInstance = null;

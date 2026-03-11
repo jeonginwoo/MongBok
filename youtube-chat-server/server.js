@@ -4,8 +4,21 @@ import { LiveChat } from 'youtube-chat';
 import cors from 'cors';
 import axios from 'axios';
 import { createRequire } from 'module';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
+import readline from 'readline';
 import 'dotenv/config';
+
+// 예상치 못한 크래시도 로그로 남기고 바로 꺼지지 않도록 처리
+function fatalExit(label, err) {
+  const msg = `\n[${label}] ${err?.stack || err}\n`;
+  process.stderr.write(msg);
+  try { writeFileSync('./crash.log', new Date().toISOString() + msg, { flag: 'a' }); } catch (_) {}
+  console.log('10초 후 자동으로 종료됩니다...');
+  setTimeout(() => process.exit(1), 10000);
+}
+
+process.on('uncaughtException', (err) => fatalExit('uncaughtException', err));
+process.on('unhandledRejection', (reason) => fatalExit('unhandledRejection', reason));
 
 // __SERVER_VERSION__: 빌드 시 bundle.mjs의 esbuild define으로 주입
 // dev 모드(node server.js)에서는 package.json에서 직접 읽음
@@ -262,16 +275,30 @@ const server = app.listen(PORT, () => {
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.error(`❌ 포트 ${PORT}이 이미 사용 중입니다.`);
-    console.error(`❌ 실행 중인 다른 채팅 서버를 먼저 종료한 뒤 다시 실행해주세요.`);
+    console.error(`\n❌ 포트 ${PORT}이 이미 사용 중입니다.`);
+    console.error(`❌ 실행 중인 다른 채팅 서버를 먼저 종료한 뒤 다시 실행해주세요.\n`);
   } else {
     console.error('❌ 서버 오류:', err.message);
   }
-  process.exit(1);
+
+  if (process.stdin.isTTY) {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    rl.question('Press Enter to exit...', () => {
+      rl.close();
+      process.exit(1);
+    });
+  } else {
+    console.log('10초 후 자동으로 종료됩니다...');
+    setTimeout(() => process.exit(1), 10000);
+  }
 });
 
 // WebSocket 서버 생성
 const wss = new WebSocketServer({ server });
+
+// ws 라이브러리가 HTTP 서버 error를 wss로 재전달하므로 핸들러 등록 필수
+// (없으면 EADDRINUSE 시 uncaught exception으로 즉시 크래시)
+wss.on('error', () => { /* server.on('error') 에서 이미 처리 */ });
 
 // 활성 채팅 세션 관리
 const activeSessions = new Map();
