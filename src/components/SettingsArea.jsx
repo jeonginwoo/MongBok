@@ -27,6 +27,7 @@ import {
   Settings as SettingsIcon,
   FolderOpen as FolderOpenIcon,
   ClearAll as ClearAllIcon,
+  InfoOutlined as InfoOutlinedIcon,
 } from "@mui/icons-material";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
@@ -42,6 +43,7 @@ import {
   themeModeAtom,
   pointColorAtom,
   chatFontSizeAdjustmentAtom,
+  autoHideOfflineAtom,
   autoRecordEnabledAtom,
   recordQualityAtom,
   recordFrameRateAtom,
@@ -174,6 +176,7 @@ export default function SettingsArea({ onClose }) {
   const [themeMode, setThemeMode] = useAtom(themeModeAtom);
   const [pointColor, setPointColor] = useAtom(pointColorAtom);
   const [chatFontSizeAdjustment, setChatFontSizeAdjustment] = useAtom(chatFontSizeAdjustmentAtom);
+  const [autoHideOffline, setAutoHideOffline] = useAtom(autoHideOfflineAtom);
   const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
   const [recordQuality, setRecordQuality] = useAtom(recordQualityAtom);
   const [recordFrameRate, setRecordFrameRate] = useAtom(recordFrameRateAtom);
@@ -293,6 +296,17 @@ export default function SettingsArea({ onClose }) {
     setRecordSaveDirHandle(null);
     setRecordSaveDirName("");
     window.localStorage.removeItem("recordSaveDirName");
+  };
+
+  const handleToggleAutoHideOffline = () => {
+    setAutoHideOffline((prev) => {
+      const nextState = !prev;
+      const validation = validateBoolean(nextState, "autoHideOffline");
+      if (validation === true) {
+        window.localStorage.setItem("autoHideOffline", JSON.stringify(nextState));
+      }
+      return nextState;
+    });
   };
 
   const handleToggleAutoRecord = () => {
@@ -603,9 +617,21 @@ export default function SettingsArea({ onClose }) {
 
         {/* 화면 조작 모드 */}
         <SettingRow>
-          <SettingLabel>
+          <SettingLabel sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
             {pointerEventsEnabled ? "화면 조작 모드" : "화면 이동 모드"}{" "}
             <HotkeySpan component="span" pointcolor={pointColor}>(V)</HotkeySpan>
+            <Tooltip
+              slotProps={tooltipSlotProps}
+              placement="top"
+              title={
+                <Box component="ul" sx={{ pl: 2, m: 0 }}>
+                  <li>화면 이동 모드: 패널을 드래그해 자유롭게 위치 조정</li>
+                  <li>화면 조작 모드: 영상 플레이어를 직접 클릭·조작</li>
+                </Box>
+              }
+            >
+              <InfoOutlinedIcon sx={{ fontSize: "1.4rem", color: "text.secondary", cursor: "default" }} />
+            </Tooltip>
           </SettingLabel>
           <SettingToggleGroup
             value={pointerEventsEnabled}
@@ -615,14 +641,10 @@ export default function SettingsArea({ onClose }) {
             pointcolor={pointColor}
           >
             <ToggleButton value={false} aria-label="pan tool">
-              <Tooltip slotProps={tooltipSlotProps} title="화면 이동 모드" placement="top">
-                <PanToolIcon />
-              </Tooltip>
+              <PanToolIcon />
             </ToggleButton>
             <ToggleButton value={true} aria-label="mouse">
-              <Tooltip slotProps={tooltipSlotProps} title="화면 조작 모드" placement="top">
-                <MouseIcon />
-              </Tooltip>
+              <MouseIcon />
             </ToggleButton>
           </SettingToggleGroup>
         </SettingRow>
@@ -662,6 +684,21 @@ export default function SettingsArea({ onClose }) {
               sx={{ color: "primary.main", width: 130, "& .MuiSlider-mark": { backgroundColor: "transparent" } }}
             />
           </Box>
+        </SettingRow>
+
+        {/* 오프라인 자동 숨김 */}
+        <SettingRow>
+          <SettingLabel sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            오프라인 자동 숨김
+            <Tooltip
+              slotProps={tooltipSlotProps}
+              title="화면에 배치된 채널이 라이브 상태에서 오프라인 전환 시 자동으로 목록으로 복귀합니다"
+              placement="top"
+            >
+              <InfoOutlinedIcon sx={{ fontSize: "1.4rem", color: "text.secondary", cursor: "default" }} />
+            </Tooltip>
+          </SettingLabel>
+          <SettingSwitch checked={autoHideOffline} onChange={handleToggleAutoHideOffline} />
         </SettingRow>
 
         <Divider />
@@ -712,11 +749,21 @@ export default function SettingsArea({ onClose }) {
 
         {/* 자동 녹화 설정 */}
         <SettingRow>
-          <SettingLabel>
-            자동 녹화{" "}
-            <Box component="span" sx={{ color: "text.secondary", fontSize: "1.2rem" }}>
-              (1번 Zone)
-            </Box>
+          <SettingLabel sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            자동 녹화
+            <Tooltip
+              slotProps={tooltipSlotProps}
+              placement="top"
+              title={
+                <Box component="ul" sx={{ pl: 2, m: 0 }}>
+                  <li>1번 위치의 채널이 라이브 시작 시 자동으로 녹화를 시작합니다 (브라우저 동의 필요)</li>
+                  <li>1번 위치의 채널이 오프라인 전환 시 자동으로 녹화를 종료합니다</li>
+                  <li>오프라인 자동 숨김과 함께 사용 시, 숨겨진 채널로 인해 1번 위치의 채널이 교체되면 녹화도 함께 종료됩니다</li>
+                </Box>
+              }
+            >
+              <InfoOutlinedIcon sx={{ fontSize: "1.4rem", color: "text.secondary", cursor: "default" }} />
+            </Tooltip>
           </SettingLabel>
           <SettingSwitch checked={autoRecordEnabled} onChange={handleToggleAutoRecord} />
         </SettingRow>
@@ -742,7 +789,22 @@ export default function SettingsArea({ onClose }) {
 
         {/* 녹화 코덱 설정 */}
         <SettingRow>
-          <SettingLabel>녹화 코덱</SettingLabel>
+          <SettingLabel sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            녹화 코덱
+            <Tooltip
+              slotProps={tooltipSlotProps}
+              placement="top"
+              title={
+                <Box component="ul" sx={{ pl: 2, m: 0 }}>
+                  <li>H.264: 호환성 최고, 대부분의 기기에서 재생 가능 (기본 권장) · GPU 하드웨어 인코딩 지원</li>
+                  <li>VP9: 파일 크기 약 30~50% 작음, 최신 브라우저 지원 · CPU 인코딩 위주, 부하 높음</li>
+                  <li>VP8: 구형 코덱, VP9보다 압축 효율 낮음 · CPU 인코딩, 부하 낮음</li>
+                </Box>
+              }
+            >
+              <InfoOutlinedIcon sx={{ fontSize: "1.4rem", color: "text.secondary", cursor: "default" }} />
+            </Tooltip>
+          </SettingLabel>
           <SettingToggleGroup value={recordCodec} exclusive onChange={handleChangeRecordCodec} size="small" pointcolor={pointColor}>
             <ToggleButton value="h264"><SmallText>H.264</SmallText></ToggleButton>
             <ToggleButton value="vp9"><SmallText>VP9</SmallText></ToggleButton>

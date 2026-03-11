@@ -60,6 +60,13 @@ export const autoRecordEnabledAtom = atomWithStorage(
   storage
 );
 
+// 오프라인 전환 시 자동 목록 복귀 on/off
+export const autoHideOfflineAtom = atomWithStorage(
+  "autoHideOffline",
+  false,
+  storage
+);
+
 // 컨트롤러 확장/축소
 export const controllerExpandedAtom = atomWithStorage(
   "controllerExpanded",

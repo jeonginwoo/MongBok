@@ -30,6 +30,7 @@ import {
   pointColorAtom,
   chatFontSizeAdjustmentAtom,
   autoRecordEnabledAtom,
+  autoHideOfflineAtom,
   ratioAtom,
   layoutTypeAtom,
   layoutHistoryAtom,
@@ -84,7 +85,11 @@ export default function ControlButtonGroup({ fullscreen }) {
   const setSnackbar = useSetAtom(snackbarAtom);
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
   const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
+  const autoHideOffline = useAtomValue(autoHideOfflineAtom);
+  const autoHideOfflineRef = useRef(autoHideOffline);
+  useEffect(() => { autoHideOfflineRef.current = autoHideOffline; }, [autoHideOffline]);
   const prevZone1LiveRef = React.useRef(undefined);
+  const prevZone1IdRef = React.useRef(undefined);
   const channelsRef = useRef(channels);
   const refreshingRef = useRef(refreshing);
   useEffect(() => { channelsRef.current = channels; }, [channels]);
@@ -109,12 +114,28 @@ export default function ControlButtonGroup({ fullscreen }) {
 
   useEffect(() => {
     const zone1Channel = Object.values(channels).find((c) => c.zoneId === 1);
+    const zone1Id = zone1Channel?.id ?? null;
     const isLive = zone1Channel?.isLive === true;
 
     // 활성화된(Sortable) 채널이 하나도 없으면 녹화 중지
     const visibleChannelsCount = Object.values(channels).filter((c) => c.isVisible).length;
     if (isRecording && visibleChannelsCount === 0) {
       setIsRecording(false);
+    }
+
+    // autoHideOffline 활성화 상태에서 zone 1 채널이 오프라인으로 목록 복귀해
+    // 다른 채널이 zone 1을 채운 경우 녹화 중지
+    if (
+      isRecording &&
+      autoHideOffline &&
+      prevZone1IdRef.current !== undefined &&
+      prevZone1IdRef.current !== null &&
+      prevZone1IdRef.current !== zone1Id
+    ) {
+      const prevZone1Channel = channels[prevZone1IdRef.current];
+      if (prevZone1Channel && prevZone1Channel.isLive === false && prevZone1Channel.zoneId === null) {
+        setIsRecording(false);
+      }
     }
 
     if (autoRecordEnabled) {
@@ -127,7 +148,8 @@ export default function ControlButtonGroup({ fullscreen }) {
     }
 
     prevZone1LiveRef.current = isLive;
-  }, [channels, autoRecordEnabled, setIsRecording, isRecording]);
+    prevZone1IdRef.current = zone1Id;
+  }, [channels, autoRecordEnabled, autoHideOffline, setIsRecording, isRecording]);
 
   const handleRecordButtonClick = () => {
     setIsRecording((prev) => !prev);
@@ -224,6 +246,38 @@ export default function ControlButtonGroup({ fullscreen }) {
     );
   }, [setChatFontSizeAdjustment]);
 
+  const applyLiveStatusUpdate = useCallback((channelId, liveStatus) => {
+    setChannels((prev) => {
+      const prevChannel = prev[channelId];
+      if (!prevChannel) return prev;
+
+      const wasLive = prevChannel.isLive === true;
+      const isNowOffline = liveStatus.isLive === false;
+
+      if (autoHideOfflineRef.current && wasLive && isNowOffline && prevChannel.zoneId !== null) {
+        const updated = structuredClone(prev);
+        updated[channelId] = { ...updated[channelId], ...liveStatus, isVisible: false, zoneId: null };
+
+        const visibleList = Object.values(updated)
+          .filter((c) => c.isVisible)
+          .sort((a, b) => (a.zoneId ?? Infinity) - (b.zoneId ?? Infinity));
+        visibleList.forEach((c, index) => { updated[c.id].zoneId = index + 1; });
+
+        window.localStorage.setItem(
+          "channels",
+          JSON.stringify(
+            Object.fromEntries(
+              Object.entries(updated).map(([id, ch]) => [id, { platform: ch.platform, zoneId: ch.zoneId }])
+            )
+          )
+        );
+        return updated;
+      }
+
+      return { ...prev, [channelId]: { ...prev[channelId], ...liveStatus } };
+    });
+  }, [setChannels]);
+
   const handleRefresh = useCallback(async () => {
     if (refreshing) return;
     setRefreshing(true);
@@ -235,10 +289,7 @@ export default function ControlButtonGroup({ fullscreen }) {
         entries.map(async ([channelId, item]) => {
           try {
             const liveStatus = await getLiveStatus(channelId, item.platform);
-            setChannels((prev) => ({
-              ...prev,
-              [channelId]: { ...prev[channelId], ...liveStatus },
-            }));
+            applyLiveStatusUpdate(channelId, liveStatus);
           } catch (err) {
             console.error(`⚠️ ${channelId} 라이브 상태 갱신 실패:`, err);
           }
@@ -249,7 +300,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     } finally {
       setTimeout(() => setRefreshing(false), 750);
     }
-  }, [channels, refreshing, setChannels]);
+  }, [channels, refreshing, applyLiveStatusUpdate]);
 
   // zoneId가 부여된 채널만 갱신 (자동 60초 주기)
   const handleAutoRefreshZoned = useCallback(async () => {
@@ -263,10 +314,7 @@ export default function ControlButtonGroup({ fullscreen }) {
         entries.map(async ([channelId, item]) => {
           try {
             const liveStatus = await getLiveStatus(channelId, item.platform);
-            setChannels((prev) => ({
-              ...prev,
-              [channelId]: { ...prev[channelId], ...liveStatus },
-            }));
+            applyLiveStatusUpdate(channelId, liveStatus);
           } catch (err) {
             console.error(`⚠️ ${channelId} 라이브 상태 갱신 실패:`, err);
           }
@@ -277,7 +325,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     } finally {
       setTimeout(() => setRefreshing(false), 750);
     }
-  }, [channels, refreshing, setChannels]);
+  }, [channels, refreshing, applyLiveStatusUpdate]);
 
   // zoneId가 없는 채널만 갱신 (자동 10분 주기)
   const handleAutoRefreshUnzoned = useCallback(async () => {

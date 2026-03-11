@@ -7,6 +7,7 @@ export const SETTINGS_ORDER = [
   "currentTimePosition",
   "pointerEventsEnabled",
   "chatFontSizeAdjustment",
+  "autoHideOffline",
   "autoRecordEnabled",
   "recordFrameRate",
   "recordQuality",
