@@ -1,7 +1,7 @@
 import { atom } from "jotai";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
 import { canvas } from "@/data/canvas";
-import { getAllChannelsData } from "@/api/live";
+import { getLiveStatus } from "@/api/live";
 
 const storage = createJSONStorage(() =>
   typeof window !== "undefined" ? window.localStorage : undefined
@@ -14,15 +14,65 @@ channelsAtom.onMount = (setAtom) => {
   try {
     const saved = window.localStorage.getItem("channels");
     const savedChannels = saved ? JSON.parse(saved) : {};
+    const entries = Object.entries(savedChannels);
 
-    if (Object.keys(savedChannels).length > 0) {
-      getAllChannelsData(savedChannels)
-        .then((data) => {
-          setAtom(data);
-        })
-        .catch((err) => {
-          console.error("❌ 초기 데이터 셋팅 실패:", err);
-        });
+    if (entries.length > 0) {
+      // 즉시 플레이스홀더 데이터로 채널 목록 표시
+      const placeholder = {};
+      for (const [channelId, item] of entries) {
+        placeholder[channelId] = {
+          id: channelId,
+          name: "",
+          imageUrl: "",
+          liveTitle: "",
+          openDate: null,
+          closeDate: null,
+          isLive: false,
+          userCount: 0,
+          liveVideoId: null,
+          liveCategory: null,
+          tags: [],
+          isVisible: item.zoneId != null,
+          zoneId: item.zoneId ?? null,
+          platform: item.platform,
+          _loading: true,
+        };
+      }
+      setAtom(placeholder);
+
+      // 각 채널 데이터를 비동기로 개별 fetch → 도착하는 대로 atom 업데이트
+      for (const [channelId, item] of entries) {
+        getLiveStatus(channelId, item.platform)
+          .then((live) => {
+            setAtom((prev) => ({
+              ...prev,
+              [channelId]: {
+                ...prev[channelId],
+                name: live.name,
+                imageUrl: live.imageUrl,
+                liveTitle: live.liveTitle,
+                openDate: live.openDate,
+                closeDate: live.closeDate,
+                isLive: live.isLive,
+                userCount: live.userCount,
+                liveVideoId: live.liveVideoId ?? null,
+                liveCategory: live.liveCategory,
+                tags: live.tags,
+                _loading: false,
+              },
+            }));
+          })
+          .catch((err) => {
+            console.error(`⚠️ ${channelId} 데이터 불러오기 실패:`, err);
+            setAtom((prev) => ({
+              ...prev,
+              [channelId]: {
+                ...prev[channelId],
+                _loading: false,
+              },
+            }));
+          });
+      }
     }
   } catch (e) {
     console.error("❌ localStorage 파싱 실패:", e);
