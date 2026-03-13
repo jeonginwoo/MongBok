@@ -89,7 +89,8 @@ export default function ControlButtonGroup({ fullscreen }) {
   const autoHideOfflineRef = useRef(autoHideOffline);
   useEffect(() => { autoHideOfflineRef.current = autoHideOffline; }, [autoHideOffline]);
   const prevZone1LiveRef = React.useRef(undefined);
-  const prevZone1IdRef = React.useRef(undefined);
+  const isRecordingRef = useRef(isRecording);
+  useEffect(() => { isRecordingRef.current = isRecording; }, [isRecording]);
   const channelsRef = useRef(channels);
   const refreshingRef = useRef(refreshing);
   useEffect(() => { channelsRef.current = channels; }, [channels]);
@@ -114,28 +115,12 @@ export default function ControlButtonGroup({ fullscreen }) {
 
   useEffect(() => {
     const zone1Channel = Object.values(channels).find((c) => c.zoneId === 1);
-    const zone1Id = zone1Channel?.id ?? null;
     const isLive = zone1Channel?.isLive === true;
 
     // 활성화된(Sortable) 채널이 하나도 없으면 녹화 중지
     const visibleChannelsCount = Object.values(channels).filter((c) => c.isVisible).length;
     if (isRecording && visibleChannelsCount === 0) {
       setIsRecording(false);
-    }
-
-    // autoHideOffline 활성화 상태에서 zone 1 채널이 오프라인으로 목록 복귀해
-    // 다른 채널이 zone 1을 채운 경우 녹화 중지
-    if (
-      isRecording &&
-      autoHideOffline &&
-      prevZone1IdRef.current !== undefined &&
-      prevZone1IdRef.current !== null &&
-      prevZone1IdRef.current !== zone1Id
-    ) {
-      const prevZone1Channel = channels[prevZone1IdRef.current];
-      if (prevZone1Channel && prevZone1Channel.isLive === false && prevZone1Channel.zoneId === null) {
-        setIsRecording(false);
-      }
     }
 
     if (autoRecordEnabled) {
@@ -148,8 +133,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     }
 
     prevZone1LiveRef.current = isLive;
-    prevZone1IdRef.current = zone1Id;
-  }, [channels, autoRecordEnabled, autoHideOffline, setIsRecording, isRecording]);
+  }, [channels, autoRecordEnabled, setIsRecording, isRecording]);
 
   const handleRecordButtonClick = () => {
     setIsRecording((prev) => !prev);
@@ -247,6 +231,14 @@ export default function ControlButtonGroup({ fullscreen }) {
   }, [setChatFontSizeAdjustment]);
 
   const applyLiveStatusUpdate = useCallback((channelId, liveStatus) => {
+    // autoHideOffline에 의해 zone이 재배치되기 전에, zone 1 채널의 오프라인 전환을 감지하여 녹화를 먼저 중지
+    if (autoHideOfflineRef.current && isRecordingRef.current) {
+      const current = channelsRef.current[channelId];
+      if (current && current.isLive === true && liveStatus.isLive === false && current.zoneId === 1) {
+        setIsRecording(false);
+      }
+    }
+
     setChannels((prev) => {
       const prevChannel = prev[channelId];
       if (!prevChannel) return prev;
@@ -276,7 +268,7 @@ export default function ControlButtonGroup({ fullscreen }) {
 
       return { ...prev, [channelId]: { ...prev[channelId], ...liveStatus } };
     });
-  }, [setChannels]);
+  }, [setChannels, setIsRecording]);
 
   const handleRefresh = useCallback(async () => {
     if (refreshing) return;
