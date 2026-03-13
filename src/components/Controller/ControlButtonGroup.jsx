@@ -33,7 +33,7 @@ import {
   autoHideOfflineAtom,
   ratioAtom,
   layoutTypeAtom,
-  layoutHistoryAtom,
+  viewPresetsAtom,
   viewCountAtom,
   currentTimePositionAtom,
 } from "@/atoms/setting";
@@ -104,7 +104,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [ratio, setRatio] = useAtom(ratioAtom);
   const { selectRatio } = useLayoutManager();
   const layoutType = useAtomValue(layoutTypeAtom);
-  const [, setLayoutHistory] = useAtom(layoutHistoryAtom);
+  const [, setViewPresets] = useAtom(viewPresetsAtom);
   const viewCount = useAtomValue(viewCountAtom);
   const [currentTimePosition, setCurrentTimePosition] = useAtom(
     currentTimePositionAtom
@@ -210,11 +210,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   }, [setShowCurrentTime]);
 
   const handleToggleCurrentTimePosition = useCallback(() => {
-    setCurrentTimePosition((prev) => {
-      const nextState = prev === "left" ? "right" : "left";
-      window.localStorage.setItem("currentTimePosition", JSON.stringify(nextState));
-      return nextState;
-    });
+    setCurrentTimePosition((prev) => prev === "left" ? "right" : "left");
   }, [setCurrentTimePosition]);
 
   const handleChangePointColor = (color) => {
@@ -477,7 +473,10 @@ export default function ControlButtonGroup({ fullscreen }) {
             const targetLayout = layoutKeys[targetIndex];
             if (targetLayout !== layoutType) {
               const historyKey = `${ratio}-${viewCount}`;
-              setLayoutHistory((prev) => ({ ...prev, [historyKey]: targetLayout }));
+              setViewPresets((prev) => ({
+                ...prev,
+                [historyKey]: { ...prev[historyKey], layoutType: targetLayout },
+              }));
             }
           }
           break;
@@ -502,7 +501,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     selectRatio,
     viewCount,
     layoutType,
-    setLayoutHistory,
+    setViewPresets,
   ]);
 
   return (

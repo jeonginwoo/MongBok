@@ -8,7 +8,7 @@ import { canvas } from "@/data/canvas";
 import { useAtom, useAtomValue } from "jotai";
 import {
   layoutTypeAtom,
-  layoutHistoryAtom,
+  viewPresetsAtom,
   ratioAtom,
   viewCountAtom,
   controllerExpandedAtom,
@@ -49,7 +49,7 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup, {
 
 export default function LayoutToggleGroup({ settingsMode }) {
   const layoutType = useAtomValue(layoutTypeAtom);
-  const [, setLayoutHistory] = useAtom(layoutHistoryAtom);
+  const [, setViewPresets] = useAtom(viewPresetsAtom);
   const [ratioKey] = useAtom(ratioAtom);
   const viewCount = useAtomValue(viewCountAtom);
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
@@ -60,7 +60,10 @@ export default function LayoutToggleGroup({ settingsMode }) {
   const handleChange = (_, newType) => {
     if (newType !== null) {
       const historyKey = `${ratioKey}-${viewCount}`;
-      setLayoutHistory((prev) => ({ ...prev, [historyKey]: newType }));
+      setViewPresets((prev) => ({
+        ...prev,
+        [historyKey]: { ...prev[historyKey], layoutType: newType },
+      }));
     }
   };
 
@@ -70,8 +73,11 @@ export default function LayoutToggleGroup({ settingsMode }) {
     if (!availableLayouts || availableLayouts[layoutType]) return;
     // 현재 layoutType이 이 비율+뷰카운트에서 유효하지 않으면 layout1로 초기화
     const historyKey = `${ratioKey}-${viewCount}`;
-    setLayoutHistory((prev) => ({ ...prev, [historyKey]: Object.keys(availableLayouts)[0] }));
-  }, [ratio, orientation, ratioKey, viewCount, layoutType, setLayoutHistory]);
+    setViewPresets((prev) => ({
+      ...prev,
+      [historyKey]: { ...prev[historyKey], layoutType: Object.keys(availableLayouts)[0] },
+    }));
+  }, [ratio, orientation, ratioKey, viewCount, layoutType, setViewPresets]);
 
   const availableLayouts = canvas[ratio]?.[orientation]?.layouts?.[viewCount];
 

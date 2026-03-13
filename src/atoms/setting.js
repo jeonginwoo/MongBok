@@ -46,13 +46,6 @@ export const showCurrentTimeAtom = atomWithStorage(
   storage
 );
 
-// 현재 시간 위치
-export const currentTimePositionAtom = atomWithStorage(
-  "currentTimePosition",
-  "left",
-  storage
-);
-
 // 자동 녹화 on/off
 export const autoRecordEnabledAtom = atomWithStorage(
   "autoRecordEnabled",
@@ -102,18 +95,41 @@ export const viewCountAtom = atom((get) => {
   return Object.values(channels).filter((c) => c.isVisible).length;
 });
 
-// 비율+뷰카운트별 마지막 선택 레이아웃 히스토리 (설정 동기화 제외)
-export const layoutHistoryAtom = atomWithStorage("layoutHistory", {}, storage);
+// 비율+뷰카운트별 뷰 프리셋 (레이아웃 + 시간 위치 등)
+export const viewPresetsAtom = atomWithStorage("viewPresets", {}, storage);
 
-// layoutType (비율+뷰카운트별 히스토리에서 파생)
+// layoutType (비율+뷰카운트별 프리셋에서 파생)
 export const layoutTypeAtom = atom((get) => {
-  const history = get(layoutHistoryAtom);
+  const presets = get(viewPresetsAtom);
   const ratioKey = get(ratioAtom);
   const viewCount = get(viewCountAtom);
   if (viewCount === 0) return "layout1";
-  const historyKey = `${ratioKey}-${viewCount}`;
-  return history[historyKey] ?? "layout1";
+  const key = `${ratioKey}-${viewCount}`;
+  return presets[key]?.layoutType ?? "layout1";
 });
+
+// 현재 시간 위치 (비율+뷰카운트별 프리셋에서 파생)
+export const currentTimePositionAtom = atom(
+  (get) => {
+    const presets = get(viewPresetsAtom);
+    const ratioKey = get(ratioAtom);
+    const viewCount = get(viewCountAtom);
+    const key = `${ratioKey}-${viewCount}`;
+    return presets[key]?.currentTimePosition ?? "left";
+  },
+  (get, set, update) => {
+    const ratioKey = get(ratioAtom);
+    const viewCount = get(viewCountAtom);
+    const key = `${ratioKey}-${viewCount}`;
+    const presets = get(viewPresetsAtom);
+    const current = presets[key]?.currentTimePosition ?? "left";
+    const newValue = typeof update === "function" ? update(current) : update;
+    set(viewPresetsAtom, {
+      ...presets,
+      [key]: { ...presets[key], currentTimePosition: newValue },
+    });
+  }
+);
 
 // Viewer 채널 수에 따른 레이아웃
 export const layoutAtom = atom((get) => {

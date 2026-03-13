@@ -434,7 +434,6 @@ export default function SettingsArea({ onClose }) {
   const handleChangeCurrentTimePosition = (event, newPosition) => {
     if (newPosition !== null) {
       setCurrentTimePosition(newPosition);
-      window.localStorage.setItem("currentTimePosition", JSON.stringify(newPosition));
     }
   };
 

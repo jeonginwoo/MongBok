@@ -396,6 +396,7 @@ export const validatePreferences = async (dataToValidate) => {
 export const applyPreferences = (parsedData) => {
   // 먼저 모든 허용된 키를 로컬 스토리지에서 삭제합니다.
   ALLOWED_KEYS.forEach((key) => window.localStorage.removeItem(key));
+  window.localStorage.removeItem("viewPresets");
 
   updatePreferences(parsedData);
 };
@@ -415,7 +416,7 @@ export const updatePreferences = (parsedData) => {
       } catch (e) {}
     }
 
-    // "layout" 키는 layoutHistory의 현재 비율+뷰카운트 슬롯에 저장
+    // "layout" 키는 viewPresets의 현재 비율+뷰카운트 슬롯에 저장
     if (key === "layout") {
       let ratio = parsedData.ratio;
       if (!ratio) {
@@ -430,10 +431,33 @@ export const updatePreferences = (parsedData) => {
         : 0;
       if (ratio) {
         const historyKey = `${ratio}-${viewCount}`;
-        let history = {};
-        try { history = JSON.parse(window.localStorage.getItem("layoutHistory")) || {}; } catch {}
-        history[historyKey] = value;
-        window.localStorage.setItem("layoutHistory", JSON.stringify(history));
+        let presets = {};
+        try { presets = JSON.parse(window.localStorage.getItem("viewPresets")) || {}; } catch {}
+        presets[historyKey] = { ...presets[historyKey], layoutType: value };
+        window.localStorage.setItem("viewPresets", JSON.stringify(presets));
+      }
+      continue;
+    }
+
+    // "currentTimePosition" 키는 viewPresets의 현재 비율+뷰카운트 슬롯에 저장
+    if (key === "currentTimePosition") {
+      let ratio = parsedData.ratio;
+      if (!ratio) {
+        try { ratio = JSON.parse(window.localStorage.getItem("ratio")); } catch {}
+      }
+      let channelsData = parsedData.channels;
+      if (!channelsData) {
+        try { channelsData = JSON.parse(window.localStorage.getItem("channels")); } catch {}
+      }
+      const viewCount = channelsData && typeof channelsData === "object"
+        ? Object.values(channelsData).filter((ch) => ch.zoneId !== null).length
+        : 0;
+      if (ratio) {
+        const historyKey = `${ratio}-${viewCount}`;
+        let presets = {};
+        try { presets = JSON.parse(window.localStorage.getItem("viewPresets")) || {}; } catch {}
+        presets[historyKey] = { ...presets[historyKey], currentTimePosition: value };
+        window.localStorage.setItem("viewPresets", JSON.stringify(presets));
       }
       continue;
     }
