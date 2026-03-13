@@ -12,4 +12,6 @@ export const isRecordingAtom = atom(false);
 
 export const isDraggingAtom = atom(false);
 
+export const isSavingRecordingAtom = atom(false);
+
 export const settingsOpenAtom = atom(false);

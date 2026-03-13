@@ -1,6 +1,6 @@
 import { useRef, useEffect } from "react";
-import { useAtom, useAtomValue } from "jotai";
-import { isRecordingAtom } from "@/atoms/ui";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { isRecordingAtom, isSavingRecordingAtom } from "@/atoms/ui";
 import { recordQualityAtom, recordFrameRateAtom, recordCodecAtom, recordSoundEnabledAtom, recordSoundTypeAtom, recordSoundVolumeAtom, recordSaveDirHandleAtom } from "@/atoms/setting";
 import { playNotificationSound } from "@/utils/audio";
 import { getRecordDirectory } from "@/utils/recordDirectoryStorage";
@@ -15,12 +15,25 @@ export const useScreenRecorder = () => {
   const recordSoundType = useAtomValue(recordSoundTypeAtom);
   const recordSoundVolume = useAtomValue(recordSoundVolumeAtom);
   const [recordSaveDirHandle, setRecordSaveDirHandle] = useAtom(recordSaveDirHandleAtom);
+  const setIsSavingRecording = useSetAtom(isSavingRecordingAtom);
+  const originalTitleRef = useRef(document.title);
   const mediaRecorderRef = useRef(null);
   const streamRef = useRef(null);
   const chunksRef = useRef([]);
   const writableStreamRef = useRef(null); // File System Access API: 디스크 직접 스트리밍용
   const contentRef = useRef(null);
   const latestIsRecordingRef = useRef(isRecording);
+
+  // .crswap 파일이 존재하는 동안 브라우저 종료 경고
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (writableStreamRef.current) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
 
   useEffect(() => {
     latestIsRecordingRef.current = isRecording;
@@ -36,8 +49,9 @@ export const useScreenRecorder = () => {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
       if (writableStreamRef.current) {
-        writableStreamRef.current.close().catch(() => {});
-        writableStreamRef.current = null;
+        writableStreamRef.current.close().catch(() => {}).finally(() => {
+          writableStreamRef.current = null;
+        });
       }
     };
   }, []);
@@ -222,13 +236,18 @@ export const useScreenRecorder = () => {
 
         const stopRecording = async () => {
           if (writableStreamRef.current) {
-            // File System Access API: 스트림 닫으면 파일이 완성됨
+            // File System Access API: 스트림 닫으면 파일이 완성됨 (.crswap → .webm)
+            setIsSavingRecording(true);
+            originalTitleRef.current = document.title;
+            document.title = "⚠️ 녹화 저장 중... 브라우저를 닫지 마세요";
             try {
               await writableStreamRef.current.close();
             } catch (e) {
               console.error("파일 스트림 닫기 오류:", e);
             }
             writableStreamRef.current = null;
+            setIsSavingRecording(false);
+            document.title = originalTitleRef.current;
           } else {
             // 폴백: 메모리 Blob → 다운로드
             const blob = new Blob(chunksRef.current, { type: mimeType });
