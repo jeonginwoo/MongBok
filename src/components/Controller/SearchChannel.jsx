@@ -19,7 +19,7 @@ import AddIcon from "@mui/icons-material/Add";
 import AppsIcon from "@mui/icons-material/Apps";
 import SearchChannelInfo from "@/components/Info/ChannelInfo/SearchChannelInfo";
 import { searchChannels } from "@/api/search";
-import { updatePreferences, validateChannels } from "@/utils/preferences";
+import { updatePreferences } from "@/utils/preferences";
 import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE } from "@/data/config";
 
 import { useAtom, useSetAtom } from "jotai";
@@ -243,14 +243,8 @@ export default function SearchChannel() {
         ])
       );
 
-      // 유효성 검사 후 저장
-      validateChannels(channelsToSave).then((result) => {
-        if (result === true) {
-          updatePreferences({ channels: channelsToSave });
-        } else {
-          console.error("채널 데이터 유효성 검사 실패:", result);
-        }
-      });
+      // 검색 결과에서 추가하는 것이므로 즉시 저장 (채팅 서버 상태와 무관하게 동작)
+      updatePreferences({ channels: channelsToSave });
 
       return updated;
     });

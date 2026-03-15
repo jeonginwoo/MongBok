@@ -1,6 +1,6 @@
 import React from "react";
 import dayjs from "dayjs";
-import { Box, Typography, Tooltip } from "@mui/material";
+import { Box, Typography, Tooltip, Skeleton } from "@mui/material";
 import { PLATFORM_COLORS } from "@/data/color";
 
 import LiveCategory from "@/components/Info/LiveCategory";
@@ -17,6 +17,42 @@ export default function ChannelInfo({ channel, isDragging = false }) {
   if (!channel) return null;
 
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
+
+  if (channel._loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          width: "100%",
+          height: "100%",
+          boxSizing: "border-box",
+        }}
+      >
+        <Skeleton
+          variant="circular"
+          width={54}
+          height={54}
+          sx={{ flexShrink: 0, bgcolor: "background.level5" }}
+        />
+        {controllerExpanded && (
+          <Box sx={{ width: "100%", marginRight: "0.5rem" }}>
+            <Skeleton
+              variant="text"
+              width="60%"
+              sx={{ fontSize: "1.4rem", bgcolor: "background.level5" }}
+            />
+            <Skeleton
+              variant="text"
+              width="40%"
+              sx={{ fontSize: "1.2rem", bgcolor: "background.level5" }}
+            />
+          </Box>
+        )}
+      </Box>
+    );
+  }
 
   const inactiveStyle = !channel.isLive
     ? { filter: "grayscale(100%) brightness(0.7)" }
