@@ -33,6 +33,10 @@ export const metadata = {
     description: '여러 플랫폼의 방송을 한 화면에서 동시에 시청할 수 있는 멀티 스트림, 멀티 뷰어 서비스입니다.',
     images: ['/og-image.svg'],
   },
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({ children }) {
