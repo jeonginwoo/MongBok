@@ -33,7 +33,7 @@ if (ENABLE_YOUTUBE) enabledPlatforms.push("youtube");
 
 const platformLogos = {
   chzzk: "/chzzk/chzzk_logo.png",
-  soop: "/soop/soop_logo.jpeg",
+  soop: "/soop/soop_logo.png",
   youtube: "/youtube/youtube_logo.png",
 };
 
@@ -384,6 +384,7 @@ export default function SearchChannel() {
                 position: "relative",
                 borderRadius: "50%",
                 overflow: "hidden",
+                backgroundColor: "background.level3",
               }}
             >
               <Image
@@ -419,9 +420,9 @@ export default function SearchChannel() {
             position: "absolute",
             top: "4.8rem",
             right: 0,
-            ...(selectedPlatform && { left: 0 }),
+            left: 0,
+            ...(!selectedPlatform && { width: { md: "78.8rem" }, left: { xs: 0, sm: 0, md: "auto" } }),
             zIndex: 1000,
-            overflowX: "auto",
             backgroundColor: "background.level1",
             padding: "1.0rem",
             borderRadius: "0.6rem",
@@ -538,8 +539,7 @@ export default function SearchChannel() {
               gap: 2,
               maxHeight: { xs: "50rem", sm: "50rem", md: "none" },
               overflowY: { xs: "auto", sm: "auto", md: "visible" },
-              overflowX: { xs: "visible", sm: "visible", md: "auto" },
-              justifyContent: "stretch",
+              ...(!selectedPlatform && { marginRight: { xs: "-0.4rem", sm: "-0.4rem", md: 0 } }),
             }}
           >
             {enabledPlatforms.map((platform) => {
@@ -552,9 +552,9 @@ export default function SearchChannel() {
                 <Box
                   key={platform}
                   sx={{
-                    flex: { xs: "0 0 auto", sm: "0 0 auto", md: "1" },
-                    width: { xs: "100%", sm: "100%", md: "auto" },
-                    minWidth: { md: "22.0rem" },
+                    flex: { xs: "0 0 auto", md: "1" },
+                    width: { xs: "100%", md: "auto" },
+                    minWidth: { md: "22rem" },
                     backgroundColor: "background.level2",
                     borderRadius: "0.6rem",
                     padding: "0.8rem",
