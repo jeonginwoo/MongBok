@@ -54,6 +54,9 @@ export default function ChannelList() {
 
   const sortedHidden = React.useMemo(() => {
     return [...hidden].sort((a, b) => {
+      if (!!a._loading !== !!b._loading) {
+        return a._loading ? 1 : -1;
+      }
       if ((b.userCount ?? 0) !== (a.userCount ?? 0)) {
         return (b.userCount ?? 0) - (a.userCount ?? 0);
       }
