@@ -456,7 +456,14 @@ export const updatePreferences = (parsedData) => {
         const historyKey = `${ratio}-${viewCount}`;
         let presets = {};
         try { presets = JSON.parse(window.localStorage.getItem("viewPresets")) || {}; } catch {}
-        presets[historyKey] = { ...presets[historyKey], currentTimePosition: value };
+        const layoutType = presets[historyKey]?.layoutType ?? "layout1";
+        presets[historyKey] = {
+          ...presets[historyKey],
+          currentTimePosition: {
+            ...(presets[historyKey]?.currentTimePosition || {}),
+            [layoutType]: value,
+          },
+        };
         window.localStorage.setItem("viewPresets", JSON.stringify(presets));
       }
       continue;

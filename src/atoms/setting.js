@@ -165,18 +165,26 @@ export const currentTimePositionAtom = atom(
     const ratioKey = get(ratioAtom);
     const viewCount = get(viewCountAtom);
     const key = `${ratioKey}-${viewCount}`;
-    return presets[key]?.currentTimePosition ?? "left";
+    const layoutType = presets[key]?.layoutType ?? "layout1";
+    return presets[key]?.currentTimePosition?.[layoutType] ?? "right";
   },
   (get, set, update) => {
     const ratioKey = get(ratioAtom);
     const viewCount = get(viewCountAtom);
     const key = `${ratioKey}-${viewCount}`;
     const presets = get(viewPresetsAtom);
-    const current = presets[key]?.currentTimePosition ?? "left";
+    const layoutType = presets[key]?.layoutType ?? "layout1";
+    const current = presets[key]?.currentTimePosition?.[layoutType] ?? "left";
     const newValue = typeof update === "function" ? update(current) : update;
     set(viewPresetsAtom, {
       ...presets,
-      [key]: { ...presets[key], currentTimePosition: newValue },
+      [key]: {
+        ...presets[key],
+        currentTimePosition: {
+          ...(presets[key]?.currentTimePosition || {}),
+          [layoutType]: newValue,
+        },
+      },
     });
   }
 );
