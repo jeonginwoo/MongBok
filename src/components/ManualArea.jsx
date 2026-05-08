@@ -288,6 +288,16 @@ export default function ManualArea() {
           </Typography>
         </Section>
 
+        <Typography
+          sx={{
+            textAlign: "center",
+            color: "text.disabled",
+            fontSize: "1.1rem",
+            mt: 6,
+          }}
+        >
+          v1.0.0
+        </Typography>
       </Box>
     </Box>
   );

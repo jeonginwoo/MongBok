@@ -85,7 +85,7 @@ export const ratioAtom = atomWithStorage("ratio", "16:9-landscape", storage);
 // 화면 조작/이동
 export const pointerEventsEnabledAtom = atomWithStorage(
   "pointerEventsEnabled",
-  false,
+  true,
   storage
 );
 

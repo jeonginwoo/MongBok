@@ -20,10 +20,10 @@ export default function ChatView({ chatList, layoutKey }) {
   const theme = useTheme();
 
   const handleScroll = useCallback(() => {
-    if (!scrollRef.current || autoScrollingRef.current) return;
+    if (!scrollRef.current || autoScrollingRef.current || layoutChangingRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-    const isAtBottom = distanceFromBottom < 2;
+    const isAtBottom = distanceFromBottom < 5; // 약간의 여유 허용
     
     isAutoScrollEnabledRef.current = isAtBottom;
     
@@ -42,7 +42,7 @@ export default function ChatView({ chatList, layoutKey }) {
     setShowScrollToBottomButton(false);
     setTimeout(() => {
       autoScrollingRef.current = false;
-    }, 50);
+    }, 100);
   }, []);
 
   useLayoutEffect(() => {
@@ -50,10 +50,12 @@ export default function ChatView({ chatList, layoutKey }) {
     if (scrollEl && isAutoScrollEnabledRef.current) {
       scrollEl.scrollTop = scrollEl.scrollHeight;
       
-      autoScrollingRef.current = true;
-      requestAnimationFrame(() => {
-        autoScrollingRef.current = false;
-      });
+      if (!layoutChangingRef.current) {
+        autoScrollingRef.current = true;
+        requestAnimationFrame(() => {
+          autoScrollingRef.current = false;
+        });
+      }
       
     } else if (scrollEl && !isAutoScrollEnabledRef.current && !layoutChangingRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = scrollEl;
@@ -73,32 +75,42 @@ export default function ChatView({ chatList, layoutKey }) {
       
       isAutoScrollEnabledRef.current = true;
       
-      requestAnimationFrame(() => {
-        if (scrollEl) {
-          scrollEl.scrollTop = scrollEl.scrollHeight;
-        }
-      });
+      // 즉시 스크롤
+      scrollEl.scrollTop = scrollEl.scrollHeight;
       
-      const resizeObserver = new ResizeObserver(() => {
-        if (layoutChangingRef.current && scrollEl) {
-          scrollEl.scrollTop = scrollEl.scrollHeight;
-        }
-      });
-      
-      resizeObserver.observe(scrollEl);
-      
+      // 애니메이션 도중 여러 번 스크롤 시도 (0.25s 애니메이션 대응)
+      const scrollInterval = setInterval(() => {
+        if (scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
+      }, 50);
+
       const timer = setTimeout(() => {
         layoutChangingRef.current = false;
         autoScrollingRef.current = false;
-        resizeObserver.disconnect();
+        clearInterval(scrollInterval);
+        if (scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
       }, 600);
       
       return () => {
         clearTimeout(timer);
-        resizeObserver.disconnect();
+        clearInterval(scrollInterval);
       };
     }
   }, [layoutKey]);
+
+  // 컨테이너 크기 변경 감지 (윈도우 리사이즈 등)
+  useLayoutEffect(() => {
+    const scrollEl = scrollRef.current;
+    if (!scrollEl) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (isAutoScrollEnabledRef.current || layoutChangingRef.current) {
+        scrollEl.scrollTop = scrollEl.scrollHeight;
+      }
+    });
+
+    resizeObserver.observe(scrollEl);
+    return () => resizeObserver.disconnect();
+  }, []);
 
   // Maintain bottom-anchored scroll position when content height changes (e.g. font size change)
   useLayoutEffect(() => {
