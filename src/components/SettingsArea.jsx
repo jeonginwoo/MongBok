@@ -568,17 +568,15 @@ export default function SettingsArea({ onClose }) {
         </SettingRow>
 
         {/* 레이아웃 */}
-        {layoutKeys.length > 0 && (
-          <SettingRow>
-            <SettingLabel sx={{ whiteSpace: "nowrap" }}>
-              레이아웃{" "}
-              <HotkeySpan component="span" pointcolor={pointColor}>(1, 2, ...)</HotkeySpan>
-            </SettingLabel>
-            <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-              <LayoutToggleGroup settingsMode />
-            </Box>
-          </SettingRow>
-        )}
+        <SettingRow>
+          <SettingLabel sx={{ whiteSpace: "nowrap" }}>
+            레이아웃{" "}
+            <HotkeySpan component="span" pointcolor={pointColor}>(1, 2, ...)</HotkeySpan>
+          </SettingLabel>
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            <LayoutToggleGroup settingsMode />
+          </Box>
+        </SettingRow>
 
         {/* 현재 시간 표시 */}
         <SettingRow>
@@ -597,12 +595,13 @@ export default function SettingsArea({ onClose }) {
               <HotkeySpan component="span" pointcolor={pointColor}>(P)</HotkeySpan>
             </SettingLabel>
             <SettingToggleGroup
-              value={currentTimePosition}
+              value={viewCount === 0 ? null : currentTimePosition}
               exclusive
               onChange={handleChangeCurrentTimePosition}
               aria-label="current time position"
               pointcolor={pointColor}
               size="small"
+              disabled={viewCount === 0}
             >
               <ToggleButton value="left" aria-label="left" sx={{ minWidth: '35px' }}>
                 <SmallText>L</SmallText>
@@ -625,7 +624,7 @@ export default function SettingsArea({ onClose }) {
               title={
                 <Box component="ul" sx={{ pl: 2, m: 0 }}>
                   <li>화면 이동 모드: 패널을 드래그해 자유롭게 위치 조정</li>
-                  <li>화면 조작 모드: 영상 플레이어를 직접 클릭·조작</li>
+                  <li>화면 조작 모드: 영상 플레이어를 직접 클릭·조작, 채팅창 스크롤</li>
                 </Box>
               }
             >

@@ -34,6 +34,11 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup, {
       borderRadius: "0.4rem !important",
       color: accentColor,
 
+      "&.Mui-disabled": {
+        borderColor: `${theme.palette.action.disabledBackground} !important`,
+        color: `${theme.palette.action.disabled} !important`,
+      },
+
       "&.Mui-selected": {
         backgroundColor: accentColor,
         color: "#fff",
@@ -58,7 +63,7 @@ export default function LayoutToggleGroup({ settingsMode }) {
   const [ratio, orientation] = ratioKey.split("-");
 
   const handleChange = (_, newType) => {
-    if (newType !== null) {
+    if (newType !== null && viewCount > 0) {
       const historyKey = `${ratioKey}-${viewCount}`;
       setViewPresets((prev) => ({
         ...prev,
@@ -79,7 +84,7 @@ export default function LayoutToggleGroup({ settingsMode }) {
     }));
   }, [ratio, orientation, ratioKey, viewCount, layoutType, setViewPresets]);
 
-  const availableLayouts = canvas[ratio]?.[orientation]?.layouts?.[viewCount];
+  const availableLayouts = canvas[ratio]?.[orientation]?.layouts?.[viewCount || 1];
 
   return (
     (controllerExpanded || settingsMode) && (
@@ -91,6 +96,7 @@ export default function LayoutToggleGroup({ settingsMode }) {
             onChange={handleChange}
             aria-label="layout selection"
             pointcolor={pointColor}
+            disabled={viewCount === 0}
           >
             {Object.keys(availableLayouts).map((key, index) => (
               <ToggleButton

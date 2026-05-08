@@ -429,7 +429,7 @@ export const updatePreferences = (parsedData) => {
       const viewCount = channelsData && typeof channelsData === "object"
         ? Object.values(channelsData).filter((ch) => ch.zoneId !== null).length
         : 0;
-      if (ratio) {
+      if (ratio && viewCount > 0) {
         const historyKey = `${ratio}-${viewCount}`;
         let presets = {};
         try { presets = JSON.parse(window.localStorage.getItem("viewPresets")) || {}; } catch {}
@@ -452,7 +452,7 @@ export const updatePreferences = (parsedData) => {
       const viewCount = channelsData && typeof channelsData === "object"
         ? Object.values(channelsData).filter((ch) => ch.zoneId !== null).length
         : 0;
-      if (ratio) {
+      if (ratio && viewCount > 0) {
         const historyKey = `${ratio}-${viewCount}`;
         let presets = {};
         try { presets = JSON.parse(window.localStorage.getItem("viewPresets")) || {}; } catch {}

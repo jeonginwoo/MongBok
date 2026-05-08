@@ -103,7 +103,7 @@ export default function ManualArea() {
             primary="채널 검색"
             secondary={[
               "우측 컨트롤러 상단의 검색창에서 원하는 채널을 검색할 수 있습니다.",
-              "검색어 입력 후 Enter를 누르거나, 0.5초 동안 입력이 없으면 자동으로 검색됩니다.",
+              "검색어 입력 후 Enter를 누르거나 0.5초 동안 입력이 없으면 자동으로 검색됩니다.",
               "검색 결과는 각 플랫폼에서 상위 5개가 출력됩니다.",
             ]}
           />
@@ -117,7 +117,7 @@ export default function ManualArea() {
             primary="채널 삭제"
             secondary={[
               "채널 목록에서 각 채널에 마우스를 올리면 나타나는 휴지통 아이콘을 클릭하여 삭제할 수 있습니다.",
-              "모바일에서는 해당 위치를 클릭하면 됩니다.",
+              "모바일에서는 해당 위치를 터치하면 됩니다.",
             ]}
           />
           <Item
@@ -126,7 +126,7 @@ export default function ManualArea() {
             secondary={[
               "목록의 채널을 클릭하면 화면에 배치됩니다.",
               "배치된 채널은 드래그하여 순서를 변경할 수 있고, 다시 클릭하면 목록으로 돌아갑니다.",
-              "목록에 대기 중인 채널은 시청자순 → 채널명순으로 자동 정렬됩니다.",
+              "목록에 대기 중인 채널은 시청자순(1순위), 채널명순(2순위)으로 자동 정렬됩니다.",
             ]}
           />
           <Item
@@ -135,6 +135,7 @@ export default function ManualArea() {
             secondary={[
               "검색 상위 5개에 없는 채널은 설정 > 설정 동기화에서 직접 추가할 수 있습니다.",
               '채널 목록에 추가할 항목을 channels 항목에 "채널ID": { "platform": "플랫폼명" } 형식으로 입력하면 됩니다.',
+              "채널ID는 각 채널의 URL에서 확인할 수 있습니다(유튜브 제외). 유튜브 채널ID 확인 방법은... 여러가지 있습니다.",
               "플랫폼명은 chzzk / soop / youtube 중 하나입니다.",
             ]}
           />
@@ -257,9 +258,7 @@ export default function ManualArea() {
         {/* YouTube 채팅 서버 */}
         <Section title="YouTube 채팅 서버">
           <Typography sx={{ fontSize: "1.25rem", color: "text.secondary", lineHeight: 1.65, mb: 2.5 }}>
-            유튜브 채팅을 표시하려면 로컬에서 채팅 서버를 실행해야 합니다.
-            Node.js 없이 바로 실행할 수 있습니다.
-            서버 실행 후 포트 <strong>47200</strong>에서 WebSocket을 수신합니다.
+            유튜브 채팅을 표시하려면 로컬에서 채팅 서버를 실행해야 합니다. 아래 버튼으로 운영체제에 맞는 서버 실행 파일을 다운로드할 수 있습니다.
           </Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, mb: 2 }}>
             {[

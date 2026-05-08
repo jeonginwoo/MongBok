@@ -18,6 +18,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { List, ListItem, Divider, Box } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ChannelInfo from "@/components/Info/ChannelInfo/ChannelListChannelInfo";
 
@@ -335,7 +336,8 @@ function HiddenItem({ channel, onToggle, onDelete }) {
         opacity: 1,
         cursor: "pointer",
         "&:hover": {
-          borderColor: "border.hover",
+          backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
+          borderColor: (theme) => alpha(theme.palette.primary.main, 0.1),
           "& .delete-icon": {
             opacity: 0.5,
           },

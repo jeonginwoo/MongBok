@@ -171,6 +171,8 @@ export const currentTimePositionAtom = atom(
   (get, set, update) => {
     const ratioKey = get(ratioAtom);
     const viewCount = get(viewCountAtom);
+    if (viewCount === 0) return;
+
     const key = `${ratioKey}-${viewCount}`;
     const presets = get(viewPresetsAtom);
     const layoutType = presets[key]?.layoutType ?? "layout1";
