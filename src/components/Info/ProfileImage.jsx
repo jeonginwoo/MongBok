@@ -16,6 +16,7 @@ export default function ProfileImage({
         height: imgSize + borderSize,
         borderRadius: "50%",
         flexShrink: 0,
+        userSelect: "none",
         background:
           isBoardered || channel.isLive
             ? theme.palette.platform[channel.platform].profile
@@ -43,8 +44,11 @@ export default function ProfileImage({
           }
           alt={`${channel.name || "channel"} profile`}
           fill
+          draggable={false}
           style={{
             objectFit: "cover",
+            userSelect: "none",
+            WebkitUserDrag: "none",
           }}
         />
       </Box>

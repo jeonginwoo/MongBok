@@ -296,7 +296,7 @@ export default function ManualArea() {
             mt: 6,
           }}
         >
-          v1.0.0
+          v1.0.1
         </Typography>
       </Box>
     </Box>

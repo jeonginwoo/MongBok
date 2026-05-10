@@ -28,13 +28,14 @@ export default function ChannelInfo({ channel, isDragging = false }) {
           width: "100%",
           height: "100%",
           boxSizing: "border-box",
+          userSelect: "none",
         }}
       >
         <Skeleton
           variant="circular"
           width={54}
           height={54}
-          sx={{ flexShrink: 0, bgcolor: "background.level5" }}
+          sx={{ flexShrink: 0, bgcolor: "background.level5", userSelect: "none" }}
         />
         {controllerExpanded && (
           <Box sx={{ width: "100%", marginRight: "0.5rem" }}>
@@ -125,6 +126,7 @@ export default function ChannelInfo({ channel, isDragging = false }) {
           boxSizing: "border-box",
           border: "none",
           transition: "filter 0.3s ease",
+          userSelect: "none",
           ...inactiveStyle,
         }}
       >
