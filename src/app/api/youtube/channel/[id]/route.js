@@ -62,16 +62,16 @@ export async function GET(request, context) {
 
     // 라이브 영상의 시청자 수 텍스트에서 숫자 추출 헬퍼
     const extractViewerCount = (video) => {
-      // view_count가 숫자인 경우
       if (typeof video.view_count === 'number') {
         return { isLive: true, count: video.view_count };
       }
 
-      // 텍스트 소스 후보 목록
       const textSources = [
         typeof video.view_count === 'string' ? video.view_count : video.view_count?.text,
         video.viewers?.text,
         video.short_view_count_text?.text,
+        video.metadata?.metadata?.metadata_rows?.[0]?.metadata_parts?.[0]?.text?.text,
+        video.metadata?.metadata?.[0]?.metadata_rows?.[0]?.metadata_items?.[0]?.text?.text,
       ];
 
       for (const text of textSources) {
@@ -89,21 +89,56 @@ export async function GET(request, context) {
           return { isLive: true, count: 0 };
         }
         if (lower.includes('views')) {
-          // 전체 조회수 = 라이브 아님
           return { isLive: false, count: 0 };
         }
       }
+
+      if (video.is_live) {
+        return { isLive: true, count: 0 };
+      }
+
       return { isLive: false, count: 0 };
     };
 
     const livePage = await raceTimeout(channel.getLiveStreams().catch(() => null), 10000);
 
-    if (livePage?.videos?.length > 0) {
+    if (livePage) {
       // 전체 라이브 목록에서 현재 라이브 중인 영상 중 시청자 수가 가장 많은 것 선택
       let bestLive = null;
       let bestCount = -1;
 
-      for (const video of livePage.videos) {
+      // youtubei.js 16.0.1+ 구조 대응 (current_tab.content.contents)
+      const contents = livePage.current_tab?.content?.contents || livePage.current_tab?.content?.videos || livePage.videos || [];
+
+      for (const item of contents) {
+        let video = null;
+        let isLiveBadge = false;
+
+        // RichItem(LockupView) 또는 Video 객체 추출
+        if (item.type === 'RichItem' && item.content) {
+          const c = item.content;
+          if (c.type === 'LockupView') {
+            const liveText =
+              c.metadata?.metadata?.metadata_rows?.[0]?.metadata_parts?.[0]?.text?.text ||
+              c.metadata?.metadata?.[0]?.metadata_rows?.[0]?.metadata_items?.[0]?.text?.text;
+            video = {
+              id: c.content_id,
+              title: { text: c.metadata?.title?.text },
+              is_live: c.content_image?.overlays?.some((o) =>
+                o.badges?.some((b) => b.text === 'LIVE' || b.badge_style?.includes('LIVE'))
+              ),
+              view_count: liveText,
+            };
+          }
+ else {
+            video = c;
+          }
+        } else {
+          video = item;
+        }
+
+        if (!video || (!video.id && !video.videoId)) continue;
+
         const { isLive: currentlyLive, count } = extractViewerCount(video);
         if (currentlyLive && count > bestCount) {
           bestCount = count;
@@ -115,25 +150,30 @@ export async function GET(request, context) {
         isLive = true;
         viewerCount = bestCount;
         liveTitle = bestLive.title?.text || "";
+        const videoId = bestLive.id || bestLive.videoId;
 
         // getInfo()로 정확한 시작 시간 가져오기 (5초 타임아웃, 실패해도 liveVideo는 유지)
         const infoForStart = await raceTimeout(
-          youtube.getInfo(bestLive.id).catch(() => null),
+          youtube.getInfo(videoId).catch(() => null),
           5000
         );
         startTime = infoForStart ? parseTimestamp(infoForStart.basic_info?.start_timestamp) : null;
 
         liveVideo = {
           title: liveTitle,
-          id: bestLive.id,
+          id: videoId,
           views: viewerCount,
           startTime,
         };
       }
 
       // 라이브 중이 아닐 때 마지막 완료된 라이브 정보 조회
-      if (!isLive) {
-        const completedCandidates = livePage.videos.filter((v) => {
+      if (!isLive && contents.length > 0) {
+        const completedCandidates = contents.map(item => {
+          if (item.type === 'RichItem' && item.content) return item.content;
+          return item;
+        }).filter((v) => {
+          if (!v) return false;
           const textSources = [
             typeof v.view_count === 'string' ? v.view_count : v.view_count?.text,
             v.viewers?.text,
@@ -142,10 +182,13 @@ export async function GET(request, context) {
           return textSources.some((t) => t && t.toLowerCase().includes('views'));
         });
 
-        const candidate = completedCandidates[0] ?? livePage.videos[0];
-        if (candidate?.id) {
+        const firstItem = contents[0]?.type === 'RichItem' ? contents[0].content : contents[0];
+        const candidate = completedCandidates[0] ?? firstItem;
+        const candidateId = candidate?.id || candidate?.content_id || candidate?.videoId;
+        
+        if (candidateId) {
           const infoForLast = await raceTimeout(
-            youtube.getInfo(candidate.id).catch(() => null),
+            youtube.getInfo(candidateId).catch(() => null),
             5000
           );
           if (infoForLast) {

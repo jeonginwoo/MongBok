@@ -154,6 +154,8 @@ app.get('/channel/:channelId', async (req, res) => {
         typeof video.view_count === 'string' ? video.view_count : video.view_count?.text,
         video.viewers?.text,
         video.short_view_count_text?.text,
+        video.metadata?.metadata?.metadata_rows?.[0]?.metadata_parts?.[0]?.text?.text,
+        video.metadata?.metadata?.[0]?.metadata_rows?.[0]?.metadata_items?.[0]?.text?.text,
       ];
       for (const text of textSources) {
         if (!text) continue;
@@ -171,16 +173,46 @@ app.get('/channel/:channelId', async (req, res) => {
         }
         if (lower.includes('views')) return { isLive: false, count: 0 };
       }
+      if (video.is_live) return { isLive: true, count: 0 };
       return { isLive: false, count: 0 };
     };
 
     const livePage = await raceTimeout(channel.getLiveStreams().catch(() => null), 10000);
 
-    if (livePage?.videos?.length > 0) {
+    if (livePage) {
       let bestLive = null;
       let bestCount = -1;
 
-      for (const video of livePage.videos) {
+      // youtubei.js 16.0.1+ 구조 대응
+      const contents = livePage.current_tab?.content?.contents || livePage.current_tab?.content?.videos || livePage.videos || [];
+
+      for (const item of contents) {
+        let video = null;
+
+        if (item.type === 'RichItem' && item.content) {
+          const c = item.content;
+          if (c.type === 'LockupView') {
+            const liveText =
+              c.metadata?.metadata?.metadata_rows?.[0]?.metadata_parts?.[0]?.text?.text ||
+              c.metadata?.metadata?.[0]?.metadata_rows?.[0]?.metadata_items?.[0]?.text?.text;
+            video = {
+              id: c.content_id,
+              title: { text: c.metadata?.title?.text },
+              is_live: c.content_image?.overlays?.some((o) =>
+                o.badges?.some((b) => b.text === 'LIVE' || b.badge_style?.includes('LIVE'))
+              ),
+              view_count: liveText,
+            };
+          }
+ else {
+            video = c;
+          }
+        } else {
+          video = item;
+        }
+
+        if (!video || (!video.id && !video.videoId)) continue;
+
         const { isLive: currentlyLive, count } = extractViewerCount(video);
         if (currentlyLive && count > bestCount) {
           bestCount = count;
@@ -192,18 +224,23 @@ app.get('/channel/:channelId', async (req, res) => {
         isLive = true;
         viewerCount = bestCount;
         liveTitle = bestLive.title?.text || '';
+        const videoId = bestLive.id || bestLive.videoId;
 
         const infoForStart = await raceTimeout(
-          youtube.getInfo(bestLive.id).catch(() => null),
+          youtube.getInfo(videoId).catch(() => null),
           5000
         );
         startTime = infoForStart ? parseTimestamp(infoForStart.basic_info?.start_timestamp) : null;
 
-        liveVideo = { title: liveTitle, id: bestLive.id, views: viewerCount, startTime };
+        liveVideo = { title: liveTitle, id: videoId, views: viewerCount, startTime };
       }
 
-      if (!isLive) {
-        const completedCandidates = livePage.videos.filter((v) => {
+      if (!isLive && contents.length > 0) {
+        const completedCandidates = contents.map(item => {
+          if (item.type === 'RichItem' && item.content) return item.content;
+          return item;
+        }).filter((v) => {
+          if (!v) return false;
           const textSources = [
             typeof v.view_count === 'string' ? v.view_count : v.view_count?.text,
             v.viewers?.text,
@@ -212,10 +249,13 @@ app.get('/channel/:channelId', async (req, res) => {
           return textSources.some((t) => t && t.toLowerCase().includes('views'));
         });
 
-        const candidate = completedCandidates[0] ?? livePage.videos[0];
-        if (candidate?.id) {
+        const firstItem = contents[0]?.type === 'RichItem' ? contents[0].content : contents[0];
+        const candidate = completedCandidates[0] ?? firstItem;
+        const candidateId = candidate?.id || candidate?.content_id || candidate?.videoId;
+
+        if (candidateId) {
           const infoForLast = await raceTimeout(
-            youtube.getInfo(candidate.id).catch(() => null),
+            youtube.getInfo(candidateId).catch(() => null),
             5000
           );
           if (infoForLast) {
@@ -322,7 +362,20 @@ wss.on('connection', (ws) => {
       
       if (data.type === 'start' && data.liveId) {
         const liveId = data.liveId;
-        console.log(`🚀 채팅 스트림 시작 요청: ${liveId}`);
+        let channelName = liveId;
+        try {
+          const youtube = await getYoutubeInstance();
+          const videoInfo = await youtube.getInfo(liveId).catch(() => null);
+          channelName =
+            videoInfo?.basic_info?.author ||
+            videoInfo?.video_details?.author ||
+            videoInfo?.basic_info?.owner?.name ||
+            liveId;
+        } catch (_) {
+          channelName = liveId;
+        }
+
+        console.log(`🚀 채팅 스트림 시작 요청: ${channelName}`);
         
         // 기존 세션 정리
         if (currentLiveChatInstance) {
@@ -337,7 +390,7 @@ wss.on('connection', (ws) => {
           currentLiveChatInstance = liveChat;
           
           liveChat.on('start', (id) => {
-            console.log(`✅ 채팅 시작: ${id}`);
+            console.log(`✅ 채팅 시작: ${channelName}`);
             ws.send(JSON.stringify({ type: 'start', id }));
           });
           
