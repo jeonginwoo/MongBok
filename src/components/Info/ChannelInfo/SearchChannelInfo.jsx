@@ -49,9 +49,11 @@ export default function ChannelInfo({ searchChannel }) {
         </Typography>
       </Box>
 
-      <Box sx={{ ...inactiveStyle }}>
-        <UserCount channel={searchChannel} />
-      </Box>
+      {searchChannel.isLive && (
+        <Box sx={{ ...inactiveStyle }}>
+          <UserCount channel={searchChannel} />
+        </Box>
+      )}
     </Box>
   );
 }

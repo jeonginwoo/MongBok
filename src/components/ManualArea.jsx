@@ -296,7 +296,7 @@ export default function ManualArea() {
             mt: 6,
           }}
         >
-          v1.0.1
+          v{process.env.NEXT_PUBLIC_APP_VERSION}
         </Typography>
       </Box>
     </Box>

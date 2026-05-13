@@ -61,7 +61,7 @@ export default function ChannelInfo({ channel }) {
           }}
         >
           <LiveCategory channel={channel} fontSize="1.2em" />
-          <UserCount channel={channel} />
+          {channel.isLive && <UserCount channel={channel} />}
         </Box>
       </Box>
     </Box>
