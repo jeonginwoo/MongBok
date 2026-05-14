@@ -174,13 +174,11 @@ export default function ChannelInfo({ channel, isDragging = false }) {
                 borderRadius: "10rem",
                 color: "text.secondary",
                 fontWeight: "bold",
-                whiteSpace: "nowrap",
               }}
             >
               {channel.isLive ? (
-                <LiveCategory channel={channel} />
-              ) : (
-                <ChannelStatus channel={channel} />
+                <LiveCategory channel={channel} sx={{ maxWidth: "18rem" }} />
+              ) : (                <ChannelStatus channel={channel} />
               )}
             </Box>
           </Box>
