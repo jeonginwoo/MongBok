@@ -220,7 +220,7 @@ export default function ChannelList() {
           {activeChannel ? (
             <ListItem
               sx={{
-                padding: controllerExpanded ? "0 2.3rem 0 0" : "0",
+                padding: controllerExpanded ? "0 1.3rem 0 0" : "0",
                 overflow: "hidden",
                 border: (theme) =>
                   `0.1rem solid ${
@@ -299,7 +299,7 @@ function SortableItem({ channel, onToggle }) {
       sx={{
         position: "relative",
         mb: 1,
-        padding: controllerExpanded ? "0 2.3rem 0 0" : "0",
+        padding: controllerExpanded ? "0 1.3rem 0 0" : "0",
         overflow: "hidden",
         borderRadius: "10rem",
         backgroundColor: "background.level4",
@@ -326,7 +326,7 @@ function HiddenItem({ channel, onToggle, onDelete }) {
       onClick={() => onToggle(channel.id)}
       sx={{
         position: "relative",
-        padding: controllerExpanded ? "0 2.3rem 0 0" : "0",
+        padding: controllerExpanded ? "0 1.3rem 0 0" : "0",
         overflow: "hidden",
         borderRadius: "10rem",
         mb: 1,
