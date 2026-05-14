@@ -120,7 +120,7 @@ export default function DraggableChat({ channel, zone }) {
           height: "100%",
           zoom: zoom,
           transformOrigin: "top left",
-          fontSize: `${1 + chatFontSizeAdjustment * CHAT_FONT_SIZE_STEP}rem`,
+          fontSize: `${CHAT_FONT_SIZE_BASE + chatFontSizeAdjustment * CHAT_FONT_SIZE_STEP}rem`,
         }}
       >
         <Box

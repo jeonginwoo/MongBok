@@ -664,7 +664,7 @@ export default function SettingsArea({ onClose }) {
             <Slider
               size="small"
               value={chatFontSizeAdjustment}
-              min={-5} max={10} step={1}
+              min={-10} max={10} step={1}
               valueLabelDisplay={isSliderHovered ? "on" : "auto"}
               onChange={handleChangeChatFontSize}
               slotProps={{
@@ -866,7 +866,7 @@ export default function SettingsArea({ onClose }) {
               <Slider
                 size="small"
                 value={recordSoundVolume}
-                min={0} max={200} step={5}
+                min={0} max={100} step={5}
                 valueLabelDisplay={isVolumeSliderHovered ? "on" : "auto"}
                 onChange={handleChangeRecordSoundVolume}
                 onChangeCommitted={(e, value) => playNotificationSound(recordSoundType, value)}

@@ -30,9 +30,9 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup, {
       padding: 0,
       width: "3.2rem",
       height: "3.2rem",
-      border: `0.1rem solid ${accentColor} !important`,
+      border: `0.1rem solid ${theme.palette.divider} !important`,
       borderRadius: "0.4rem !important",
-      color: accentColor,
+      color: theme.palette.text.primary,
 
       "&.Mui-disabled": {
         borderColor: `${theme.palette.action.disabledBackground} !important`,

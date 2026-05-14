@@ -29,7 +29,7 @@ export const playNotificationSound = (type, volume = 50) => {
     gain.connect(ctx.destination);
 
     const currentTime = ctx.currentTime;
-    const volumeMultiplier = volume / 100;
+    const volumeMultiplier = volume / 5;
 
     if (type === "ding") {
       // 띵~ (C5)

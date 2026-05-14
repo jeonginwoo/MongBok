@@ -19,8 +19,8 @@ export const validateRecordSoundType = (value) => {
 
 export const validateRecordSoundVolume = (value) => {
   const num = Number(value);
-  if (isNaN(num) || num < 0 || num > 200) {
-    return `유효하지 않은 녹화 알림음 볼륨 값 '${value}'. 0에서 200 사이의 값이어야 합니다.`;
+  if (isNaN(num) || num < 0 || num > 100) {
+    return `유효하지 않은 녹화 알림음 볼륨 값 '${value}'. 0에서 100 사이의 값이어야 합니다.`;
   }
   return true;
 };
@@ -71,8 +71,8 @@ export const validateChatFontSizeAdjustment = (value) => {
   if (isNaN(num)) {
     return `'chatFontSizeAdjustment'에 대한 유효하지 않은 값 '${value}'. 숫자여야 합니다.`;
   }
-  if (num < -5 || num > 10) {
-    return `'chatFontSizeAdjustment' 값은 -5에서 10 사이여야 합니다.`;
+  if (num < -10 || num > 10) {
+    return `'chatFontSizeAdjustment' 값은 -10에서 10 사이여야 합니다.`;
   }
   return true;
 };

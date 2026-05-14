@@ -450,7 +450,7 @@ export default function ControlButtonGroup({ fullscreen }) {
           break;
         case "ARROWLEFT":
           event.preventDefault();
-          if (chatFontSizeAdjustment > -5) {
+          if (chatFontSizeAdjustment > -10) {
             handleChangeChatFontSize(null, chatFontSizeAdjustment - 1);
           }
           break;

@@ -58,6 +58,15 @@ channelsAtom.onMount = (setAtom) => {
                 liveVideoId: live.liveVideoId ?? null,
                 liveCategory: live.liveCategory,
                 tags: live.tags,
+                // Chat metadata
+                chatChannelId: live.chatChannelId,
+                accessToken: live.accessToken,
+                chatNo: live.chatNo,
+                ftk: live.ftk,
+                bjid: live.bjid,
+                chDomain: live.chDomain,
+                chPt: live.chPt,
+                pconObject: live.pconObject,
                 _loading: false,
               },
             }));
@@ -131,6 +140,7 @@ export const CHAT_RENDER_INTERVAL = 150;
 
 // 채팅창 폰트 크기 조절
 export const CHAT_FONT_SIZE_STEP = 0.05;
+export const CHAT_FONT_SIZE_BASE = 1 + 3 * CHAT_FONT_SIZE_STEP;
 export const chatFontSizeAdjustmentAtom = atomWithStorage(
   "chatFontSizeAdjustment",
   0,
@@ -247,10 +257,10 @@ export const recordSoundTypeAtom = atomWithStorage(
   storage
 );
 
-// 녹화 알림음 볼륨 (0-200)
+// 녹화 알림음 볼륨 (0-100)
 export const recordSoundVolumeAtom = atomWithStorage(
   "recordSoundVolume",
-  100,
+  50,
   storage
 );
 
