@@ -1,5 +1,6 @@
 import {
   chzzk_client,
+  chzzk_chat_client,
   soop_channel_client,
   soop_live_client,
   youtube_channel_client,
@@ -16,6 +17,19 @@ const getChzzkLiveStatus = async (channelId) => {
       return await getChzzkLiveStatus2(channelId);
     }
 
+    const chatChannelId = data?.chatChannelId;
+    let accessToken = null;
+    if (chatChannelId) {
+      try {
+        const tokenRes = await chzzk_chat_client.get(
+          `/nng_main/v1/chats/access-token?channelId=${chatChannelId}&chatType=STREAMING`
+        );
+        accessToken = tokenRes.data?.content?.accessToken;
+      } catch (e) {
+        console.error("❌ [Chzzk] 액세스 토큰 가져오기 실패:", e);
+      }
+    }
+
     return {
       name: data?.channel?.channelName ?? "",
       imageUrl: data?.channel?.channelImageUrl ?? "",
@@ -26,6 +40,8 @@ const getChzzkLiveStatus = async (channelId) => {
       userCount: data?.status === "CLOSE" ? -1 : data?.concurrentUserCount ?? 0,
       liveCategory: data?.liveCategoryValue || data?.liveCategory,
       tags: data?.tags,
+      chatChannelId,
+      accessToken,
     };
   } catch (error) {
     console.error("❌ [Chzzk] 라이브 상태 가져오기 실패:", error);
@@ -50,6 +66,8 @@ const getChzzkLiveStatus2 = async (channelId) => {
       userCount: data?.openLive ? 0 : -1,
       liveCategory: null,
       tags: [],
+      chatChannelId: null,
+      accessToken: null,
     };
   } catch (error) {
     console.error("❌ [Chzzk] 라이브 상태 가져오기 실패:", error);
@@ -57,10 +75,13 @@ const getChzzkLiveStatus2 = async (channelId) => {
   }
 };
 
-const getSoopLiveTags = async (channelId) => {
+const getSoopLiveDetails = async (channelId) => {
   try {
     const body = new URLSearchParams({
       bid: channelId,
+      type: "live",
+      player_type: "html5",
+      mode: "landing",
     });
 
     const response = await soop_live_client.post(
@@ -77,9 +98,15 @@ const getSoopLiveTags = async (channelId) => {
     return {
       liveCategory: data?.CATEGORY_TAGS?.[0] ?? null,
       tags: data?.HASH_TAGS ?? [],
+      chatNo: data?.CHATNO,
+      ftk: data?.FTK,
+      bjid: data?.BJID,
+      chDomain: data?.CHDOMAIN,
+      chPt: data?.CHPT != null ? `${parseInt(data.CHPT, 10) + 1}` : null,
+      pconObject: data?.PCON_OBJECT,
     };
   } catch (error) {
-    console.error("❌ [Soop] 라이브 태그 가져오기 실패:", error);
+    console.error("❌ [Soop] 라이브 상세 정보 가져오기 실패:", error);
     throw error;
   }
 };
@@ -89,7 +116,7 @@ const getSoopLiveStatus = async (channelId) => {
   try {
     const response = await soop_channel_client.get(`/api/${channelId}/station`);
     const data = response.data;
-    const tag = await getSoopLiveTags(channelId);
+    const detail = await getSoopLiveDetails(channelId);
 
     return {
       name: data?.station?.user_nick ?? "",
@@ -100,8 +127,14 @@ const getSoopLiveStatus = async (channelId) => {
       closeDate: null,
       isLive: data?.broad != null,
       userCount: data?.broad == null ? -1 : data?.broad?.current_sum_viewer ?? 0,
-      liveCategory: tag?.liveCategory,
-      tags: tag?.tags,
+      liveCategory: detail?.liveCategory,
+      tags: detail?.tags,
+      chatNo: detail?.chatNo,
+      ftk: detail?.ftk,
+      bjid: detail?.bjid,
+      chDomain: detail?.chDomain,
+      chPt: detail?.chPt,
+      pconObject: detail?.pconObject,
     };
   } catch (error) {
     console.error("❌ [Soop] 라이브 상태 가져오기 실패:", error);
@@ -209,6 +242,15 @@ export const getAllChannelsData = async (localStorageData) => {
           isVisible: item.zoneId != null,
           zoneId: item.zoneId ?? null,
           platform: item.platform,
+          // Chat metadata
+          chatChannelId: live.chatChannelId,
+          accessToken: live.accessToken,
+          chatNo: live.chatNo,
+          ftk: live.ftk,
+          bjid: live.bjid,
+          chDomain: live.chDomain,
+          chPt: live.chPt,
+          pconObject: live.pconObject,
         };
       } catch (error) {
         console.error(`⚠️ ${channelId} 데이터 불러오기 실패:`, error);

@@ -7,6 +7,13 @@ export const chzzk_client = axios.create({
   },
 });
 
+export const chzzk_chat_client = axios.create({
+  baseURL: "/api/chzzk/chat",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 export const soop_channel_client = axios.create({
   baseURL: "/api/soop/station",
   headers: {

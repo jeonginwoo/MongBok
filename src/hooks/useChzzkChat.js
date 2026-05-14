@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CHAT_MAX_COUNT, CHAT_RENDER_INTERVAL } from "@/atoms/setting";
+import { useAtomValue } from "jotai";
+import { CHAT_MAX_COUNT, CHAT_RENDER_INTERVAL, channelsAtom } from "@/atoms/setting";
 
 const nicknameColors = [
   "#ECA843", "#EEA05D", "#EA723D", "#EAA35F", "#E98158", "#E97F58",
@@ -42,77 +43,32 @@ const MessageTypeCode = {
   CHEESE_CHAT: 10,
 };
 
-function useChzzkLiveStatus(channelId) {
-  const [liveStatus, setLiveStatus] = useState(null);
-
-  useEffect(() => {
-    if (!channelId) return;
-
-    const fetchStatus = async () => {
-      try {
-        const response = await fetch(
-          `/api/chzzk/live/polling/v2/channels/${channelId}/live-status`
-        );
-        const data = await response.json();
-        if (data.code === 200) {
-          setLiveStatus(data.content);
-        } else {
-          setLiveStatus(null);
-        }
-      } catch (e) {
-        console.error(e);
-        setLiveStatus(null);
-      }
-    };
-
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 30000);
-    return () => clearInterval(interval);
-  }, [channelId]);
-
-  return liveStatus;
-}
-
-function useAccessToken(chatChannelId) {
-  const [accessToken, setAccessToken] = useState(null);
-
-  useEffect(() => {
-    if (!chatChannelId) {
-      setAccessToken(null);
-      return;
-    }
-    (async () => {
-      try {
-        const response = await fetch(
-          `/api/chzzk/chat/nng_main/v1/chats/access-token?channelId=${chatChannelId}&chatType=STREAMING`
-        );
-        const data = await response.json();
-        if (data.code === 200) {
-          setAccessToken(data.content.accessToken);
-        } else {
-          setAccessToken(null);
-        }
-      } catch (e) {
-        console.error(e);
-        setAccessToken(null);
-      }
-    })();
-  }, [chatChannelId]);
-
-  return accessToken;
-}
-
 export default function useChzzkChat(channelId) {
   const [chatList, setChatList] = useState([]);
   const pendingChatListRef = useRef([]);
   const isUnloadingRef = useRef(false);
   const isRefreshingRef = useRef(false);
   const [webSocketBuster, setWebSocketBuster] = useState(0);
+  const [retryBuster, setRetryBuster] = useState(0);
   const messageCounterRef = useRef(0); // 메시지 카운터로 고유 ID 생성
 
-  const liveStatus = useChzzkLiveStatus(channelId);
-  const chatChannelId = liveStatus?.chatChannelId;
-  const accessToken = useAccessToken(chatChannelId);
+  const [status, setStatus] = useState("idle"); // idle, loading, connected, disconnected, error
+  const statusRef = useRef("idle");
+  const [error, setError] = useState(null);
+
+  const channels = useAtomValue(channelsAtom);
+  const channelData = channels[channelId];
+  const { chatChannelId, accessToken } = channelData || {};
+
+  const updateStatus = useCallback((newStatus) => {
+    statusRef.current = newStatus;
+    setStatus(newStatus);
+  }, []);
+
+  const retry = useCallback(() => {
+    setRetryBuster((prev) => prev + 1);
+    setWebSocketBuster(Date.now());
+  }, []);
 
   const convertChat = useCallback((chzzkChat) => {
     const profile = JSON.parse(chzzkChat.profile || "{}");
@@ -179,11 +135,28 @@ export default function useChzzkChat(channelId) {
   }, []);
 
   useEffect(() => {
-    if (!chatChannelId || !accessToken) {
+    if (!channelId) {
+      updateStatus("idle");
+      setError(null);
       return;
     }
 
+    if (!chatChannelId || !accessToken) {
+      // 이미 연결된 상태에서 메타데이터가 잠깐 비는 경우 status를 loading으로 바꾸지 않음 (깜빡임 방지)
+      if (statusRef.current !== "connected") {
+        updateStatus("loading");
+      }
+      return;
+    }
+
+    let isCurrent = true;
+    // 이미 연결된 상태라면 로딩창을 띄우지 않고 백그라운드에서 교체 (심리스 연결)
+    const isSeamless = statusRef.current === "connected";
     const ws = new WebSocket("wss://kr-ss1.chat.naver.com/chat");
+    
+    if (!isSeamless) {
+      updateStatus("loading");
+    }
 
     const worker = new Worker(
       URL.createObjectURL(
@@ -224,6 +197,7 @@ export default function useChzzkChat(channelId) {
     };
 
     ws.onopen = () => {
+      if (!isCurrent) return;
       ws.send(
         JSON.stringify({
           bdy: {
@@ -240,15 +214,26 @@ export default function useChzzkChat(channelId) {
         })
       );
       isRefreshingRef.current = false;
+      updateStatus("connected");
+      setError(null);
     };
 
     ws.onclose = () => {
+      if (!isCurrent) return;
       if (!isUnloadingRef.current && !isRefreshingRef.current) {
-        setTimeout(() => setWebSocketBuster(Date.now()), 1000);
+        updateStatus("disconnected");
+        setTimeout(() => setWebSocketBuster(Date.now()), 10000);
       }
     };
 
+    ws.onerror = (e) => {
+      if (!isCurrent) return;
+      updateStatus("error");
+      setError("WebSocket error");
+    };
+
     ws.onmessage = (event) => {
+      if (!isCurrent) return;
       const json = JSON.parse(event.data);
 
       switch (json.cmd) {
@@ -277,7 +262,7 @@ export default function useChzzkChat(channelId) {
               return true;
             })
             .map(convertChat);
-          
+
           pendingChatListRef.current.push(...newChats);
           break;
         }
@@ -290,12 +275,13 @@ export default function useChzzkChat(channelId) {
     worker.postMessage("startPingTimer");
 
     return () => {
+      isCurrent = false;
       isRefreshingRef.current = true;
       worker.postMessage("stop");
       worker.terminate();
       ws.close();
     };
-  }, [chatChannelId, accessToken, convertChat, webSocketBuster]);
+  }, [channelId, chatChannelId, accessToken, convertChat, webSocketBuster]);
 
   useEffect(() => {
     return () => {
@@ -314,5 +300,5 @@ export default function useChzzkChat(channelId) {
     return () => clearInterval(interval);
   }, []);
 
-  return chatList;
+  return { chatList, status, error, retry };
 }

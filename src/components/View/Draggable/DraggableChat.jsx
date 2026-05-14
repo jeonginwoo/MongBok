@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 import ChannelInfo from "@/components/Info/ChannelInfo/ViewAreaChannelInfo";
 import ChatView from "@/components/View/Chat/ChatView";
 
 import { useAtomValue } from "jotai";
-import { controllerExpandedAtom, chatFontSizeAdjustmentAtom, CHAT_FONT_SIZE_STEP, pointerEventsEnabledAtom } from "@/atoms/setting";
+import { controllerExpandedAtom, chatFontSizeAdjustmentAtom, CHAT_FONT_SIZE_BASE, CHAT_FONT_SIZE_STEP, pointerEventsEnabledAtom } from "@/atoms/setting";
 import { fitStyleAtom } from "@/atoms/ui";
 import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE } from "@/data/config";
 
@@ -34,24 +38,22 @@ export default function DraggableChat({ channel, zone }) {
   const [zoom, setZoom] = useState(1);
   const channelId = channel.id;
 
-  const chzzkChatList = useChzzkChat(
+  const chzzkChat = useChzzkChat(
     (ENABLE_CHZZK && channel.platform === "chzzk") ? channelId : null
   );
-  const soopChatList = useSoopChat(
+  const soopChat = useSoopChat(
     (ENABLE_SOOP && channel.platform === "soop") ? channelId : null
   );
-  const youtubeChatList = useYoutubeChat(
+  const youtubeChat = useYoutubeChat(
     (ENABLE_YOUTUBE && channel.platform === "youtube") ? channelId : null
   );
 
-  const chatList =
-    (ENABLE_CHZZK && channel.platform === "chzzk")
-      ? chzzkChatList
-      : (ENABLE_SOOP && channel.platform === "soop")
-      ? soopChatList
-      : (ENABLE_YOUTUBE && channel.platform === "youtube")
-      ? youtubeChatList
-      : [];
+  const { chatList, status, error, retry } = useMemo(() => {
+    if (channel.platform === "chzzk") return chzzkChat;
+    if (channel.platform === "soop") return soopChat;
+    if (channel.platform === "youtube") return youtubeChat;
+    return { chatList: [], status: "idle", error: null, retry: () => {} };
+  }, [channel.platform, chzzkChat, soopChat, youtubeChat]);
 
   const BASE_WIDTH = 360;
 
@@ -151,6 +153,60 @@ export default function DraggableChat({ channel, zone }) {
           }}
         >
           <ChatView chatList={chatList} layoutKey={layoutKey} />
+          
+          {(status === "loading" || status === "error" || status === "disconnected") && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                background: (theme) => `rgba(0, 0, 0, 0.6)`,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 20,
+                backdropFilter: "blur(4px)",
+                p: "2rem",
+                textAlign: "center",
+                pointerEvents: "auto",
+              }}
+            >
+              {status === "loading" && (
+                <>
+                  <CircularProgress size="4rem" sx={{ mb: "1.5rem" }} />
+                  <Typography variant="body1">채팅에 연결 중입니다...</Typography>
+                </>
+              )}
+              
+              {(status === "error" || status === "disconnected") && (
+                <>
+                  <Typography variant="body1" sx={{ mb: "0.5rem", color: "error.main", fontWeight: "bold" }}>
+                    {status === "error" ? "채팅을 불러오지 못했습니다" : "채팅 연결이 끊어졌습니다"}
+                  </Typography>
+                  {error && (
+                    <Typography variant="caption" sx={{ mb: "1.5rem", opacity: 0.7 }}>
+                      {error}
+                    </Typography>
+                  )}
+                  <Button
+                    variant="contained"
+                    startIcon={<RefreshIcon />}
+                    onClick={retry}
+                    sx={{
+                      borderRadius: "2rem",
+                      px: "2rem",
+                      py: "0.5rem",
+                    }}
+                  >
+                    다시 시도
+                  </Button>
+                </>
+              )}
+            </Box>
+          )}
         </Box>
       </Box>
     </Box>

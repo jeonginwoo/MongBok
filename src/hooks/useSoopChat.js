@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { defaultEmojis, afreecaNicknameColors } from "../data/soopConstants";
 import useSoopEmoticons from "./useSoopEmoticons";
-import { CHAT_MAX_COUNT, CHAT_RENDER_INTERVAL } from "@/atoms/setting";
+import { CHAT_MAX_COUNT, CHAT_RENDER_INTERVAL, channelsAtom } from "@/atoms/setting";
+import { useAtomValue } from "jotai";
 
 function parseMessage(message) {
   return new TextDecoder().decode(message).substring(1).trim().split("\f");
@@ -34,14 +35,33 @@ function splitWithSpace(message) {
 export default function useSoopChat(channelId) {
   const [chatList, setChatList] = useState([]);
   const pendingChatListRef = useRef([]);
-  const [station, setStation] = useState(null);
-  const [channelInfo, setChannelInfo] = useState(null);
   const isUnloadingRef = useRef(false);
   const isRefreshingRef = useRef(false);
   const [webSocketBuster, setWebSocketBuster] = useState(0);
+  const [retryBuster, setRetryBuster] = useState(0);
   const messageCounterRef = useRef(0); // 메시지 카운터로 고유 ID 생성
 
+  const [status, setStatus] = useState("idle"); // idle, loading, connected, disconnected, error
+  const statusRef = useRef("idle");
+  const [error, setError] = useState(null);
+
+  const channels = useAtomValue(channelsAtom);
+  const channelData = channels[channelId];
+  const { 
+    chatNo, ftk, bjid, chDomain, chPt, pconObject, isLive 
+  } = channelData || {};
+
+  const updateStatus = useCallback((newStatus) => {
+    statusRef.current = newStatus;
+    setStatus(newStatus);
+  }, []);
+
   const { emoticons: customEmoticons } = useSoopEmoticons(channelId);
+
+  const retry = useCallback(() => {
+    setRetryBuster((prev) => prev + 1);
+    setWebSocketBuster(Date.now());
+  }, []);
 
   const combinedEmoticons = useMemo(() => {
     if (!channelId) return defaultEmojis;
@@ -66,57 +86,6 @@ export default function useSoopChat(channelId) {
     );
   }, [combinedEmoticons]);
 
-  useEffect(() => {
-    if (!channelId) return;
-
-    const fetchStation = async () => {
-      try {
-        const response = await fetch(`/api/soop/station/api/${channelId}/station`);
-        const data = await response.json();
-        setStation(data);
-      } catch (e) {
-        console.error(e);
-      }
-    };
-
-    fetchStation();
-    const interval = setInterval(fetchStation, 30000);
-    return () => clearInterval(interval);
-  }, [channelId]);
-
-  useEffect(() => {
-    if (!channelId || !station?.broad) return;
-    const broadNo = station.broad.broad_no;
-
-    (async () => {
-      try {
-        const response = await fetch(
-          `/api/soop/live/afreeca/player_live_api.php?bjid=${channelId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-            },
-            body: new URLSearchParams({
-              bid: channelId,
-              bno: broadNo,
-              type: "live",
-              player_type: "html5",
-              mode: "landing",
-            }),
-          }
-        );
-        const data = await response.json();
-        setChannelInfo({
-          ...data.CHANNEL,
-          CHPT: `${parseInt(data.CHANNEL.CHPT, 10) + 1}`,
-        });
-      } catch (e) {
-        console.error(e);
-      }
-    })();
-  }, [channelId, station]);
-
   const convertChat = useCallback(
     (soopMessage) => {
       const {
@@ -128,21 +97,20 @@ export default function useSoopChat(channelId) {
         isTier3Follower,
       } = parseFlag(soopMessage[7]);
       const subscriptionMonths = parseInt(soopMessage[8], 10);
-      const PCON_OBJECT = channelInfo?.PCON_OBJECT;
 
       const personalSubscriptionBadges =
         (() => {
-          if (PCON_OBJECT == null) {
+          if (pconObject == null) {
             return [];
           }
           if (isTier1Follower) {
-            return PCON_OBJECT.tier1;
+            return pconObject.tier1;
           }
           if (isTier2Follower) {
-            return PCON_OBJECT.tier2;
+            return pconObject.tier2;
           }
           if (isTier3Follower) {
-            return PCON_OBJECT.tier3;
+            return pconObject.tier3;
           }
           return [];
         })() ?? [];
@@ -196,7 +164,7 @@ export default function useSoopChat(channelId) {
           : splitWithSpace(message),
       };
     },
-    [emojiRegex, channelInfo, combinedEmoticons]
+    [emojiRegex, pconObject, combinedEmoticons]
   );
 
   const convertStickerChat = useCallback(
@@ -214,21 +182,20 @@ export default function useSoopChat(channelId) {
       const stickerVersion = soopMessage[5];
       const stickerExtension = soopMessage[12];
       const subscriptionMonths = parseInt(soopMessage[13]);
-      const PCON_OBJECT = channelInfo?.PCON_OBJECT;
 
       const personalSubscriptionBadges =
         (() => {
-          if (PCON_OBJECT == null) {
+          if (pconObject == null) {
             return [];
           }
           if (isTier1Follower) {
-            return PCON_OBJECT.tier1;
+            return pconObject.tier1;
           }
           if (isTier2Follower) {
-            return PCON_OBJECT.tier2;
+            return pconObject.tier2;
           }
           if (isTier3Follower) {
-            return PCON_OBJECT.tier3;
+            return pconObject.tier3;
           }
           return [];
         })() ?? [];
@@ -278,12 +245,11 @@ export default function useSoopChat(channelId) {
         ],
       };
     },
-    [channelInfo, combinedEmoticons]
+    [pconObject, combinedEmoticons]
   );
 
   const convertBalloonChat = useCallback(
     (soopMessage) => {
-      // 0018 메시지 구조: [2]=userId, [3]=nickname, [4]=별풍선 개수
       const balloonAmount = parseInt(soopMessage[4], 10) || 0;
       const userId = soopMessage[2];
       const nickname = soopMessage[3];
@@ -315,17 +281,32 @@ export default function useSoopChat(channelId) {
   );
 
   useEffect(() => {
-    if (!channelInfo) return;
+    if (!channelId) {
+      updateStatus("idle");
+      setError(null);
+      return;
+    }
 
-    const { CHDOMAIN, CHPT, BJID, CHATNO, FTK } = channelInfo;
-    if (!CHDOMAIN || !CHPT || !BJID) return;
-    const webSocketUrl = `wss://${CHDOMAIN}:${CHPT}/Websocket/${BJID}`;
-    const payload = `\f${CHATNO}\f${FTK}\f0\f\f`;
+    if (!isLive || !bjid || !chatNo || !ftk) {
+      if (statusRef.current !== "connected") {
+        updateStatus("loading");
+      }
+      return;
+    }
+
+    let isCurrent = true;
+    const isSeamless = statusRef.current === "connected";
+    const webSocketUrl = `wss://${chDomain}:${chPt}/Websocket/${bjid}`;
+    const payload = `\f${chatNo}\f${ftk}\f0\f\f`;
     const key = payload.length.toString().padStart(6, "0");
     const handshake = `\u001b\t0002${key}00${payload}`;
 
     const ws = new WebSocket(webSocketUrl, ["chat"]);
     ws.binaryType = "arraybuffer";
+    
+    if (!isSeamless) {
+      updateStatus("loading");
+    }
 
     const worker = new Worker(
       URL.createObjectURL(
@@ -366,18 +347,32 @@ export default function useSoopChat(channelId) {
     };
 
     ws.onopen = () => {
+      if (!isCurrent) return;
       ws.send(new TextEncoder().encode("\u001b\t000100000600\f\f\f16\f"));
-      setTimeout(() => ws.send(handshake), 100);
+      setTimeout(() => {
+        if (isCurrent) ws.send(handshake);
+      }, 100);
       isRefreshingRef.current = false;
+      updateStatus("connected");
+      setError(null);
     };
 
     ws.onclose = () => {
+      if (!isCurrent) return;
       if (!isUnloadingRef.current && !isRefreshingRef.current) {
-        setTimeout(() => setWebSocketBuster(Date.now()), 1000);
+        updateStatus("disconnected");
+        setTimeout(() => setWebSocketBuster(Date.now()), 10000);
       }
     };
 
+    ws.onerror = (e) => {
+      if (!isCurrent) return;
+      updateStatus("error");
+      setError("WebSocket error");
+    };
+
     ws.onmessage = (event) => {
+      if (!isCurrent) return;
       worker.postMessage("startPingTimer");
       const data = event.data;
       const soopMessage = parseMessage(data);
@@ -408,12 +403,13 @@ export default function useSoopChat(channelId) {
     worker.postMessage("startPingTimer");
 
     return () => {
+      isCurrent = false;
       isRefreshingRef.current = true;
       worker.postMessage("stop");
       worker.terminate();
       ws.close();
     };
-  }, [channelInfo, convertChat, convertBalloonChat, convertStickerChat, webSocketBuster]);
+  }, [channelId, bjid, chatNo, ftk, chDomain, chPt, webSocketBuster, isLive, convertChat, convertBalloonChat, convertStickerChat]);
 
   useEffect(() => {
     return () => {
@@ -443,5 +439,5 @@ export default function useSoopChat(channelId) {
     return () => clearInterval(interval);
   }, []);
 
-  return chatList;
+  return { chatList, status, error, retry };
 }
