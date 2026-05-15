@@ -67,7 +67,7 @@ const parseTimestamp = (ts) => {
   }
   return null;
 };
-const APP_URL = process.env.APP_URL || "https://s-fuz.vercel.app";
+const APP_URL = process.env.APP_URL || "https://mongbok.vercel.app";
 
 // axios 기본 User-Agent 설정 (YouTube 차단 방지)
 axios.defaults.headers.common['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';

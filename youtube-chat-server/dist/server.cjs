@@ -91440,7 +91440,7 @@ var parseTimestamp = (ts) => {
   }
   return null;
 };
-var APP_URL = process.env.APP_URL || "https://s-fuz.vercel.app";
+var APP_URL = process.env.APP_URL || "https://mongbok.vercel.app";
 axios_default.defaults.headers.common["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 function argbToHex(colorNum) {
   if (!colorNum || typeof colorNum !== "number") return null;

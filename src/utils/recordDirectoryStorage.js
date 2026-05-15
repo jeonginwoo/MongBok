@@ -1,5 +1,5 @@
 // FileSystemDirectoryHandle은 JSON 직렬화 불가이므로 IndexedDB에 저장
-const DB_NAME = "s-fuz-db";
+const DB_NAME = "mongbok-db";
 const STORE_NAME = "handles";
 const KEY = "recordSaveDir";
 

@@ -90,7 +90,7 @@ export default function ManualArea() {
             WebkitTextFillColor: "transparent",
           }}
         >
-          스퓨즈 가이드
+          몽복 가이드
         </Typography>
         <Typography sx={{ color: "text.secondary", fontSize: "1.3rem", mb: 5 }}>
           멀티 스트리밍 뷰어 사용 설명서
