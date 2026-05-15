@@ -147,7 +147,11 @@ export default function useYoutubeChat(channelId) {
   useEffect(() => {
     if (!liveVideoId || !isLive) {
       if (statusRef.current !== "connected") {
-        updateStatus("loading");
+        if (!isLive) {
+          updateStatus("offline");
+        } else {
+          updateStatus("loading");
+        }
       }
       return;
     }

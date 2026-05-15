@@ -58,7 +58,7 @@ export default function useChzzkChat(channelId) {
 
   const channels = useAtomValue(channelsAtom);
   const channelData = channels[channelId];
-  const { chatChannelId, accessToken } = channelData || {};
+  const { chatChannelId, accessToken, isLive } = channelData || {};
 
   const updateStatus = useCallback((newStatus) => {
     statusRef.current = newStatus;
@@ -144,7 +144,11 @@ export default function useChzzkChat(channelId) {
     if (!chatChannelId || !accessToken) {
       // 이미 연결된 상태에서 메타데이터가 잠깐 비는 경우 status를 loading으로 바꾸지 않음 (깜빡임 방지)
       if (statusRef.current !== "connected") {
-        updateStatus("loading");
+        if (isLive === false) {
+          updateStatus("offline");
+        } else {
+          updateStatus("loading");
+        }
       }
       return;
     }

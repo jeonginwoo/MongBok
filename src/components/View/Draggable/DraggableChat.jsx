@@ -11,10 +11,11 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import ChannelInfo from "@/components/Info/ChannelInfo/ViewAreaChannelInfo";
 import ChatView from "@/components/View/Chat/ChatView";
 
-import { useAtomValue } from "jotai";
-import { controllerExpandedAtom, chatFontSizeAdjustmentAtom, CHAT_FONT_SIZE_BASE, CHAT_FONT_SIZE_STEP, pointerEventsEnabledAtom } from "@/atoms/setting";
+import { useAtomValue, useAtom } from "jotai";
+import { controllerExpandedAtom, chatFontSizeAdjustmentAtom, CHAT_FONT_SIZE_BASE, CHAT_FONT_SIZE_STEP, pointerEventsEnabledAtom, channelsAtom } from "@/atoms/setting";
 import { fitStyleAtom } from "@/atoms/ui";
 import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE } from "@/data/config";
+import { getLiveStatus } from "@/api/live";
 
 import useChzzkChat from "@/hooks/useChzzkChat";
 import useSoopChat from "@/hooks/useSoopChat";
@@ -54,6 +55,23 @@ export default function DraggableChat({ channel, zone }) {
     if (channel.platform === "youtube") return youtubeChat;
     return { chatList: [], status: "idle", error: null, retry: () => {} };
   }, [channel.platform, chzzkChat, soopChat, youtubeChat]);
+
+  const [channels, setChannels] = useAtom(channelsAtom);
+
+  const handleManualRefresh = async () => {
+    if (status === "offline") {
+      try {
+        const liveStatus = await getLiveStatus(channelId, channel.platform);
+        setChannels((prev) => ({
+          ...prev,
+          [channelId]: { ...prev[channelId], ...liveStatus },
+        }));
+      } catch (err) {
+        console.error("❌ 라이브 상태 갱신 실패:", err);
+      }
+    }
+    retry();
+  };
 
   const BASE_WIDTH = 360;
 
@@ -153,8 +171,34 @@ export default function DraggableChat({ channel, zone }) {
           }}
         >
           <ChatView chatList={chatList} layoutKey={layoutKey} />
+
+          {/* 치지직 소프트 오프라인 표시 */}
+          {channel.platform === "chzzk" && !channel.isLive && status === "connected" && (
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: "1em",
+                left: "50%",
+                transform: "translateX(-50%)",
+                background: "rgba(0, 0, 0, 0.7)",
+                color: "white",
+                px: "1.5em",
+                py: "0.5em",
+                borderRadius: "2em",
+                backdropFilter: "blur(4px)",
+                zIndex: 20,
+                pointerEvents: "none",
+                whiteSpace: "nowrap",
+                border: "1px solid rgba(255, 255, 255, 0.2)",
+              }}
+            >
+              <Typography sx={{ fontWeight: "bold", opacity: 0.9, fontSize: "1em" }}>
+                방송 중이 아닙니다 (채팅 연결됨)
+              </Typography>
+            </Box>
+          )}
           
-          {(status === "loading" || status === "error" || status === "disconnected") && (
+          {(status === "loading" || status === "error" || status === "disconnected" || (status === "offline" && channel.platform !== "chzzk")) && (
             <Box
               sx={{
                 position: "absolute",
@@ -176,29 +220,60 @@ export default function DraggableChat({ channel, zone }) {
             >
               {status === "loading" && (
                 <>
-                  <CircularProgress size="4rem" sx={{ mb: "1.5rem" }} />
-                  <Typography variant="body1">채팅에 연결 중입니다...</Typography>
+                  <CircularProgress size="4em" sx={{ mb: "1.5em" }} />
+                  <Typography sx={{ fontSize: "1.2em" }}>채팅에 연결 중입니다...</Typography>
+                </>
+              )}
+
+              {status === "offline" && (
+                <>
+                  <Typography sx={{ mb: "1em", fontWeight: "bold", fontSize: "1.5em" }}>
+                    채널이 오프라인 상태입니다
+                  </Typography>
+                  <Typography sx={{ mb: "2em", opacity: 0.8, fontSize: "1em" }}>
+                    방송이 시작되면 자동으로 채팅이 연결됩니다.
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    startIcon={<RefreshIcon sx={{ fontSize: "1.2em" }} />}
+                    onClick={handleManualRefresh}
+                    sx={{
+                      borderRadius: "2em",
+                      px: "2em",
+                      py: "0.5em",
+                      fontSize: "0.9em",
+                      color: "white",
+                      borderColor: "rgba(255, 255, 255, 0.5)",
+                      "&:hover": {
+                        borderColor: "white",
+                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      }
+                    }}
+                  >
+                    상태 새로고침
+                  </Button>
                 </>
               )}
               
               {(status === "error" || status === "disconnected") && (
                 <>
-                  <Typography variant="body1" sx={{ mb: "0.5rem", color: "error.main", fontWeight: "bold" }}>
+                  <Typography sx={{ mb: "0.5em", color: "error.main", fontWeight: "bold", fontSize: "1.2em" }}>
                     {status === "error" ? "채팅을 불러오지 못했습니다" : "채팅 연결이 끊어졌습니다"}
                   </Typography>
                   {error && (
-                    <Typography variant="caption" sx={{ mb: "1.5rem", opacity: 0.7 }}>
+                    <Typography sx={{ mb: "1.5em", opacity: 0.7, fontSize: "0.8em" }}>
                       {error}
                     </Typography>
                   )}
                   <Button
                     variant="contained"
-                    startIcon={<RefreshIcon />}
-                    onClick={retry}
+                    startIcon={<RefreshIcon sx={{ fontSize: "1.2em" }} />}
+                    onClick={handleManualRefresh}
                     sx={{
-                      borderRadius: "2rem",
+                      borderRadius: "2em",
                       px: "2rem",
                       py: "0.5rem",
+                      fontSize: "0.9em",
                     }}
                   >
                     다시 시도

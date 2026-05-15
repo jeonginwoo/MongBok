@@ -289,7 +289,11 @@ export default function useSoopChat(channelId) {
 
     if (!isLive || !bjid || !chatNo || !ftk) {
       if (statusRef.current !== "connected") {
-        updateStatus("loading");
+        if (!isLive) {
+          updateStatus("offline");
+        } else {
+          updateStatus("loading");
+        }
       }
       return;
     }
