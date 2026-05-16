@@ -48,7 +48,7 @@ export default function useSoopChat(channelId) {
   const channels = useAtomValue(channelsAtom);
   const channelData = channels[channelId];
   const { 
-    chatNo, ftk, bjid, chDomain, chPt, pconObject, isLive 
+    chatNo, ftk, bjid, chDomain, chPt, pconObject, isLive, lastRefreshed 
   } = channelData || {};
 
   const updateStatus = useCallback((newStatus) => {
@@ -62,6 +62,17 @@ export default function useSoopChat(channelId) {
     setRetryBuster((prev) => prev + 1);
     setWebSocketBuster(Date.now());
   }, []);
+
+  const lastHandledRefreshRef = useRef(null);
+
+  useEffect(() => {
+    if (lastRefreshed && lastHandledRefreshRef.current !== lastRefreshed) {
+      if (status === "disconnected" || status === "error") {
+        retry();
+      }
+      lastHandledRefreshRef.current = lastRefreshed;
+    }
+  }, [lastRefreshed, status, retry]);
 
   const combinedEmoticons = useMemo(() => {
     if (!channelId) return defaultEmojis;
@@ -365,7 +376,6 @@ export default function useSoopChat(channelId) {
       if (!isCurrent) return;
       if (!isUnloadingRef.current && !isRefreshingRef.current) {
         updateStatus("disconnected");
-        setTimeout(() => setWebSocketBuster(Date.now()), 10000);
       }
     };
 

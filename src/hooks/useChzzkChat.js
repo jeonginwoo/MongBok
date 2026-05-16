@@ -58,7 +58,7 @@ export default function useChzzkChat(channelId) {
 
   const channels = useAtomValue(channelsAtom);
   const channelData = channels[channelId];
-  const { chatChannelId, accessToken, isLive } = channelData || {};
+  const { chatChannelId, accessToken, isLive, lastRefreshed } = channelData || {};
 
   const updateStatus = useCallback((newStatus) => {
     statusRef.current = newStatus;
@@ -69,6 +69,17 @@ export default function useChzzkChat(channelId) {
     setRetryBuster((prev) => prev + 1);
     setWebSocketBuster(Date.now());
   }, []);
+
+  const lastHandledRefreshRef = useRef(null);
+
+  useEffect(() => {
+    if (lastRefreshed && lastHandledRefreshRef.current !== lastRefreshed) {
+      if (status === "disconnected" || status === "error") {
+        retry();
+      }
+      lastHandledRefreshRef.current = lastRefreshed;
+    }
+  }, [lastRefreshed, status, retry]);
 
   const convertChat = useCallback((chzzkChat) => {
     const profile = JSON.parse(chzzkChat.profile || "{}");
@@ -226,7 +237,6 @@ export default function useChzzkChat(channelId) {
       if (!isCurrent) return;
       if (!isUnloadingRef.current && !isRefreshingRef.current) {
         updateStatus("disconnected");
-        setTimeout(() => setWebSocketBuster(Date.now()), 10000);
       }
     };
 

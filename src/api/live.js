@@ -214,6 +214,10 @@ export const getLiveStatus = async (channelId, platform) => {
     return;
   }
 
+  if (liveStatus) {
+    liveStatus.lastRefreshed = Date.now();
+  }
+
   return liveStatus;
 };
 

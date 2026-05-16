@@ -25,7 +25,7 @@ export default function useYoutubeChat(channelId) {
 
   const channels = useAtomValue(channelsAtom);
   const channelData = channels[channelId];
-  const { liveVideoId, isLive } = channelData || {};
+  const { liveVideoId, isLive, lastRefreshed } = channelData || {};
 
   const updateStatus = useCallback((newStatus) => {
     statusRef.current = newStatus;
@@ -35,6 +35,17 @@ export default function useYoutubeChat(channelId) {
   const retry = useCallback(() => {
     setRetryBuster((prev) => prev + 1);
   }, []);
+
+  const lastHandledRefreshRef = useRef(null);
+
+  useEffect(() => {
+    if (lastRefreshed && lastHandledRefreshRef.current !== lastRefreshed) {
+      if (status === "disconnected" || status === "error") {
+        retry();
+      }
+      lastHandledRefreshRef.current = lastRefreshed;
+    }
+  }, [lastRefreshed, status, retry]);
 
   // 채팅 메시지 변환
   const convertChat = useCallback((chatItem) => {
@@ -228,7 +239,6 @@ export default function useYoutubeChat(channelId) {
           if (!isCurrent) return;
           if (!isIntentionallyClosed && liveVideoId) {
             updateStatus("disconnected");
-            reconnectTimeout = setTimeout(connect, 10000);
           }
         };
       } catch (error) {
