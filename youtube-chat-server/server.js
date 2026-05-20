@@ -6,7 +6,6 @@ import axios from 'axios';
 import { createRequire } from 'module';
 import { readFileSync, writeFileSync } from 'fs';
 import readline from 'readline';
-import 'dotenv/config';
 
 // 예상치 못한 크래시도 로그로 남기고 바로 꺼지지 않도록 처리
 function fatalExit(label, err) {
@@ -230,7 +229,66 @@ app.get('/channel/:channelId', async (req, res) => {
           youtube.getInfo(videoId).catch(() => null),
           5000
         );
-        startTime = infoForStart ? parseTimestamp(infoForStart.basic_info?.start_timestamp) : null;
+
+        if (infoForStart) {
+          startTime = parseTimestamp(infoForStart.basic_info?.start_timestamp);
+          
+          // 1. 페이지 소스에서 직접 정확한 시청자 수 추출 시도 (사용자 요청)
+          try {
+            const { data: html } = await axios.get(`https://www.youtube.com/watch?v=${videoId}`, {
+              timeout: 3000,
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7'
+              }
+            });
+            
+            // "videoViewCountRenderer":{ ... "isLive":true ... "originalViewCount":"2709"}
+            const ovcMatch = html.match(/"videoViewCountRenderer":\{[^}]*?"isLive":true[^}]*?"originalViewCount":"(\d+)"/);
+            if (ovcMatch && ovcMatch[1]) {
+              const scrapedCount = parseInt(ovcMatch[1]);
+              // 목록에서 가져온 대략적인 수(bestCount)와 너무 차이가 나면 무시 (누적 조회수 방지)
+              // 예: 3.7K(3700)인데 8002가 나오면 무시
+              if (!isNaN(scrapedCount) && (bestCount <= 0 || scrapedCount < bestCount * 1.5)) {
+                viewerCount = scrapedCount;
+              }
+            } else {
+              // "runs":[{"text":"현재 "},{"text":"2,709"},{"text":"명 시청 중"}]
+              const runsMatch = html.match(/"viewCount":\{"videoViewCountRenderer":\{"viewCount":\{"runs":\[\{"text":".*?"\},\{"text":"([\d,.]+)"\},\{"text":"명 시청 중"\}\]/);
+              if (runsMatch && runsMatch[1]) {
+                const scrapedCount = parseInt(runsMatch[1].replace(/,/g, ''));
+                if (!isNaN(scrapedCount) && (bestCount <= 0 || scrapedCount < bestCount * 1.5)) {
+                  viewerCount = scrapedCount;
+                }
+              }
+            }
+          } catch (e) {
+            // HTML 파싱 실패 시 다음 단계로 진행
+          }
+
+          // 2. HTML 파싱에 실패했거나 값이 이상한 경우 youtubei.js 데이터 활용
+          if (viewerCount === bestCount || viewerCount === 0) {
+            const viewCountRenderer = infoForStart.primary_info?.view_count?.video_view_count_renderer;
+            if (viewCountRenderer) {
+              const isRendererLive = viewCountRenderer.is_live || 
+                                   JSON.stringify(viewCountRenderer).includes('시청 중') || 
+                                   JSON.stringify(viewCountRenderer).includes('watching');
+
+              if (isRendererLive) {
+                const exactString = viewCountRenderer.original_view_count || 
+                                   viewCountRenderer.view_count?.runs?.map(r => r.text).join('') ||
+                                   viewCountRenderer.view_count?.text;
+                
+                if (exactString) {
+                  const exactViewCount = parseInt(String(exactString).replace(/[^0-9]/g, ''));
+                  if (!isNaN(exactViewCount) && exactViewCount > 0 && (bestCount <= 0 || exactViewCount < bestCount * 1.5)) {
+                    viewerCount = exactViewCount;
+                  }
+                }
+              }
+            }
+          }
+        }
 
         liveVideo = { title: liveTitle, id: videoId, views: viewerCount, startTime };
       }
@@ -297,20 +355,22 @@ app.get('/channel/:channelId', async (req, res) => {
 const server = app.listen(PORT, () => {
   console.log(`✅ YouTube Chat Server v${SERVER_VERSION} running on port ${PORT}`);
 
-  // 앱 배포 서버에서 필요 버전 확인
-  axios.get(`${APP_URL}/api/youtube/server-version`)
-    .then(({ data }) => {
-      const required = data?.requiredVersion;
-      if (required && required !== SERVER_VERSION) {
-        console.warn(`⚠️  버전 불일치! 현재: v${SERVER_VERSION} / 필요: v${required}`);
-        console.warn(`⚠️  최신 버전을 다운로드해주세요: ${APP_URL}`);
-      } else {
-        console.log('✅ 서버 버전이 최신입니다.');
-      }
-    })
-    .catch(() => {
-      console.log('ℹ️  버전 확인 실패 (네트워크 없음 또는 야하 중)');
-    });
+  // 앱 배포 서버에서 필요 버전 확인 (약간의 지연을 두어 앱 시작 대기)
+  setTimeout(() => {
+    axios.get(`${APP_URL}/api/youtube/server-version`)
+      .then(({ data }) => {
+        const required = data?.requiredVersion;
+        if (required && required !== SERVER_VERSION) {
+          console.warn(`⚠️  버전 불일치! 현재: v${SERVER_VERSION} / 필요: v${required}`);
+          console.warn(`⚠️  최신 버전을 다운로드해주세요: ${APP_URL}`);
+        } else {
+          console.log('✅ 서버 버전이 최신입니다.');
+        }
+      })
+      .catch((err) => {
+        console.log(`ℹ️  버전 확인 건너뜀 (URL: ${APP_URL}, 사유: ${err.message})`);
+      });
+  }, 3000);
 });
 
 server.on('error', (err) => {
@@ -375,7 +435,7 @@ wss.on('connection', (ws) => {
           channelName = liveId;
         }
 
-        console.log(`🚀 채팅 스트림 시작 요청: ${channelName}`);
+        console.log(`🚀 채팅 스트림 시작 요청: ${channelName} (${liveId})`);
         
         // 기존 세션 정리
         if (currentLiveChatInstance) {

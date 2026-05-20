@@ -31821,446 +31821,6 @@ var require_lib3 = __commonJS({
   }
 });
 
-// node_modules/dotenv/package.json
-var require_package = __commonJS({
-  "node_modules/dotenv/package.json"(exports2, module2) {
-    module2.exports = {
-      name: "dotenv",
-      version: "17.3.1",
-      description: "Loads environment variables from .env file",
-      main: "lib/main.js",
-      types: "lib/main.d.ts",
-      exports: {
-        ".": {
-          types: "./lib/main.d.ts",
-          require: "./lib/main.js",
-          default: "./lib/main.js"
-        },
-        "./config": "./config.js",
-        "./config.js": "./config.js",
-        "./lib/env-options": "./lib/env-options.js",
-        "./lib/env-options.js": "./lib/env-options.js",
-        "./lib/cli-options": "./lib/cli-options.js",
-        "./lib/cli-options.js": "./lib/cli-options.js",
-        "./package.json": "./package.json"
-      },
-      scripts: {
-        "dts-check": "tsc --project tests/types/tsconfig.json",
-        lint: "standard",
-        pretest: "npm run lint && npm run dts-check",
-        test: "tap run tests/**/*.js --allow-empty-coverage --disable-coverage --timeout=60000",
-        "test:coverage": "tap run tests/**/*.js --show-full-coverage --timeout=60000 --coverage-report=text --coverage-report=lcov",
-        prerelease: "npm test",
-        release: "standard-version"
-      },
-      repository: {
-        type: "git",
-        url: "git://github.com/motdotla/dotenv.git"
-      },
-      homepage: "https://github.com/motdotla/dotenv#readme",
-      funding: "https://dotenvx.com",
-      keywords: [
-        "dotenv",
-        "env",
-        ".env",
-        "environment",
-        "variables",
-        "config",
-        "settings"
-      ],
-      readmeFilename: "README.md",
-      license: "BSD-2-Clause",
-      devDependencies: {
-        "@types/node": "^18.11.3",
-        decache: "^4.6.2",
-        sinon: "^14.0.1",
-        standard: "^17.0.0",
-        "standard-version": "^9.5.0",
-        tap: "^19.2.0",
-        typescript: "^4.8.4"
-      },
-      engines: {
-        node: ">=12"
-      },
-      browser: {
-        fs: false
-      }
-    };
-  }
-});
-
-// node_modules/dotenv/lib/main.js
-var require_main = __commonJS({
-  "node_modules/dotenv/lib/main.js"(exports2, module2) {
-    var fs2 = require("fs");
-    var path2 = require("path");
-    var os2 = require("os");
-    var crypto3 = require("crypto");
-    var packageJson = require_package();
-    var version3 = packageJson.version;
-    var TIPS = [
-      "\u{1F510} encrypt with Dotenvx: https://dotenvx.com",
-      "\u{1F510} prevent committing .env to code: https://dotenvx.com/precommit",
-      "\u{1F510} prevent building .env in docker: https://dotenvx.com/prebuild",
-      "\u{1F916} agentic secret storage: https://dotenvx.com/as2",
-      "\u26A1\uFE0F secrets for agents: https://dotenvx.com/as2",
-      "\u{1F6E1}\uFE0F auth for agents: https://vestauth.com",
-      "\u{1F6E0}\uFE0F  run anywhere with `dotenvx run -- yourcommand`",
-      "\u2699\uFE0F  specify custom .env file path with { path: '/custom/path/.env' }",
-      "\u2699\uFE0F  enable debug logging with { debug: true }",
-      "\u2699\uFE0F  override existing env vars with { override: true }",
-      "\u2699\uFE0F  suppress all logs with { quiet: true }",
-      "\u2699\uFE0F  write to custom object with { processEnv: myObject }",
-      "\u2699\uFE0F  load multiple .env files with { path: ['.env.local', '.env'] }"
-    ];
-    function _getRandomTip() {
-      return TIPS[Math.floor(Math.random() * TIPS.length)];
-    }
-    function parseBoolean(value) {
-      if (typeof value === "string") {
-        return !["false", "0", "no", "off", ""].includes(value.toLowerCase());
-      }
-      return Boolean(value);
-    }
-    function supportsAnsi() {
-      return process.stdout.isTTY;
-    }
-    function dim(text) {
-      return supportsAnsi() ? `\x1B[2m${text}\x1B[0m` : text;
-    }
-    var LINE = /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/mg;
-    function parse6(src) {
-      const obj = {};
-      let lines = src.toString();
-      lines = lines.replace(/\r\n?/mg, "\n");
-      let match;
-      while ((match = LINE.exec(lines)) != null) {
-        const key = match[1];
-        let value = match[2] || "";
-        value = value.trim();
-        const maybeQuote = value[0];
-        value = value.replace(/^(['"`])([\s\S]*)\1$/mg, "$2");
-        if (maybeQuote === '"') {
-          value = value.replace(/\\n/g, "\n");
-          value = value.replace(/\\r/g, "\r");
-        }
-        obj[key] = value;
-      }
-      return obj;
-    }
-    function _parseVault(options) {
-      options = options || {};
-      const vaultPath = _vaultPath(options);
-      options.path = vaultPath;
-      const result = DotenvModule.configDotenv(options);
-      if (!result.parsed) {
-        const err = new Error(`MISSING_DATA: Cannot parse ${vaultPath} for an unknown reason`);
-        err.code = "MISSING_DATA";
-        throw err;
-      }
-      const keys = _dotenvKey(options).split(",");
-      const length = keys.length;
-      let decrypted;
-      for (let i = 0; i < length; i++) {
-        try {
-          const key = keys[i].trim();
-          const attrs = _instructions(result, key);
-          decrypted = DotenvModule.decrypt(attrs.ciphertext, attrs.key);
-          break;
-        } catch (error2) {
-          if (i + 1 >= length) {
-            throw error2;
-          }
-        }
-      }
-      return DotenvModule.parse(decrypted);
-    }
-    function _warn(message) {
-      console.error(`[dotenv@${version3}][WARN] ${message}`);
-    }
-    function _debug(message) {
-      console.log(`[dotenv@${version3}][DEBUG] ${message}`);
-    }
-    function _log(message) {
-      console.log(`[dotenv@${version3}] ${message}`);
-    }
-    function _dotenvKey(options) {
-      if (options && options.DOTENV_KEY && options.DOTENV_KEY.length > 0) {
-        return options.DOTENV_KEY;
-      }
-      if (process.env.DOTENV_KEY && process.env.DOTENV_KEY.length > 0) {
-        return process.env.DOTENV_KEY;
-      }
-      return "";
-    }
-    function _instructions(result, dotenvKey) {
-      let uri;
-      try {
-        uri = new URL(dotenvKey);
-      } catch (error2) {
-        if (error2.code === "ERR_INVALID_URL") {
-          const err = new Error("INVALID_DOTENV_KEY: Wrong format. Must be in valid uri format like dotenv://:key_1234@dotenvx.com/vault/.env.vault?environment=development");
-          err.code = "INVALID_DOTENV_KEY";
-          throw err;
-        }
-        throw error2;
-      }
-      const key = uri.password;
-      if (!key) {
-        const err = new Error("INVALID_DOTENV_KEY: Missing key part");
-        err.code = "INVALID_DOTENV_KEY";
-        throw err;
-      }
-      const environment = uri.searchParams.get("environment");
-      if (!environment) {
-        const err = new Error("INVALID_DOTENV_KEY: Missing environment part");
-        err.code = "INVALID_DOTENV_KEY";
-        throw err;
-      }
-      const environmentKey = `DOTENV_VAULT_${environment.toUpperCase()}`;
-      const ciphertext = result.parsed[environmentKey];
-      if (!ciphertext) {
-        const err = new Error(`NOT_FOUND_DOTENV_ENVIRONMENT: Cannot locate environment ${environmentKey} in your .env.vault file.`);
-        err.code = "NOT_FOUND_DOTENV_ENVIRONMENT";
-        throw err;
-      }
-      return { ciphertext, key };
-    }
-    function _vaultPath(options) {
-      let possibleVaultPath = null;
-      if (options && options.path && options.path.length > 0) {
-        if (Array.isArray(options.path)) {
-          for (const filepath of options.path) {
-            if (fs2.existsSync(filepath)) {
-              possibleVaultPath = filepath.endsWith(".vault") ? filepath : `${filepath}.vault`;
-            }
-          }
-        } else {
-          possibleVaultPath = options.path.endsWith(".vault") ? options.path : `${options.path}.vault`;
-        }
-      } else {
-        possibleVaultPath = path2.resolve(process.cwd(), ".env.vault");
-      }
-      if (fs2.existsSync(possibleVaultPath)) {
-        return possibleVaultPath;
-      }
-      return null;
-    }
-    function _resolveHome(envPath) {
-      return envPath[0] === "~" ? path2.join(os2.homedir(), envPath.slice(1)) : envPath;
-    }
-    function _configVault(options) {
-      const debug2 = parseBoolean(process.env.DOTENV_CONFIG_DEBUG || options && options.debug);
-      const quiet = parseBoolean(process.env.DOTENV_CONFIG_QUIET || options && options.quiet);
-      if (debug2 || !quiet) {
-        _log("Loading env from encrypted .env.vault");
-      }
-      const parsed = DotenvModule._parseVault(options);
-      let processEnv = process.env;
-      if (options && options.processEnv != null) {
-        processEnv = options.processEnv;
-      }
-      DotenvModule.populate(processEnv, parsed, options);
-      return { parsed };
-    }
-    function configDotenv(options) {
-      const dotenvPath = path2.resolve(process.cwd(), ".env");
-      let encoding = "utf8";
-      let processEnv = process.env;
-      if (options && options.processEnv != null) {
-        processEnv = options.processEnv;
-      }
-      let debug2 = parseBoolean(processEnv.DOTENV_CONFIG_DEBUG || options && options.debug);
-      let quiet = parseBoolean(processEnv.DOTENV_CONFIG_QUIET || options && options.quiet);
-      if (options && options.encoding) {
-        encoding = options.encoding;
-      } else {
-        if (debug2) {
-          _debug("No encoding is specified. UTF-8 is used by default");
-        }
-      }
-      let optionPaths = [dotenvPath];
-      if (options && options.path) {
-        if (!Array.isArray(options.path)) {
-          optionPaths = [_resolveHome(options.path)];
-        } else {
-          optionPaths = [];
-          for (const filepath of options.path) {
-            optionPaths.push(_resolveHome(filepath));
-          }
-        }
-      }
-      let lastError;
-      const parsedAll = {};
-      for (const path3 of optionPaths) {
-        try {
-          const parsed = DotenvModule.parse(fs2.readFileSync(path3, { encoding }));
-          DotenvModule.populate(parsedAll, parsed, options);
-        } catch (e) {
-          if (debug2) {
-            _debug(`Failed to load ${path3} ${e.message}`);
-          }
-          lastError = e;
-        }
-      }
-      const populated = DotenvModule.populate(processEnv, parsedAll, options);
-      debug2 = parseBoolean(processEnv.DOTENV_CONFIG_DEBUG || debug2);
-      quiet = parseBoolean(processEnv.DOTENV_CONFIG_QUIET || quiet);
-      if (debug2 || !quiet) {
-        const keysCount = Object.keys(populated).length;
-        const shortPaths = [];
-        for (const filePath of optionPaths) {
-          try {
-            const relative = path2.relative(process.cwd(), filePath);
-            shortPaths.push(relative);
-          } catch (e) {
-            if (debug2) {
-              _debug(`Failed to load ${filePath} ${e.message}`);
-            }
-            lastError = e;
-          }
-        }
-        _log(`injecting env (${keysCount}) from ${shortPaths.join(",")} ${dim(`-- tip: ${_getRandomTip()}`)}`);
-      }
-      if (lastError) {
-        return { parsed: parsedAll, error: lastError };
-      } else {
-        return { parsed: parsedAll };
-      }
-    }
-    function config(options) {
-      if (_dotenvKey(options).length === 0) {
-        return DotenvModule.configDotenv(options);
-      }
-      const vaultPath = _vaultPath(options);
-      if (!vaultPath) {
-        _warn(`You set DOTENV_KEY but you are missing a .env.vault file at ${vaultPath}. Did you forget to build it?`);
-        return DotenvModule.configDotenv(options);
-      }
-      return DotenvModule._configVault(options);
-    }
-    function decrypt(encrypted, keyStr) {
-      const key = Buffer.from(keyStr.slice(-64), "hex");
-      let ciphertext = Buffer.from(encrypted, "base64");
-      const nonce = ciphertext.subarray(0, 12);
-      const authTag = ciphertext.subarray(-16);
-      ciphertext = ciphertext.subarray(12, -16);
-      try {
-        const aesgcm = crypto3.createDecipheriv("aes-256-gcm", key, nonce);
-        aesgcm.setAuthTag(authTag);
-        return `${aesgcm.update(ciphertext)}${aesgcm.final()}`;
-      } catch (error2) {
-        const isRange = error2 instanceof RangeError;
-        const invalidKeyLength = error2.message === "Invalid key length";
-        const decryptionFailed = error2.message === "Unsupported state or unable to authenticate data";
-        if (isRange || invalidKeyLength) {
-          const err = new Error("INVALID_DOTENV_KEY: It must be 64 characters long (or more)");
-          err.code = "INVALID_DOTENV_KEY";
-          throw err;
-        } else if (decryptionFailed) {
-          const err = new Error("DECRYPTION_FAILED: Please check your DOTENV_KEY");
-          err.code = "DECRYPTION_FAILED";
-          throw err;
-        } else {
-          throw error2;
-        }
-      }
-    }
-    function populate(processEnv, parsed, options = {}) {
-      const debug2 = Boolean(options && options.debug);
-      const override = Boolean(options && options.override);
-      const populated = {};
-      if (typeof parsed !== "object") {
-        const err = new Error("OBJECT_REQUIRED: Please check the processEnv argument being passed to populate");
-        err.code = "OBJECT_REQUIRED";
-        throw err;
-      }
-      for (const key of Object.keys(parsed)) {
-        if (Object.prototype.hasOwnProperty.call(processEnv, key)) {
-          if (override === true) {
-            processEnv[key] = parsed[key];
-            populated[key] = parsed[key];
-          }
-          if (debug2) {
-            if (override === true) {
-              _debug(`"${key}" is already defined and WAS overwritten`);
-            } else {
-              _debug(`"${key}" is already defined and was NOT overwritten`);
-            }
-          }
-        } else {
-          processEnv[key] = parsed[key];
-          populated[key] = parsed[key];
-        }
-      }
-      return populated;
-    }
-    var DotenvModule = {
-      configDotenv,
-      _configVault,
-      _parseVault,
-      config,
-      decrypt,
-      parse: parse6,
-      populate
-    };
-    module2.exports.configDotenv = DotenvModule.configDotenv;
-    module2.exports._configVault = DotenvModule._configVault;
-    module2.exports._parseVault = DotenvModule._parseVault;
-    module2.exports.config = DotenvModule.config;
-    module2.exports.decrypt = DotenvModule.decrypt;
-    module2.exports.parse = DotenvModule.parse;
-    module2.exports.populate = DotenvModule.populate;
-    module2.exports = DotenvModule;
-  }
-});
-
-// node_modules/dotenv/lib/env-options.js
-var require_env_options = __commonJS({
-  "node_modules/dotenv/lib/env-options.js"(exports2, module2) {
-    var options = {};
-    if (process.env.DOTENV_CONFIG_ENCODING != null) {
-      options.encoding = process.env.DOTENV_CONFIG_ENCODING;
-    }
-    if (process.env.DOTENV_CONFIG_PATH != null) {
-      options.path = process.env.DOTENV_CONFIG_PATH;
-    }
-    if (process.env.DOTENV_CONFIG_QUIET != null) {
-      options.quiet = process.env.DOTENV_CONFIG_QUIET;
-    }
-    if (process.env.DOTENV_CONFIG_DEBUG != null) {
-      options.debug = process.env.DOTENV_CONFIG_DEBUG;
-    }
-    if (process.env.DOTENV_CONFIG_OVERRIDE != null) {
-      options.override = process.env.DOTENV_CONFIG_OVERRIDE;
-    }
-    if (process.env.DOTENV_CONFIG_DOTENV_KEY != null) {
-      options.DOTENV_KEY = process.env.DOTENV_CONFIG_DOTENV_KEY;
-    }
-    module2.exports = options;
-  }
-});
-
-// node_modules/dotenv/lib/cli-options.js
-var require_cli_options = __commonJS({
-  "node_modules/dotenv/lib/cli-options.js"(exports2, module2) {
-    var re = /^dotenv_config_(encoding|path|quiet|debug|override|DOTENV_KEY)=(.+)$/;
-    module2.exports = function optionMatcher(args) {
-      const options = args.reduce(function(acc, cur) {
-        const matches = cur.match(re);
-        if (matches) {
-          acc[matches[1]] = matches[2];
-        }
-        return acc;
-      }, {});
-      if (!("quiet" in options)) {
-        options.quiet = "true";
-      }
-      return options;
-    };
-  }
-});
-
 // node_modules/tslib/tslib.es6.mjs
 function __setFunctionName(f, name, prefix) {
   if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
@@ -35060,7 +34620,7 @@ var require_urlencoded2 = __commonJS({
 });
 
 // node_modules/@fastify/busboy/lib/main.js
-var require_main2 = __commonJS({
+var require_main = __commonJS({
   "node_modules/@fastify/busboy/lib/main.js"(exports2, module2) {
     "use strict";
     var WritableStream = require("node:stream").Writable;
@@ -37003,7 +36563,7 @@ var require_formdata = __commonJS({
 var require_body = __commonJS({
   "node_modules/undici/lib/fetch/body.js"(exports2, module2) {
     "use strict";
-    var Busboy = require_main2();
+    var Busboy = require_main();
     var util3 = require_util();
     var {
       ReadableStreamFrom,
@@ -91374,19 +90934,6 @@ var {
 // server.js
 var import_fs = require("fs");
 var import_readline = __toESM(require("readline"), 1);
-
-// node_modules/dotenv/config.js
-(function() {
-  require_main().config(
-    Object.assign(
-      {},
-      require_env_options(),
-      require_cli_options()(process.argv)
-    )
-  );
-})();
-
-// server.js
 function fatalExit(label, err) {
   const msg = `
 [${label}] ${err?.stack || err}
@@ -91403,7 +90950,7 @@ process.on("uncaughtException", (err) => fatalExit("uncaughtException", err));
 process.on("unhandledRejection", (reason) => fatalExit("unhandledRejection", reason));
 var SERVER_VERSION;
 try {
-  SERVER_VERSION = "1.0.3";
+  SERVER_VERSION = "1.0.4";
 } catch {
   SERVER_VERSION = JSON.parse(
     (0, import_fs.readFileSync)(new URL("./package.json", __importMetaUrl__), "utf8")
@@ -91562,7 +91109,49 @@ app.get("/channel/:channelId", async (req, res) => {
           youtube.getInfo(videoId).catch(() => null),
           5e3
         );
-        startTime = infoForStart ? parseTimestamp(infoForStart.basic_info?.start_timestamp) : null;
+        if (infoForStart) {
+          startTime = parseTimestamp(infoForStart.basic_info?.start_timestamp);
+          try {
+            const { data: html } = await axios_default.get(`https://www.youtube.com/watch?v=${videoId}`, {
+              timeout: 3e3,
+              headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7"
+              }
+            });
+            const ovcMatch = html.match(/"videoViewCountRenderer":\{[^}]*?"isLive":true[^}]*?"originalViewCount":"(\d+)"/);
+            if (ovcMatch && ovcMatch[1]) {
+              const scrapedCount = parseInt(ovcMatch[1]);
+              if (!isNaN(scrapedCount) && (bestCount <= 0 || scrapedCount < bestCount * 1.5)) {
+                viewerCount = scrapedCount;
+              }
+            } else {
+              const runsMatch = html.match(/"viewCount":\{"videoViewCountRenderer":\{"viewCount":\{"runs":\[\{"text":".*?"\},\{"text":"([\d,.]+)"\},\{"text":"명 시청 중"\}\]/);
+              if (runsMatch && runsMatch[1]) {
+                const scrapedCount = parseInt(runsMatch[1].replace(/,/g, ""));
+                if (!isNaN(scrapedCount) && (bestCount <= 0 || scrapedCount < bestCount * 1.5)) {
+                  viewerCount = scrapedCount;
+                }
+              }
+            }
+          } catch (e) {
+          }
+          if (viewerCount === bestCount || viewerCount === 0) {
+            const viewCountRenderer = infoForStart.primary_info?.view_count?.video_view_count_renderer;
+            if (viewCountRenderer) {
+              const isRendererLive = viewCountRenderer.is_live || JSON.stringify(viewCountRenderer).includes("\uC2DC\uCCAD \uC911") || JSON.stringify(viewCountRenderer).includes("watching");
+              if (isRendererLive) {
+                const exactString = viewCountRenderer.original_view_count || viewCountRenderer.view_count?.runs?.map((r) => r.text).join("") || viewCountRenderer.view_count?.text;
+                if (exactString) {
+                  const exactViewCount = parseInt(String(exactString).replace(/[^0-9]/g, ""));
+                  if (!isNaN(exactViewCount) && exactViewCount > 0 && (bestCount <= 0 || exactViewCount < bestCount * 1.5)) {
+                    viewerCount = exactViewCount;
+                  }
+                }
+              }
+            }
+          }
+        }
         liveVideo = { title: liveTitle, id: videoId, views: viewerCount, startTime };
       }
       if (!isLive && contents.length > 0) {
@@ -91618,17 +91207,19 @@ app.get("/channel/:channelId", async (req, res) => {
 });
 var server = app.listen(PORT, () => {
   console.log(`\u2705 YouTube Chat Server v${SERVER_VERSION} running on port ${PORT}`);
-  axios_default.get(`${APP_URL}/api/youtube/server-version`).then(({ data: data2 }) => {
-    const required = data2?.requiredVersion;
-    if (required && required !== SERVER_VERSION) {
-      console.warn(`\u26A0\uFE0F  \uBC84\uC804 \uBD88\uC77C\uCE58! \uD604\uC7AC: v${SERVER_VERSION} / \uD544\uC694: v${required}`);
-      console.warn(`\u26A0\uFE0F  \uCD5C\uC2E0 \uBC84\uC804\uC744 \uB2E4\uC6B4\uB85C\uB4DC\uD574\uC8FC\uC138\uC694: ${APP_URL}`);
-    } else {
-      console.log("\u2705 \uC11C\uBC84 \uBC84\uC804\uC774 \uCD5C\uC2E0\uC785\uB2C8\uB2E4.");
-    }
-  }).catch(() => {
-    console.log("\u2139\uFE0F  \uBC84\uC804 \uD655\uC778 \uC2E4\uD328 (\uB124\uD2B8\uC6CC\uD06C \uC5C6\uC74C \uB610\uB294 \uC57C\uD558 \uC911)");
-  });
+  setTimeout(() => {
+    axios_default.get(`${APP_URL}/api/youtube/server-version`).then(({ data: data2 }) => {
+      const required = data2?.requiredVersion;
+      if (required && required !== SERVER_VERSION) {
+        console.warn(`\u26A0\uFE0F  \uBC84\uC804 \uBD88\uC77C\uCE58! \uD604\uC7AC: v${SERVER_VERSION} / \uD544\uC694: v${required}`);
+        console.warn(`\u26A0\uFE0F  \uCD5C\uC2E0 \uBC84\uC804\uC744 \uB2E4\uC6B4\uB85C\uB4DC\uD574\uC8FC\uC138\uC694: ${APP_URL}`);
+      } else {
+        console.log("\u2705 \uC11C\uBC84 \uBC84\uC804\uC774 \uCD5C\uC2E0\uC785\uB2C8\uB2E4.");
+      }
+    }).catch((err) => {
+      console.log(`\u2139\uFE0F  \uBC84\uC804 \uD655\uC778 \uAC74\uB108\uB700 (URL: ${APP_URL}, \uC0AC\uC720: ${err.message})`);
+    });
+  }, 3e3);
 });
 server.on("error", (err) => {
   if (err.code === "EADDRINUSE") {
@@ -91675,7 +91266,7 @@ wss.on("connection", (ws) => {
         } catch (_) {
           channelName = liveId;
         }
-        console.log(`\u{1F680} \uCC44\uD305 \uC2A4\uD2B8\uB9BC \uC2DC\uC791 \uC694\uCCAD: ${channelName}`);
+        console.log(`\u{1F680} \uCC44\uD305 \uC2A4\uD2B8\uB9BC \uC2DC\uC791 \uC694\uCCAD: ${channelName} (${liveId})`);
         if (currentLiveChatInstance) {
           currentLiveChatInstance.stop();
           currentLiveChatInstance = null;
