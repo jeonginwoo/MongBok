@@ -91026,7 +91026,18 @@ app.get("/channel/:channelId", async (req, res) => {
   try {
     const { channelId } = req.params;
     const youtube = await getYoutubeInstance();
-    const channel = await youtube.getChannel(channelId).catch((err) => {
+    let targetId = channelId;
+    if (channelId.startsWith("@")) {
+      try {
+        const resolved = await youtube.resolveURL(`https://www.youtube.com/${channelId}`);
+        if (resolved.payload?.browseId) {
+          targetId = resolved.payload.browseId;
+        }
+      } catch (err) {
+        console.error("youtube handle resolution error:", err);
+      }
+    }
+    const channel = await youtube.getChannel(targetId).catch((err) => {
       console.error("youtube channel fetch error:", err);
       return null;
     });
@@ -91188,9 +91199,9 @@ app.get("/channel/:channelId", async (req, res) => {
     }
     res.json({
       channel: {
-        id: channelId,
+        id: targetId,
         name: channelName,
-        url: `https://www.youtube.com/channel/${channelId}`,
+        url: `https://www.youtube.com/channel/${targetId}`,
         iconURL: channel.header?.author?.best_thumbnail?.url || channel.metadata?.avatar?.[0]?.url || "",
         subscribers: channel.header?.subscribers?.text || "0",
         verified: channel.header?.author?.is_verified || false

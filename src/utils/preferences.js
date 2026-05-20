@@ -153,24 +153,18 @@ export const validateChannels = async (value) => {
     
     const zoneIds = [];
     const validationPromises = Object.keys(channelsObj).map(
-      (channelId) => {
+      async (channelId) => {
         const channelData = channelsObj[channelId];
         if (typeof channelId !== "string" || !channelId) {
-          return Promise.reject({
-            error: `Validation Error: Invalid channelId '${channelId}'.`,
-          });
+          throw new Error(`Validation Error: Invalid channelId '${channelId}'.`);
         }
         if (typeof channelData !== "object" || channelData === null) {
-          return Promise.reject({
-            error: `Validation Error: Channel data for '${channelId}' is not a valid object.`,
-          });
+          throw new Error(`Validation Error: Channel data for '${channelId}' is not a valid object.`);
         }
 
         const { platform, zoneId = null } = channelData;
         if (!["chzzk", "soop", "youtube"].includes(platform)) {
-          return Promise.reject({
-            error: `Validation Error: Invalid platform '${platform}' for channel '${channelId}'. Must be 'chzzk', 'soop', 'youtube'.`,
-          });
+          throw new Error(`Validation Error: Invalid platform '${platform}' for channel '${channelId}'. Must be 'chzzk', 'soop', 'youtube'.`);
         }
 
         if (zoneId !== null) {
@@ -179,25 +173,33 @@ export const validateChannels = async (value) => {
             !Number.isInteger(zoneId) ||
             zoneId < 1
           ) {
-            return Promise.reject({
-              error: `Validation Error: Invalid zoneId '${zoneId}' for channel '${channelId}'. Must be null or a positive integer.`,
-            });
+            throw new Error(`Validation Error: Invalid zoneId '${zoneId}' for channel '${channelId}'. Must be null or a positive integer.`);
           }
           zoneIds.push(zoneId);
         }
 
-        return getLiveStatus(channelId, platform);
+        const live = await getLiveStatus(channelId, platform);
+        return {
+          originalId: channelId,
+          resolvedId: live.id || channelId,
+          data: channelData
+        };
       }
     );
 
     const results = await Promise.allSettled(validationPromises);
-    const invalidChannels = results.reduce((acc, result, index) => {
+    const invalidChannels = [];
+    const normalizedChannels = {};
+
+    results.forEach((result, index) => {
+      const originalId = Object.keys(channelsObj)[index];
       if (result.status === "rejected") {
-        const channelId = Object.keys(channelsObj)[index];
-        acc.push(channelId);
+        invalidChannels.push(originalId);
+      } else {
+        const { resolvedId, data } = result.value;
+        normalizedChannels[resolvedId] = data;
       }
-      return acc;
-    }, []);
+    });
 
     if (invalidChannels.length > 0) {
       return `다음 채널 ID에 대한 데이터를 가져올 수 없습니다: ${invalidChannels.join(
@@ -218,10 +220,11 @@ export const validateChannels = async (value) => {
         return "'zoneId' 값이 1부터 순차적이지 않습니다.";
       }
     }
+
+    return { success: true, channels: normalizedChannels };
   } catch (e) {
     return `'channels' JSON 문자열을 구문 분석하지 못했습니다: ${e.message}`;
   }
-  return true;
 };
 
 export const validateLayout = async (parsedData) => {
@@ -311,6 +314,8 @@ export const validatePreferences = async (dataToValidate) => {
       )}. 허용되는 키는: ${ALLOWED_KEYS.join(", ")} 입니다.`;
     }
 
+    const normalizedData = { ...parsedData };
+
     // 각 키별 유효성 검사 실행
     for (const key of dataKeys) {
       let value = parsedData[key];
@@ -364,6 +369,10 @@ export const validatePreferences = async (dataToValidate) => {
           break;
         case "channels":
           validationResult = await validateChannels(value);
+          if (validationResult && typeof validationResult === "object" && validationResult.success) {
+            normalizedData.channels = validationResult.channels;
+            validationResult = true;
+          }
           break;
         case "layout":
           // Layout validation depends on other keys, handled below.
@@ -378,14 +387,14 @@ export const validatePreferences = async (dataToValidate) => {
     }
 
     // Layout validation (depends on ratio and channels)
-    if ("layout" in parsedData) {
-      const layoutValidation = await validateLayout(parsedData);
+    if ("layout" in normalizedData) {
+      const layoutValidation = await validateLayout(normalizedData);
       if (layoutValidation !== true) {
         return layoutValidation;
       }
     }
 
-    return true;
+    return normalizedData;
   } catch (e) {
     return `전체 데이터 문자열을 JSON으로 구문 분석하지 못했습니다: ${e.message}`;
   }

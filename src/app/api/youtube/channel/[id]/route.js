@@ -31,8 +31,23 @@ export async function GET(request, context) {
     // 캐시된 Innertube 인스턴스 사용
     const youtube = await getYoutubeInstance();
 
+    let targetId = channelId;
+
+    // 핸들(@handle)인 경우 채널 ID로 변환 시도
+    if (channelId.startsWith('@')) {
+      try {
+        const resolved = await youtube.resolveURL(`https://www.youtube.com/${channelId}`);
+        if (resolved.payload?.browseId) {
+          targetId = resolved.payload.browseId;
+        }
+      } catch (err) {
+        console.error("youtube handle resolution error:", err);
+        // 실패 시 원래 ID로 진행 (getChannel에서 에러 처리됨)
+      }
+    }
+
     // 채널 정보 가져오기
-    const channel = await youtube.getChannel(channelId).catch((err) => {
+    const channel = await youtube.getChannel(targetId).catch((err) => {
       console.error("youtube channel fetch error:", err);
       return null;
     });
@@ -208,9 +223,9 @@ export async function GET(request, context) {
 
     return NextResponse.json({
       channel: {
-        id: channelId,
+        id: targetId,
         name: channelName,
-        url: `https://www.youtube.com/channel/${channelId}`,
+        url: `https://www.youtube.com/channel/${targetId}`,
         iconURL: channel.header?.author?.best_thumbnail?.url || 
                  channel.metadata?.avatar?.[0]?.url || "",
         subscribers: channel.header?.subscribers?.text || "0",

@@ -391,7 +391,7 @@ export default function SettingsArea({ onClose }) {
         return;
       }
 
-      applyPreferences(data.trim() === "" ? {} : JSON.parse(data));
+      applyPreferences(validationResult);
 
       setSaveSuccess(true);
       setSnackbar({ open: true, message: "설정이 성공적으로 저장되었습니다!", severity: "success" });

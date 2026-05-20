@@ -31,6 +31,7 @@ const getChzzkLiveStatus = async (channelId) => {
     }
 
     return {
+      id: channelId,
       name: data?.channel?.channelName ?? "",
       imageUrl: data?.channel?.channelImageUrl ?? "",
       liveTitle: data?.liveTitle ?? "",
@@ -57,6 +58,7 @@ const getChzzkLiveStatus2 = async (channelId) => {
     const data = response.data?.content;
 
     return {
+      id: channelId,
       name: data?.channelName ?? "",
       imageUrl: data?.channelImageUrl ?? "",
       liveTitle: "",
@@ -96,6 +98,7 @@ const getSoopLiveDetails = async (channelId) => {
     const data = response.data?.CHANNEL;
 
     return {
+      id: channelId,
       liveCategory: data?.CATEGORY_TAGS?.[0] ?? null,
       tags: data?.HASH_TAGS ?? [],
       chatNo: data?.CHATNO,
@@ -119,6 +122,7 @@ const getSoopLiveStatus = async (channelId) => {
     const detail = await getSoopLiveDetails(channelId);
 
     return {
+      id: channelId,
       name: data?.station?.user_nick ?? "",
       imageUrl: data?.profile_image ?? "",
       liveTitle:
@@ -146,6 +150,7 @@ const getSoopLiveStatus = async (channelId) => {
 const processYoutubeChannelData = (data) => {
   const { channel, liveVideo, isLive, viewerCount, lastLiveInfo } = data;
   return {
+    id: channel.id, // 실제 고유 채널 ID (UC...)
     name: channel.name ?? "",
     imageUrl: channel.iconURL ?? "",
     liveTitle: liveVideo?.title ?? "",
@@ -170,7 +175,7 @@ const getYoutubeLiveStatus = async (channelId) => {
   const controller = new AbortController();
   const tid = setTimeout(() => controller.abort(), 30000);
   try {
-    const res = await fetch(`${localUrl}/channel/${channelId}`, { signal: controller.signal });
+    const res = await fetch(`${localUrl}/channel/${encodeURIComponent(channelId)}`, { signal: controller.signal });
     clearTimeout(tid);
     if (res.ok) {
       const data = await res.json();
@@ -190,7 +195,7 @@ const getYoutubeLiveStatus = async (channelId) => {
 
   // 로컬 서버 실패 시 Vercel API로 채널 기본 정보 조회 (스트리밍 시간 제외 가능)
   try {
-    const response = await youtube_channel_client.get(`/${channelId}`);
+    const response = await youtube_channel_client.get(`/${encodeURIComponent(channelId)}`);
     const data = response.data;
     if (!data.channel) throw new Error("Channel not found");
     return processYoutubeChannelData(data);
