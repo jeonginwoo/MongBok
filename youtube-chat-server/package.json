@@ -1,6 +1,6 @@
 {
-  "name": "youtube-chat-server",
-  "version": "1.0.5",
+  "name": "youtube_chat_server",
+  "version": "1.0.6",
   "description": "WebSocket server for YouTube live chat streaming",
   "main": "server.js",
   "type": "module",
@@ -9,9 +9,9 @@
     "dev": "node --watch server.js",
     "bundle": "node bundle.mjs",
     "zip": "node zip-builds.mjs",
-    "build:all": "npm run bundle && pkg dist/server.cjs --targets node20-win-x64 --output ../public/downloads/youtube-chat-server-win-x64 && pkg dist/server.cjs --targets node20-macos-x64 --output ../public/downloads/youtube-chat-server-macos-x64 && npm run zip",
-    "build:win": "npm run bundle && pkg dist/server.cjs --targets node20-win-x64 --output ../public/downloads/youtube-chat-server-win-x64 && npm run zip",
-    "build:mac": "npm run bundle && pkg dist/server.cjs --targets node20-macos-x64 --output ../public/downloads/youtube-chat-server-macos-x64 && npm run zip"
+    "build:all": "npm run bundle && pkg dist/server.cjs --targets node20-win-x64 --output ../public/downloads/youtube_chat_server_win-x64 && pkg dist/server.cjs --targets node20-macos-x64 --output ../public/downloads/youtube_chat_server_macos-x64 && npm run zip",
+    "build:win": "npm run bundle && pkg dist/server.cjs --targets node20-win-x64 --output ../public/downloads/youtube_chat_server_win-x64 && npm run zip",
+    "build:mac": "npm run bundle && pkg dist/server.cjs --targets node20-macos-x64 --output ../public/downloads/youtube_chat_server_macos-x64 && npm run zip"
   },
   "keywords": [
     "youtube",

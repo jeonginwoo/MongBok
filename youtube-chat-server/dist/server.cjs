@@ -90950,7 +90950,7 @@ process.on("uncaughtException", (err) => fatalExit("uncaughtException", err));
 process.on("unhandledRejection", (reason) => fatalExit("unhandledRejection", reason));
 var SERVER_VERSION;
 try {
-  SERVER_VERSION = "1.0.4";
+  SERVER_VERSION = "1.0.6";
 } catch {
   SERVER_VERSION = JSON.parse(
     (0, import_fs.readFileSync)(new URL("./package.json", __importMetaUrl__), "utf8")

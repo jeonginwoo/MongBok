@@ -263,8 +263,8 @@ export default function ManualArea() {
           </Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, mb: 2 }}>
             {[
-              { icon: <WindowsIcon />, label: "Windows", href: "/downloads/youtube-chat-server-win-x64.zip" },
-              { icon: <AppleIcon />, label: "macOS", href: "/downloads/youtube-chat-server-macos-x64.zip" },
+              { icon: <WindowsIcon />, label: "Windows", href: "/downloads/mongbok_youtube_chat_server_win-x64_v1.0.6.zip" },
+              { icon: <AppleIcon />, label: "macOS", href: "/downloads/mongbok_youtube_chat_server_macos-x64_v1.0.6.zip" },
             ].map(({ icon, label, href }) => (
               <Button
                 key={label}
