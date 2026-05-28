@@ -9,8 +9,14 @@ import readline from 'readline';
 
 // 타임스탬프를 포함한 로그 출력 함수
 function log(msg, isError = false) {
-  const timestamp = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
-  const prefix = `[${timestamp}]`;
+  const now = new Date();
+  // UTC 시간에 9시간을 더해 서울 시간 생성
+  const seoulTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  const iso = seoulTime.toISOString(); // yyyy-mm-ddThh:mm:ss.sssZ
+  const date = iso.slice(0, 10);
+  const time = iso.slice(11, 19);
+  const prefix = `[${date} ${time}]`;
+
   if (isError) {
     // 에러 메시지가 너무 길면 첫 줄만 출력
     const firstLine = String(msg).split('\n')[0];

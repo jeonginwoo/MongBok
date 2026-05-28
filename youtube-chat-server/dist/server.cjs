@@ -90935,8 +90935,12 @@ var {
 var import_fs = require("fs");
 var import_readline = __toESM(require("readline"), 1);
 function log(msg, isError = false) {
-  const timestamp = (/* @__PURE__ */ new Date()).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
-  const prefix = `[${timestamp}]`;
+  const now = /* @__PURE__ */ new Date();
+  const seoulTime = new Date(now.getTime() + 9 * 60 * 60 * 1e3);
+  const iso = seoulTime.toISOString();
+  const date = iso.slice(0, 10);
+  const time = iso.slice(11, 19);
+  const prefix = `[${date} ${time}]`;
   if (isError) {
     const firstLine = String(msg).split("\n")[0];
     console.error(`${prefix} ${firstLine}`);
@@ -90960,7 +90964,7 @@ process.on("uncaughtException", (err) => fatalExit("uncaughtException", err));
 process.on("unhandledRejection", (reason) => fatalExit("unhandledRejection", reason));
 var SERVER_VERSION;
 try {
-  SERVER_VERSION = "1.0.7";
+  SERVER_VERSION = "1.0.8";
 } catch {
   SERVER_VERSION = JSON.parse(
     (0, import_fs.readFileSync)(new URL("./package.json", __importMetaUrl__), "utf8")
