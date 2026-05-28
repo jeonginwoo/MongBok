@@ -248,6 +248,13 @@ export default function useChzzkChat(channelId) {
 
     ws.onmessage = (event) => {
       if (!isCurrent) return;
+
+      // 에러 상태였더라도 메시지가 들어오면 연결된 것으로 간주하고 상태 복구 (Self-healing)
+      if (statusRef.current === "error" || statusRef.current === "disconnected") {
+        updateStatus("connected");
+        setError(null);
+      }
+
       const json = JSON.parse(event.data);
 
       switch (json.cmd) {

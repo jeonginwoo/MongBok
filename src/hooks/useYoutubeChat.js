@@ -214,6 +214,11 @@ export default function useYoutubeChat(channelId) {
           try {
             const message = JSON.parse(event.data);
             if (message.type === "chat") {
+              // 에러 상태였더라도 채팅이 들어오면 연결된 것으로 간주하고 상태 복구 (Self-healing)
+              if (statusRef.current === "error" || statusRef.current === "disconnected") {
+                updateStatus("connected");
+                setError(null);
+              }
               const chat = convertChat(message.data);
               if (chat) {
                 pendingChatListRef.current.push(chat);
@@ -222,6 +227,9 @@ export default function useYoutubeChat(channelId) {
               console.error("❌ [YouTube] 채팅 에러:", message.error);
               setError(message.error);
               updateStatus("error");
+            } else if (message.type === "end") {
+              console.log("⏹️ [YouTube] 채팅 종료:", message.reason);
+              updateStatus("disconnected");
             }
           } catch (error) {
             console.error("❌ [YouTube] 메시지 파싱 실패:", error);
