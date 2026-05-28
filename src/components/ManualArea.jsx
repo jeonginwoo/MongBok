@@ -82,23 +82,27 @@ export default function ManualArea() {
     >
       <Box sx={{ maxWidth: 800, mx: "auto", pb: 10 }}>
 
-        <Typography
-          component="h1"
-          sx={{
-            fontWeight: 800,
-            fontSize: { xs: "2.8rem", sm: "3.5rem" },
-            letterSpacing: "-0.03em",
-            mb: 6,
-            background: (theme) => 
-              pointColor === "default"
-                ? "linear-gradient(45deg, #FF6B6B 30%, #f06292 90%)"
-                : theme.palette.primary.gradient,
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          몽복 가이드
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "baseline", gap: 2, mb: 6 }}>
+          <Typography
+            component="h1"
+            sx={{
+              fontWeight: 800,
+              fontSize: { xs: "2.8rem", sm: "3.5rem" },
+              letterSpacing: "-0.03em",
+              background: (theme) => 
+                pointColor === "default"
+                  ? "linear-gradient(45deg, #FF6B6B 30%, #f06292 90%)"
+                  : theme.palette.primary.gradient,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            몽복 가이드
+          </Typography>
+          <Typography sx={{ color: "text.disabled", fontSize: "1.4rem", fontWeight: 600 }}>
+            v{process.env.NEXT_PUBLIC_APP_VERSION}
+          </Typography>
+        </Box>
         <Typography sx={{ color: "text.secondary", fontSize: "1.5rem", mb: 6, display: "none" }}>
           멀티 스트리밍 뷰어 사용 설명서
         </Typography>
@@ -267,7 +271,14 @@ export default function ManualArea() {
         </Section>
 
         {/* YouTube 채팅 서버 */}
-        <Section title="YouTube 채팅 서버">
+        <Section title={
+          <Box sx={{ display: "flex", alignItems: "baseline", gap: 1.5 }}>
+            <span>YouTube 채팅 서버</span>
+            <Typography sx={{ color: "text.disabled", fontSize: "1.3rem", fontWeight: 600 }}>
+              v{process.env.NEXT_PUBLIC_REQUIRED_SERVER_VERSION}
+            </Typography>
+          </Box>
+        }>
           <Typography sx={{ fontSize: "1.35rem", color: "text.secondary", lineHeight: 1.7, mb: 3 }}>
             유튜브의 기술적인 구조상 브라우저에서 직접 채팅 데이터를 가져오는 데 한계가 있어, 이를 보조해주는 가벼운 서버 프로그램이 별도로 필요합니다. 아래 버튼으로 운영체제에 맞는 파일을 다운로드하여 실행해 주세요.
           </Typography>
@@ -313,6 +324,7 @@ export default function ManualArea() {
             color: "text.disabled",
             fontSize: "1.2rem",
             mt: 8,
+            display: "none",
           }}
         >
           v{process.env.NEXT_PUBLIC_APP_VERSION}
