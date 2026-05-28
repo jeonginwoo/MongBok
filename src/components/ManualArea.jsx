@@ -1,4 +1,5 @@
 import React from "react";
+import { useAtomValue } from "jotai";
 import { Box, Typography, Divider, Button } from "@mui/material";
 import {
   Settings as SettingsIcon,
@@ -19,43 +20,45 @@ import {
   Apple as AppleIcon,
 } from "@mui/icons-material";
 import { PLATFORM_COLORS } from "@/data/color";
+import { pointColorAtom } from "@/atoms/setting";
 
 const Section = ({ title, children }) => (
-  <Box sx={{ mb: 4 }}>
+  <Box sx={{ mb: 5 }}>
     <Typography
       variant="h5"
       component="h2"
-      sx={{ fontWeight: 700, fontSize: "1.6rem", mb: 1.5 }}
+      sx={{ fontWeight: 700, fontSize: "1.9rem", mb: 2 }}
     >
       {title}
     </Typography>
-    <Divider sx={{ mb: 2, borderColor: "primary.main", opacity: 0.4 }} />
+    <Divider sx={{ mb: 2.5, borderColor: "primary.main", opacity: 0.4 }} />
     {children}
   </Box>
 );
 
 const Item = ({ icon, primary, secondary }) => (
-  <Box sx={{ display: "flex", gap: 2, mb: 2.5, alignItems: "flex-start" }}>
+  <Box sx={{ display: "flex", gap: 2.5, mb: 3.5, alignItems: "flex-start" }}>
     <Box
       sx={{
         color: "primary.main",
-        mt: "0.2rem",
+        mt: "0.25rem",
         flexShrink: 0,
         display: "flex",
+        "& svg": { fontSize: "1.8rem" }
       }}
     >
       {icon}
     </Box>
     <Box>
-      <Typography sx={{ fontWeight: 600, fontSize: "1.35rem", mb: 0.4 }}>
+      <Typography sx={{ fontWeight: 600, fontSize: "1.5rem", mb: 0.6 }}>
         {primary}
       </Typography>
-      <Box component="ul" sx={{ m: 0, pl: "1.4rem", listStyleType: "disc" }}>
+      <Box component="ul" sx={{ m: 0, pl: "1.6rem", listStyleType: "disc" }}>
         {(Array.isArray(secondary) ? secondary : [secondary]).map((line, i) => (
           <Box
             component="li"
             key={i}
-            sx={{ fontSize: "1.2rem", color: "text.secondary", lineHeight: 1.65 }}
+            sx={{ fontSize: "1.3rem", color: "text.secondary", lineHeight: 1.7 }}
           >
             {line}
           </Box>
@@ -66,6 +69,7 @@ const Item = ({ icon, primary, secondary }) => (
 );
 
 export default function ManualArea() {
+  const pointColor = useAtomValue(pointColorAtom);
   return (
     <Box
       sx={{
@@ -73,26 +77,29 @@ export default function ManualArea() {
         overflowY: "scroll",
         backgroundColor: "background.default",
         color: "text.primary",
-        p: { xs: 2, sm: 3, md: 5 },
+        p: { xs: 2, sm: 4, md: 6 },
       }}
     >
-      <Box sx={{ maxWidth: 680, mx: "auto", pb: 8 }}>
+      <Box sx={{ maxWidth: 800, mx: "auto", pb: 10 }}>
 
         <Typography
           component="h1"
           sx={{
             fontWeight: 800,
-            fontSize: { xs: "2.4rem", sm: "3rem" },
+            fontSize: { xs: "2.8rem", sm: "3.5rem" },
             letterSpacing: "-0.03em",
-            mb: 0.5,
-            background: (theme) => theme.palette.primary.gradient,
+            mb: 6,
+            background: (theme) => 
+              pointColor === "default"
+                ? "linear-gradient(45deg, #FF6B6B 30%, #f06292 90%)"
+                : theme.palette.primary.gradient,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
           }}
         >
           몽복 가이드
         </Typography>
-        <Typography sx={{ color: "text.secondary", fontSize: "1.3rem", mb: 5 }}>
+        <Typography sx={{ color: "text.secondary", fontSize: "1.5rem", mb: 6, display: "none" }}>
           멀티 스트리밍 뷰어 사용 설명서
         </Typography>
 
@@ -136,7 +143,7 @@ export default function ManualArea() {
               "검색 상위 5개에 없는 채널은 설정 > 설정 동기화에서 직접 추가할 수 있습니다.",
               '채널 목록에 추가할 항목을 channels 항목에 "채널ID": { "platform": "플랫폼명" } 형식으로 입력 후 저장하면 됩니다.',
               "채널ID는 각 채널의 URL에서 확인할 수 있습니다.",
-              "유튜브의 경우 채널ID 또는 채널 핸들(ex. \"@골뱅이까지작성\") 모두 적용 가능하고, 핸들을 사용할 경우 자동으로 채널ID로 변환됩니다.",
+              "유튜브의 경우 채널ID 또는 채널 핸들(ex. \"@골뱅이까지작성\") 모두 적용 가능하고, 핸들을 사용할 경우 적용 시 채널ID로 변환됩니다.",
               "플랫폼명은 chzzk / soop / youtube 중 하나입니다.",
             ]}
           />
@@ -195,6 +202,9 @@ export default function ManualArea() {
               "녹화 시작 시 브라우저 팝업에서 '이 탭'을 선택하면 방송 화면만 녹화됩니다.",
               "설정에서 '자동 녹화 (1번 Zone)'를 켜면 1번 구역 방송 상태에 따라 자동으로 녹화가 시작/종료됩니다.",
               "녹화 파일은 인덱스 처리가 되어 있지 않아, 긴 영상의 경우 탐색(시간 이동)이 원활하지 않을 수 있습니다. 쾌적한 시청을 위해 별도의 인코딩 작업을 권장합니다.",
+              <Box component="span" sx={{ color: pointColor === "default" ? "error.main" : "primary.main", fontWeight: 700 }}>
+                녹화된 영상의 모든 저작권은 해당 스트리머에게 있습니다. 무단 배포 및 공유를 엄격히 금하며, 반드시 개인 소장용으로만 이용해 주시기 바랍니다.
+              </Box>,
             ]}
           />
           <Item
@@ -208,14 +218,14 @@ export default function ManualArea() {
         <Section title="참고사항">
           <Item
             icon={
-              <Box sx={{ width: 20, height: 20, borderRadius: "50%", background: PLATFORM_COLORS.soop.profile, mt: "0.1rem" }} />
+              <Box sx={{ width: 20, height: 20, borderRadius: "50%", background: PLATFORM_COLORS.soop.profile, mt: "0.2rem" }} />
             }
             primary="숲 (SOOP)"
             secondary="같은 방송을 동시에 두 곳에 띄울 수 없습니다. 방송 종료 시간은 API에서 제공하지 않아 '?'로 표시됩니다."
           />
           <Item
             icon={
-              <Box sx={{ width: 20, height: 20, borderRadius: "50%", background: PLATFORM_COLORS.chzzk.profile, mt: "0.1rem" }} />
+              <Box sx={{ width: 20, height: 20, borderRadius: "50%", background: PLATFORM_COLORS.chzzk.profile, mt: "0.2rem" }} />
             }
             primary="치지직 (CHZZK)"
             secondary={[
@@ -225,7 +235,7 @@ export default function ManualArea() {
           />
           <Item
             icon={
-              <Box sx={{ width: 20, height: 20, borderRadius: "50%", background: PLATFORM_COLORS.youtube.profile, mt: "0.1rem" }} />
+              <Box sx={{ width: 20, height: 20, borderRadius: "50%", background: PLATFORM_COLORS.youtube.profile, mt: "0.2rem" }} />
             }
             primary="유튜브 (YouTube)"
             secondary={[
@@ -258,10 +268,10 @@ export default function ManualArea() {
 
         {/* YouTube 채팅 서버 */}
         <Section title="YouTube 채팅 서버">
-          <Typography sx={{ fontSize: "1.25rem", color: "text.secondary", lineHeight: 1.65, mb: 2.5 }}>
-            유튜브 채팅을 표시하려면 로컬에서 채팅 서버를 실행해야 합니다. 아래 버튼으로 운영체제에 맞는 서버 실행 파일을 다운로드할 수 있습니다.
+          <Typography sx={{ fontSize: "1.35rem", color: "text.secondary", lineHeight: 1.7, mb: 3 }}>
+            유튜브의 기술적인 구조상 브라우저에서 직접 채팅 데이터를 가져오는 데 한계가 있어, 이를 보조해주는 가벼운 서버 프로그램이 별도로 필요합니다. 아래 버튼으로 운영체제에 맞는 파일을 다운로드하여 실행해 주세요.
           </Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, mb: 2 }}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 3 }}>
             {[
               { 
                 icon: <WindowsIcon />, 
@@ -281,16 +291,16 @@ export default function ManualArea() {
                 download
                 startIcon={icon}
                 endIcon={<DownloadIcon />}
-                sx={{ fontSize: "1.2rem", textTransform: "none", borderRadius: "0.8rem" }}
+                sx={{ fontSize: "1.3rem", py: 1, px: 2, textTransform: "none", borderRadius: "1rem" }}
               >
                 {label}
               </Button>
             ))}
           </Box>
-          <Typography sx={{ fontSize: "1.15rem", color: "text.secondary", lineHeight: 1.65 }}>
+          <Typography sx={{ fontSize: "1.2rem", color: "text.secondary", lineHeight: 1.7 }}>
             Windows는 Defender·백신 경고 시 예외 추가 후 실행하세요.
             macOS·Linux는 첫 실행 전{" "}
-            <Box component="code" sx={{ fontSize: "1.1rem", fontFamily: "monospace", px: "0.4rem", py: "0.05rem", borderRadius: "0.3rem", backgroundColor: "action.hover" }}>
+            <Box component="code" sx={{ fontSize: "1.2rem", fontFamily: "monospace", px: "0.5rem", py: "0.1rem", borderRadius: "0.4rem", backgroundColor: "action.hover" }}>
               chmod +x ./파일명
             </Box>
             {" "}으로 실행 권한을 부여해야 합니다.
@@ -301,8 +311,8 @@ export default function ManualArea() {
           sx={{
             textAlign: "center",
             color: "text.disabled",
-            fontSize: "1.1rem",
-            mt: 6,
+            fontSize: "1.2rem",
+            mt: 8,
           }}
         >
           v{process.env.NEXT_PUBLIC_APP_VERSION}

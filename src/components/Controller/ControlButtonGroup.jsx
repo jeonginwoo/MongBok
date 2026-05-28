@@ -514,7 +514,7 @@ export default function ControlButtonGroup({ fullscreen }) {
         slotProps={tooltipSlotProps}
         title={
           <>
-            {controllerExpanded ? "컨트롤러 접기" : "컨트롤러 펴기"}{" "}
+            {controllerExpanded ? "접기" : "펴기"}{" "}
             <HotkeySpan component="span" pointcolor={pointColor}>(C)</HotkeySpan>
           </>
         }
