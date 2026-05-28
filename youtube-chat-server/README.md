@@ -104,12 +104,13 @@ npm install
 npm run build:all
 ```
 
-생성된 파일 (`public/downloads/` 폴더에 저장됨):
+생성된 압축 파일 (`public/downloads/` 폴더에 저장됨):
 | 파일 | 설명 |
 |------|------|
-| `public/downloads/youtube-chat-server-win-x64.exe` | Windows 64비트 |
-| `public/downloads/youtube-chat-server-macos-x64` | macOS 64비트 |
-| `public/downloads/youtube-chat-server-linux-x64` | Linux 64비트 |
+| `public/downloads/mongbok_youtube_chat_server_win-x64_v1.x.x.zip` | Windows 64비트 |
+| `public/downloads/mongbok_youtube_chat_server_macos-x64_v1.x.x.zip` | macOS 64비트 |
+
+> **참고**: `package.json`의 `version`에 따라 압축 파일 및 내부 실행 파일의 이름(예: `mongbok_youtube_chat_server_v1.x.x.exe`)이 자동으로 지정됩니다.
 
 특정 OS만 빌드하려면:
 ```bash

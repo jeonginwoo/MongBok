@@ -7,12 +7,25 @@ import { createRequire } from 'module';
 import { readFileSync, writeFileSync } from 'fs';
 import readline from 'readline';
 
+// 타임스탬프를 포함한 로그 출력 함수
+function log(msg, isError = false) {
+  const timestamp = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+  const prefix = `[${timestamp}]`;
+  if (isError) {
+    // 에러 메시지가 너무 길면 첫 줄만 출력
+    const firstLine = String(msg).split('\n')[0];
+    console.error(`${prefix} ${firstLine}`);
+  } else {
+    console.log(`${prefix} ${msg}`);
+  }
+}
+
 // 예상치 못한 크래시도 로그로 남기고 바로 꺼지지 않도록 처리
 function fatalExit(label, err) {
   const msg = `\n[${label}] ${err?.stack || err}\n`;
   process.stderr.write(msg);
   try { writeFileSync('./crash.log', new Date().toISOString() + msg, { flag: 'a' }); } catch (_) {}
-  console.log('10초 후 자동으로 종료됩니다...');
+  log('10초 후 자동으로 종료됩니다...');
   setTimeout(() => process.exit(1), 10000);
 }
 
@@ -418,135 +431,135 @@ wss.on('error', () => { /* server.on('error') 에서 이미 처리 */ });
 const activeSessions = new Map();
 
 wss.on('connection', (ws) => {
-  console.log('🔌 클라이언트 연결됨');
-  
+  log('🔌 클라이언트 연결됨');
+
   let currentLiveChatInstance = null;
   let currentLiveId = null;
 
   // WebSocket keepalive ping
   const keepaliveInterval = setInterval(() => {
-    if (ws.readyState === ws.OPEN) {
-      ws.ping();
-    }
+  if (ws.readyState === ws.OPEN) {
+    ws.ping();
+  }
   }, 30000);
 
   ws.on('message', async (message) => {
-    try {
-      const data = JSON.parse(message.toString());
-      
-      if (data.type === 'start' && data.liveId) {
-        const liveId = data.liveId;
-        let channelName = liveId;
-        try {
-          const youtube = await getYoutubeInstance();
-          const videoInfo = await youtube.getInfo(liveId).catch(() => null);
-          channelName =
-            videoInfo?.basic_info?.author ||
-            videoInfo?.video_details?.author ||
-            videoInfo?.basic_info?.owner?.name ||
-            liveId;
-        } catch (_) {
-          channelName = liveId;
-        }
+  try {
+    const data = JSON.parse(message.toString());
 
-        console.log(`🚀 채팅 스트림 시작 요청: ${channelName} (${liveId})`);
-        
-        // 기존 세션 정리
-        if (currentLiveChatInstance) {
-          currentLiveChatInstance.stop();
-          currentLiveChatInstance = null;
-        }
-        
-        currentLiveId = liveId;
-        
-        try {
-          const liveChat = new LiveChat({ liveId });
-          currentLiveChatInstance = liveChat;
-          
-          liveChat.on('start', (id) => {
-            console.log(`✅ 채팅 시작: ${channelName}`);
-            ws.send(JSON.stringify({ type: 'start', id }));
-          });
-          
-          liveChat.on('chat', (chatItem) => {
-            // 캐시에서 슈퍼챗 원본 데이터 조회 (라이브러리 파싱 실패 보완)
-            const raw = superchatRawCache.get(chatItem.id);
-            if (raw) {
-              if (!chatItem.superchat) {
-                // 라이브러리가 superchat 필드 설정 안 한 경우
-                chatItem.superchat = raw;
-              } else {
-                // 라이브러리가 설정했지만 색상이 잘못된 경우 headerColor로 교체
-                if (!chatItem.superchat.color || !/^#[0-9A-Fa-f]{6}$/i.test(chatItem.superchat.color)) {
-                  chatItem.superchat.color = raw.color;
-                }
+    if (data.type === 'start' && data.liveId) {
+      const liveId = data.liveId;
+      let channelName = liveId;
+      try {
+        const youtube = await getYoutubeInstance();
+        const videoInfo = await youtube.getInfo(liveId).catch(() => null);
+        channelName =
+          videoInfo?.basic_info?.author ||
+          videoInfo?.video_details?.author ||
+          videoInfo?.basic_info?.owner?.name ||
+          liveId;
+      } catch (_) {
+        channelName = liveId;
+      }
+
+      log(`🚀 채팅 스트림 시작 요청: ${channelName} (${liveId})`);
+
+      // 기존 세션 정리
+      if (currentLiveChatInstance) {
+        currentLiveChatInstance.stop();
+        currentLiveChatInstance = null;
+      }
+
+      currentLiveId = liveId;
+
+      try {
+        const liveChat = new LiveChat({ liveId });
+        currentLiveChatInstance = liveChat;
+
+        liveChat.on('start', (id) => {
+          log(`✅ 채팅 시작: ${channelName}`);
+          ws.send(JSON.stringify({ type: 'start', id }));
+        });
+
+        liveChat.on('chat', (chatItem) => {
+          // 캐시에서 슈퍼챗 원본 데이터 조회 (라이브러리 파싱 실패 보완)
+          const raw = superchatRawCache.get(chatItem.id);
+          if (raw) {
+            if (!chatItem.superchat) {
+              // 라이브러리가 superchat 필드 설정 안 한 경우
+              chatItem.superchat = raw;
+            } else {
+              // 라이브러리가 설정했지만 색상이 잘못된 경우 headerColor로 교체
+              if (!chatItem.superchat.color || !/^#[0-9A-Fa-f]{6}$/i.test(chatItem.superchat.color)) {
+                chatItem.superchat.color = raw.color;
               }
-              superchatRawCache.delete(chatItem.id);
             }
-            // 최종 방어: superchat이 있는데 색상이 여전히 이상한 경우
-            if (chatItem.superchat && !/^#[0-9A-Fa-f]{6}$/i.test(chatItem.superchat.color || '')) {
-              chatItem.superchat.color = '#1565C0';
-            }
-            ws.send(JSON.stringify({ type: 'chat', data: chatItem }));
-          });
-          
-          liveChat.on('end', (reason) => {
-            console.log(`⏹️ 채팅 종료: ${reason}`);
-            ws.send(JSON.stringify({ type: 'end', reason }));
-          });
-          
-          liveChat.on('error', (error) => {
-            console.error('❌ 채팅 에러:', error);
-            ws.send(JSON.stringify({ 
-              type: 'error', 
-              error: error.message || String(error) 
-            }));
-          });
-          
-          const started = await liveChat.start();
-          
-          if (!started) {
-            console.error('❌ 채팅 시작 실패');
-            ws.send(JSON.stringify({ 
-              type: 'error', 
-              error: 'Failed to start chat - Live stream not found or chat disabled' 
-            }));
+            superchatRawCache.delete(chatItem.id);
           }
-        } catch (error) {
-          console.error('❌ LiveChat 초기화 실패:', error);
+          // 최종 방어: superchat이 있는데 색상이 여전히 이상한 경우
+          if (chatItem.superchat && !/^#[0-9A-Fa-f]{6}$/i.test(chatItem.superchat.color || '')) {
+            chatItem.superchat.color = '#1565C0';
+          }
+          ws.send(JSON.stringify({ type: 'chat', data: chatItem }));
+        });
+
+        liveChat.on('end', (reason) => {
+          log(`⏹️ 채팅 종료: ${reason}`);
+          ws.send(JSON.stringify({ type: 'end', reason }));
+        });
+
+        liveChat.on('error', (error) => {
+          log(`❌ 채팅 에러: ${error}`, true);
           ws.send(JSON.stringify({ 
             type: 'error', 
-            error: error.message 
+            error: error.message || String(error) 
+          }));
+        });
+
+        const started = await liveChat.start();
+
+        if (!started) {
+          log('❌ 채팅 시작 실패', true);
+          ws.send(JSON.stringify({ 
+            type: 'error', 
+            error: 'Failed to start chat - Live stream not found or chat disabled' 
           }));
         }
-      } else if (data.type === 'stop') {
-        console.log('⏹️ 채팅 스트림 중지 요청');
-        if (currentLiveChatInstance) {
-          currentLiveChatInstance.stop();
-          currentLiveChatInstance = null;
-          currentLiveId = null;
-        }
+      } catch (error) {
+        log(`❌ LiveChat 초기화 실패: ${error}`, true);
+        ws.send(JSON.stringify({ 
+          type: 'error', 
+          error: error.message 
+        }));
       }
-    } catch (error) {
-      console.error('❌ 메시지 처리 실패:', error);
-      ws.send(JSON.stringify({ 
-        type: 'error', 
-        error: 'Invalid message format' 
-      }));
+    } else if (data.type === 'stop') {
+      log('⏹️ 채팅 스트림 중지 요청');
+      if (currentLiveChatInstance) {
+        currentLiveChatInstance.stop();
+        currentLiveChatInstance = null;
+        currentLiveId = null;
+      }
     }
+  } catch (error) {
+    log(`❌ 메시지 처리 실패: ${error}`, true);
+    ws.send(JSON.stringify({ 
+      type: 'error', 
+      error: 'Invalid message format' 
+    }));
+  }
   });
-  
+
   ws.on('close', () => {
-    console.log('🔌 클라이언트 연결 종료');
-    clearInterval(keepaliveInterval);
-    if (currentLiveChatInstance) {
-      currentLiveChatInstance.stop();
-      currentLiveChatInstance = null;
-    }
+  log('🔌 클라이언트 연결 종료');
+  clearInterval(keepaliveInterval);
+  if (currentLiveChatInstance) {
+    currentLiveChatInstance.stop();
+    currentLiveChatInstance = null;
+  }
   });
-  
+
   ws.on('error', (error) => {
-    console.error('❌ WebSocket 에러:', error);
+  log(`❌ WebSocket 에러: ${error}`, true);
   });
 });
 

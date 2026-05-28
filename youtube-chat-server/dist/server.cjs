@@ -90,7 +90,7 @@ var require_depd = __commonJS({
       var site = callSiteLocation(stack[1]);
       var file = site[0];
       function deprecate(message) {
-        log.call(deprecate, message);
+        log2.call(deprecate, message);
       }
       deprecate._file = file;
       deprecate._ignored = isignored(namespace);
@@ -119,7 +119,7 @@ var require_depd = __commonJS({
       var str = process.env.TRACE_DEPRECATION || "";
       return containsNamespace(str, namespace);
     }
-    function log(message, site) {
+    function log2(message, site) {
       var haslisteners = eehaslisteners(process, "deprecation");
       if (!haslisteners && this._ignored) {
         return;
@@ -259,7 +259,7 @@ var require_depd = __commonJS({
         "message",
         "site",
         '"use strict"\nreturn function (' + args + ") {log.call(deprecate, message, site)\nreturn fn.apply(this, arguments)\n}"
-      )(fn, log, this, message, site);
+      )(fn, log2, this, message, site);
       return deprecatedfn;
     }
     function wrapproperty(obj, prop, message) {
@@ -284,13 +284,13 @@ var require_depd = __commonJS({
       var set = descriptor.set;
       if (typeof get === "function") {
         descriptor.get = function getter() {
-          log.call(deprecate, message, site);
+          log2.call(deprecate, message, site);
           return get.apply(this, arguments);
         };
       }
       if (typeof set === "function") {
         descriptor.set = function setter() {
-          log.call(deprecate, message, site);
+          log2.call(deprecate, message, site);
           return set.apply(this, arguments);
         };
       }
@@ -1127,7 +1127,7 @@ var require_debug = __commonJS({
 var require_browser = __commonJS({
   "node_modules/debug/src/browser.js"(exports2, module2) {
     exports2 = module2.exports = require_debug();
-    exports2.log = log;
+    exports2.log = log2;
     exports2.formatArgs = formatArgs;
     exports2.save = save;
     exports2.load = load;
@@ -1175,7 +1175,7 @@ var require_browser = __commonJS({
       });
       args.splice(lastC, 0, c);
     }
-    function log() {
+    function log2() {
       return "object" === typeof console && console.log && Function.prototype.apply.call(console.log, console, arguments);
     }
     function save(namespaces) {
@@ -1216,7 +1216,7 @@ var require_node = __commonJS({
     var util3 = require("util");
     exports2 = module2.exports = require_debug();
     exports2.init = init;
-    exports2.log = log;
+    exports2.log = log2;
     exports2.formatArgs = formatArgs;
     exports2.save = save;
     exports2.load = load;
@@ -1267,7 +1267,7 @@ var require_node = __commonJS({
         args[0] = (/* @__PURE__ */ new Date()).toUTCString() + " " + name + " " + args[0];
       }
     }
-    function log() {
+    function log2() {
       return stream4.write(util3.format.apply(util3, arguments) + "\n");
     }
     function save(namespaces) {
@@ -90934,6 +90934,16 @@ var {
 // server.js
 var import_fs = require("fs");
 var import_readline = __toESM(require("readline"), 1);
+function log(msg, isError = false) {
+  const timestamp = (/* @__PURE__ */ new Date()).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
+  const prefix = `[${timestamp}]`;
+  if (isError) {
+    const firstLine = String(msg).split("\n")[0];
+    console.error(`${prefix} ${firstLine}`);
+  } else {
+    console.log(`${prefix} ${msg}`);
+  }
+}
 function fatalExit(label, err) {
   const msg = `
 [${label}] ${err?.stack || err}
@@ -90943,14 +90953,14 @@ function fatalExit(label, err) {
     (0, import_fs.writeFileSync)("./crash.log", (/* @__PURE__ */ new Date()).toISOString() + msg, { flag: "a" });
   } catch (_) {
   }
-  console.log("10\uCD08 \uD6C4 \uC790\uB3D9\uC73C\uB85C \uC885\uB8CC\uB429\uB2C8\uB2E4...");
+  log("10\uCD08 \uD6C4 \uC790\uB3D9\uC73C\uB85C \uC885\uB8CC\uB429\uB2C8\uB2E4...");
   setTimeout(() => process.exit(1), 1e4);
 }
 process.on("uncaughtException", (err) => fatalExit("uncaughtException", err));
 process.on("unhandledRejection", (reason) => fatalExit("unhandledRejection", reason));
 var SERVER_VERSION;
 try {
-  SERVER_VERSION = "1.0.6";
+  SERVER_VERSION = "1.0.7";
 } catch {
   SERVER_VERSION = JSON.parse(
     (0, import_fs.readFileSync)(new URL("./package.json", __importMetaUrl__), "utf8")
@@ -91256,7 +91266,7 @@ var wss = new import_websocket_server.default({ server });
 wss.on("error", () => {
 });
 wss.on("connection", (ws) => {
-  console.log("\u{1F50C} \uD074\uB77C\uC774\uC5B8\uD2B8 \uC5F0\uACB0\uB428");
+  log("\u{1F50C} \uD074\uB77C\uC774\uC5B8\uD2B8 \uC5F0\uACB0\uB428");
   let currentLiveChatInstance = null;
   let currentLiveId = null;
   const keepaliveInterval = setInterval(() => {
@@ -91277,7 +91287,7 @@ wss.on("connection", (ws) => {
         } catch (_) {
           channelName = liveId;
         }
-        console.log(`\u{1F680} \uCC44\uD305 \uC2A4\uD2B8\uB9BC \uC2DC\uC791 \uC694\uCCAD: ${channelName} (${liveId})`);
+        log(`\u{1F680} \uCC44\uD305 \uC2A4\uD2B8\uB9BC \uC2DC\uC791 \uC694\uCCAD: ${channelName} (${liveId})`);
         if (currentLiveChatInstance) {
           currentLiveChatInstance.stop();
           currentLiveChatInstance = null;
@@ -91287,7 +91297,7 @@ wss.on("connection", (ws) => {
           const liveChat = new import_youtube_chat.LiveChat({ liveId });
           currentLiveChatInstance = liveChat;
           liveChat.on("start", (id) => {
-            console.log(`\u2705 \uCC44\uD305 \uC2DC\uC791: ${channelName}`);
+            log(`\u2705 \uCC44\uD305 \uC2DC\uC791: ${channelName}`);
             ws.send(JSON.stringify({ type: "start", id }));
           });
           liveChat.on("chat", (chatItem) => {
@@ -91308,11 +91318,11 @@ wss.on("connection", (ws) => {
             ws.send(JSON.stringify({ type: "chat", data: chatItem }));
           });
           liveChat.on("end", (reason) => {
-            console.log(`\u23F9\uFE0F \uCC44\uD305 \uC885\uB8CC: ${reason}`);
+            log(`\u23F9\uFE0F \uCC44\uD305 \uC885\uB8CC: ${reason}`);
             ws.send(JSON.stringify({ type: "end", reason }));
           });
           liveChat.on("error", (error2) => {
-            console.error("\u274C \uCC44\uD305 \uC5D0\uB7EC:", error2);
+            log(`\u274C \uCC44\uD305 \uC5D0\uB7EC: ${error2}`, true);
             ws.send(JSON.stringify({
               type: "error",
               error: error2.message || String(error2)
@@ -91320,21 +91330,21 @@ wss.on("connection", (ws) => {
           });
           const started = await liveChat.start();
           if (!started) {
-            console.error("\u274C \uCC44\uD305 \uC2DC\uC791 \uC2E4\uD328");
+            log("\u274C \uCC44\uD305 \uC2DC\uC791 \uC2E4\uD328", true);
             ws.send(JSON.stringify({
               type: "error",
               error: "Failed to start chat - Live stream not found or chat disabled"
             }));
           }
         } catch (error2) {
-          console.error("\u274C LiveChat \uCD08\uAE30\uD654 \uC2E4\uD328:", error2);
+          log(`\u274C LiveChat \uCD08\uAE30\uD654 \uC2E4\uD328: ${error2}`, true);
           ws.send(JSON.stringify({
             type: "error",
             error: error2.message
           }));
         }
       } else if (data2.type === "stop") {
-        console.log("\u23F9\uFE0F \uCC44\uD305 \uC2A4\uD2B8\uB9BC \uC911\uC9C0 \uC694\uCCAD");
+        log("\u23F9\uFE0F \uCC44\uD305 \uC2A4\uD2B8\uB9BC \uC911\uC9C0 \uC694\uCCAD");
         if (currentLiveChatInstance) {
           currentLiveChatInstance.stop();
           currentLiveChatInstance = null;
@@ -91342,7 +91352,7 @@ wss.on("connection", (ws) => {
         }
       }
     } catch (error2) {
-      console.error("\u274C \uBA54\uC2DC\uC9C0 \uCC98\uB9AC \uC2E4\uD328:", error2);
+      log(`\u274C \uBA54\uC2DC\uC9C0 \uCC98\uB9AC \uC2E4\uD328: ${error2}`, true);
       ws.send(JSON.stringify({
         type: "error",
         error: "Invalid message format"
@@ -91350,7 +91360,7 @@ wss.on("connection", (ws) => {
     }
   });
   ws.on("close", () => {
-    console.log("\u{1F50C} \uD074\uB77C\uC774\uC5B8\uD2B8 \uC5F0\uACB0 \uC885\uB8CC");
+    log("\u{1F50C} \uD074\uB77C\uC774\uC5B8\uD2B8 \uC5F0\uACB0 \uC885\uB8CC");
     clearInterval(keepaliveInterval);
     if (currentLiveChatInstance) {
       currentLiveChatInstance.stop();
@@ -91358,7 +91368,7 @@ wss.on("connection", (ws) => {
     }
   });
   ws.on("error", (error2) => {
-    console.error("\u274C WebSocket \uC5D0\uB7EC:", error2);
+    log(`\u274C WebSocket \uC5D0\uB7EC: ${error2}`, true);
   });
 });
 process.on("SIGTERM", () => {
