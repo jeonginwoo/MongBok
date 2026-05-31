@@ -90964,7 +90964,7 @@ process.on("uncaughtException", (err) => fatalExit("uncaughtException", err));
 process.on("unhandledRejection", (reason) => fatalExit("unhandledRejection", reason));
 var SERVER_VERSION;
 try {
-  SERVER_VERSION = "1.0.8";
+  SERVER_VERSION = "1.0.9";
 } catch {
   SERVER_VERSION = JSON.parse(
     (0, import_fs.readFileSync)(new URL("./package.json", __importMetaUrl__), "utf8")
@@ -91107,6 +91107,7 @@ app.get("/channel/:channelId", async (req, res) => {
             video = {
               id: c.content_id,
               title: { text: c.metadata?.title?.text },
+              thumbnails: c.content_image?.image?.thumbnails || [],
               is_live: c.content_image?.overlays?.some(
                 (o) => o.badges?.some((b) => b.text === "LIVE" || b.badge_style?.includes("LIVE"))
               ),
@@ -91177,7 +91178,13 @@ app.get("/channel/:channelId", async (req, res) => {
             }
           }
         }
-        liveVideo = { title: liveTitle, id: videoId, views: viewerCount, startTime };
+        liveVideo = {
+          title: liveTitle,
+          id: videoId,
+          views: viewerCount,
+          startTime,
+          thumbnails: bestLive.thumbnails && bestLive.thumbnails.length > 0 ? bestLive.thumbnails.map((t) => ({ url: t.url, width: t.width, height: t.height })) : bestLive.best_thumbnail ? [{ url: bestLive.best_thumbnail.url, width: bestLive.best_thumbnail.width, height: bestLive.best_thumbnail.height }] : [{ url: `https://i.ytimg.com/vi/${videoId}/hqdefault_live.jpg` }]
+        };
       }
       if (!isLive && contents.length > 0) {
         const completedCandidates = contents.map((item) => {

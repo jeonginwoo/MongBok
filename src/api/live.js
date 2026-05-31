@@ -1,5 +1,5 @@
 import {
-  chzzk_client,
+  chzzk_live_client,
   chzzk_chat_client,
   soop_channel_client,
   soop_live_client,
@@ -9,7 +9,7 @@ import {
 // ✅ 치지직 라이브 상태 조회
 const getChzzkLiveStatus = async (channelId) => {
   try {
-    const response = await chzzk_client.get(
+    const response = await chzzk_live_client.get(
       `/service/v3.2/channels/${channelId}/live-detail`
     );
     const data = response.data?.content;
@@ -35,6 +35,7 @@ const getChzzkLiveStatus = async (channelId) => {
       name: data?.channel?.channelName ?? "",
       imageUrl: data?.channel?.channelImageUrl ?? "",
       liveTitle: data?.liveTitle ?? "",
+      liveImageUrl: data?.liveImageUrl ? data.liveImageUrl.replace("{type}", "270") : "",
       openDate: data?.openDate ?? null,
       closeDate: data?.closeDate ?? null,
       isLive: data?.status === "OPEN",
@@ -52,7 +53,7 @@ const getChzzkLiveStatus = async (channelId) => {
 
 const getChzzkLiveStatus2 = async (channelId) => {
   try {
-    const response = await chzzk_client.get(
+    const response = await chzzk_live_client.get(
       `/service/v1/channels/${channelId}`
     );
     const data = response.data?.content;
@@ -107,6 +108,7 @@ const getSoopLiveDetails = async (channelId) => {
       chDomain: data?.CHDOMAIN,
       chPt: data?.CHPT != null ? `${parseInt(data.CHPT, 10) + 1}` : null,
       pconObject: data?.PCON_OBJECT,
+      liveImageUrl: data?.BNO ? `https://liveimg.sooplive.com/m/${data.BNO}` : "",
     };
   } catch (error) {
     console.error("❌ [Soop] 라이브 상세 정보 가져오기 실패:", error);
@@ -139,6 +141,7 @@ const getSoopLiveStatus = async (channelId) => {
       chDomain: detail?.chDomain,
       chPt: detail?.chPt,
       pconObject: detail?.pconObject,
+      liveImageUrl: detail?.liveImageUrl,
     };
   } catch (error) {
     console.error("❌ [Soop] 라이브 상태 가져오기 실패:", error);
@@ -154,6 +157,7 @@ const processYoutubeChannelData = (data) => {
     name: channel.name ?? "",
     imageUrl: channel.iconURL ?? "",
     liveTitle: liveVideo?.title ?? "",
+    liveImageUrl: liveVideo?.thumbnails?.[liveVideo?.thumbnails?.length - 1]?.url ?? "",
     openDate: liveVideo?.startTime ?? lastLiveInfo?.startTime ?? null,
     closeDate: lastLiveInfo?.closeDate ?? null,
     isLive: isLive ?? false,
@@ -241,6 +245,8 @@ export const getAllChannelsData = async (localStorageData) => {
           name: live.name,
           imageUrl: live.imageUrl,
           liveTitle: live.liveTitle,
+          liveImageUrl: live.liveImageUrl,
+          lastRefreshed: live.lastRefreshed,
           openDate: live.openDate,
           closeDate: live.closeDate,
           isLive: live.isLive,

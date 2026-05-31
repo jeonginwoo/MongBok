@@ -59,11 +59,37 @@ export default function ChannelInfo({ channel, isDragging = false }) {
     ? { filter: "grayscale(100%) brightness(0.7)" }
     : {};
 
+  const getThumbnailUrl = () => {
+    if (!channel.isLive || !channel.liveImageUrl) return null;
+    const url = channel.liveImageUrl;
+    const timestamp = channel.lastRefreshed || Date.now();
+    return `${url}${url.includes("?") ? "&" : "?"}t=${timestamp}`;
+  };
+
+  const thumbnailUrl = getThumbnailUrl();
+
   const tooltipTitle = (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+      {thumbnailUrl && (
+        <Box
+          component="img"
+          src={thumbnailUrl}
+          sx={{
+            width: "100%",
+            aspectRatio: "16 / 9",
+            borderRadius: "0.4rem",
+            objectFit: "cover",
+            backgroundColor: "background.level5",
+          }}
+        />
+      )}
       <Box sx={{ fontSize: "1.4rem" }}>
-        <Box component="span"
-          sx={{ color: (theme) => `${theme.palette.platform[channel.platform].main}`, fontWeight: "bord" }}
+        <Box
+          component="span"
+          sx={{
+            color: (theme) => `${theme.palette.platform[channel.platform].main}`,
+            fontWeight: "bold",
+          }}
         >
           {channel.name || "채널명 없음"}
         </Box>

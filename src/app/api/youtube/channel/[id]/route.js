@@ -139,48 +139,54 @@ export async function GET(request, context) {
             video = {
               id: c.content_id,
               title: { text: c.metadata?.title?.text },
+              thumbnails: c.content_image?.image?.thumbnails || [],
               is_live: c.content_image?.overlays?.some((o) =>
                 o.badges?.some((b) => b.text === 'LIVE' || b.badge_style?.includes('LIVE'))
               ),
               view_count: liveText,
             };
-          }
- else {
+            } else {
             video = c;
-          }
-        } else {
-          video = item;
-        }
+            }
+            } else {
+            video = item;
+            }
 
-        if (!video || (!video.id && !video.videoId)) continue;
+            if (!video || (!video.id && !video.videoId)) continue;
 
-        const { isLive: currentlyLive, count } = extractViewerCount(video);
-        if (currentlyLive && count > bestCount) {
-          bestCount = count;
-          bestLive = video;
-        }
-      }
+            const { isLive: currentlyLive, count } = extractViewerCount(video);
+            if (currentlyLive && count > bestCount) {
+            bestCount = count;
+            bestLive = video;
+            }
+            }
 
-      if (bestLive) {
-        isLive = true;
-        viewerCount = bestCount;
-        liveTitle = bestLive.title?.text || "";
-        const videoId = bestLive.id || bestLive.videoId;
+            if (bestLive) {
+            isLive = true;
+            viewerCount = bestCount;
+            liveTitle = bestLive.title?.text || "";
+            const videoId = bestLive.id || bestLive.videoId;
 
-        // getInfo()로 정확한 시작 시간 가져오기 (5초 타임아웃, 실패해도 liveVideo는 유지)
-        const infoForStart = await raceTimeout(
-          youtube.getInfo(videoId).catch(() => null),
-          5000
-        );
-        startTime = infoForStart ? parseTimestamp(infoForStart.basic_info?.start_timestamp) : null;
+            // getInfo()로 정확한 시작 시간 가져오기 (5초 타임아웃, 실패해도 liveVideo는 유지)
+            const infoForStart = await raceTimeout(
+              youtube.getInfo(videoId).catch(() => null),
+              5000
+            );
+            startTime = infoForStart ? parseTimestamp(infoForStart.basic_info?.start_timestamp) : null;
 
-        liveVideo = {
-          title: liveTitle,
-          id: videoId,
-          views: viewerCount,
-          startTime,
-        };
-      }
+            liveVideo = {
+              title: liveTitle,
+              id: videoId,
+              views: viewerCount,
+              startTime,
+              thumbnails: bestLive.thumbnails && bestLive.thumbnails.length > 0
+                ? bestLive.thumbnails.map(t => ({ url: t.url, width: t.width, height: t.height }))
+                : (bestLive.best_thumbnail 
+                    ? [{ url: bestLive.best_thumbnail.url, width: bestLive.best_thumbnail.width, height: bestLive.best_thumbnail.height }]
+                    : [{ url: `https://i.ytimg.com/vi/${videoId}/hqdefault_live.jpg` }]
+                  ),
+            };
+            }
 
       // 라이브 중이 아닐 때 마지막 완료된 라이브 정보 조회
       if (!isLive && contents.length > 0) {

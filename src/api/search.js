@@ -1,10 +1,10 @@
-import { chzzk_client, soop_search_client, youtube_search_client } from "@/api/client";
+import { chzzk_live_client, soop_search_client, youtube_search_client } from "@/api/client";
 import { getLiveStatus } from "@/api/live";
 import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE } from "@/data/config";
 
 const getChzzkSearch = async (keyword) => {
   try {
-    const response = await chzzk_client.get(`/service/v1/search/channels`, {
+    const response = await chzzk_live_client.get(`/service/v1/search/channels`, {
       params: { keyword, size: 5 },
     });
 
