@@ -1,9 +1,23 @@
 import { Fragment, memo } from "react";
 import urlRegexSafe from "url-regex-safe";
-import CheeseIcon from "./CheeseIcon";
 import Box from "@mui/material/Box";
 import { getCheeseColor } from "@/data/color";
 import Image from "next/image";
+
+function CheeseIcon() {
+  return (
+    <span
+      style={{
+        verticalAlign: "top",
+        padding: "0 0.4rem 0 0",
+        flexShrink: 0,
+        fontSize: "0.8em",
+      }}
+    >
+      🧀
+    </span>
+  );
+}
 
 function CheeseChatRow({ chat }) {
   const { nickname, badges, emojis, message, payAmount } = chat;

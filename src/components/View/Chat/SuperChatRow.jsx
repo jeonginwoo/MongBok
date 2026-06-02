@@ -4,6 +4,21 @@ import Box from "@mui/material/Box";
 import { getSuperChatColor } from "@/data/color";
 import Image from "next/image";
 
+function SuperChatIcon() {
+  return (
+    <span
+      style={{
+        verticalAlign: "top",
+        padding: "0 0.4rem 0 0",
+        flexShrink: 0,
+        fontSize: "0.8em",
+      }}
+    >
+      💰
+    </span>
+  );
+}
+
 function SuperChatRow({ chat }) {
   const { nickname, badges, emojis, message, superChat } = chat;
   const { amount } = superChat;
@@ -139,6 +154,7 @@ function SuperChatRow({ chat }) {
             lineHeight: 1,
           }}
         >
+          <SuperChatIcon />
           {amount}
         </Box>
       </Box>
