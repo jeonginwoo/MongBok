@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.js
 
@@ -14,10 +14,17 @@
 
 # production
 /build
+dist/
 
 # misc
 .DS_Store
+Thumbs.db
 *.pem
+*.log
+chazzy/
+prompt.txt
+.vscode/
+.idea/
 
 # debug
 npm-debug.log*
