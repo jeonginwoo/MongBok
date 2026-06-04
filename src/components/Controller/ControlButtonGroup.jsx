@@ -117,12 +117,6 @@ export default function ControlButtonGroup({ fullscreen }) {
     const zone1Channel = Object.values(channels).find((c) => c.zoneId === 1);
     const isLive = zone1Channel?.isLive === true;
 
-    // 활성화된(Sortable) 채널이 하나도 없으면 녹화 중지
-    const visibleChannelsCount = Object.values(channels).filter((c) => c.isVisible).length;
-    if (isRecording && visibleChannelsCount === 0) {
-      setIsRecording(false);
-    }
-
     if (autoRecordEnabled) {
       if (prevZone1LiveRef.current === false && isLive) {
         setIsRecording(true);
@@ -584,7 +578,7 @@ export default function ControlButtonGroup({ fullscreen }) {
               <span>
                 <IconButton
                   onClick={handleRecordButtonClick}
-                  disabled={Object.values(channels).filter(c => c.isVisible).length === 0 && !isRecording}
+                  disabled={!Object.values(channels).some(c => c.isVisible && c.isLive) && !isRecording}
                   sx={{
                     "& .MuiSvgIcon-root": {
                       color: isRecording

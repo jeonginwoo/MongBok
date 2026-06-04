@@ -1,13 +1,14 @@
 import { useRef, useEffect } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { isRecordingAtom, isSavingRecordingAtom } from "@/atoms/ui";
-import { recordQualityAtom, recordFrameRateAtom, recordCodecAtom, recordSoundEnabledAtom, recordSoundTypeAtom, recordSoundVolumeAtom, recordSaveDirHandleAtom } from "@/atoms/setting";
+import { recordQualityAtom, recordFrameRateAtom, recordCodecAtom, recordSoundEnabledAtom, recordSoundTypeAtom, recordSoundVolumeAtom, recordSaveDirHandleAtom, channelsAtom } from "@/atoms/setting";
 import { playNotificationSound } from "@/utils/audio";
 import { getRecordDirectory } from "@/utils/recordDirectoryStorage";
 import dayjs from "dayjs";
 
 export const useScreenRecorder = () => {
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
+  const channels = useAtomValue(channelsAtom);
   const quality = useAtomValue(recordQualityAtom);
   const frameRate = useAtomValue(recordFrameRateAtom);
   const codec = useAtomValue(recordCodecAtom);
@@ -38,6 +39,20 @@ export const useScreenRecorder = () => {
   useEffect(() => {
     latestIsRecordingRef.current = isRecording;
   }, [isRecording]);
+
+  // 화면에 배치된 채널 중 라이브 중인 채널이 없으면 녹화 종료
+  useEffect(() => {
+    if (isRecording) {
+      const visibleChannels = Object.values(channels).filter((c) => c.isVisible);
+      const hasLiveChannel = visibleChannels.some((c) => c.isLive);
+      const anyLoading = visibleChannels.some((c) => c._loading);
+
+      // 모든 채널이 로딩 완료되었을 때, 화면에 배치된 채널이 없거나, 배치된 채널 중 라이브 중인 채널이 없으면 녹화 종료
+      if (!anyLoading && (visibleChannels.length === 0 || !hasLiveChannel)) {
+        setIsRecording(false);
+      }
+    }
+  }, [channels, isRecording, setIsRecording]);
 
   // 컴포넌트 언마운트 시 녹화 정리 (ViewArea가 사라질 때)
   useEffect(() => {
@@ -70,7 +85,7 @@ export const useScreenRecorder = () => {
         }
 
         // 파일명 미리 결정
-        const fileName = `${dayjs().format("YYMMDD HHmm")}.webm`;
+        const fileName = `${dayjs().format("YYMMDD HHmmss")}.webm`;
 
         // 1순위: 설정에서 지정된 디렉터리 핸들 사용
         // 2순위: File System Access API showSaveFilePicker
@@ -264,7 +279,7 @@ export const useScreenRecorder = () => {
 
             a.style.display = "none";
             a.href = url;
-            a.download = `${dayjs().format("YYMMDD_HHmm")}.webm`;
+            a.download = `${dayjs().format("YYMMDD_HHmmss")}.webm`;
 
             document.body.appendChild(a);
             a.click();
