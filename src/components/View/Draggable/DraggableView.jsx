@@ -85,6 +85,8 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
       ? channel.liveVideoId
         ? `https://www.youtube.com/embed/${channel.liveVideoId}?autoplay=1`
         : `https://www.youtube.com/embed/live_stream?channel=${channelId}`
+      : channel.platform === "twitch"
+      ? `https://player.twitch.tv/?channel=${channelId}&parent=${typeof window !== "undefined" ? window.location.hostname : "localhost"}&autoplay=true`
       : "";
 
   return (

@@ -67,6 +67,7 @@ export default function ChatRow({ chat }) {
               alt=""
               src={src}
               fill
+              sizes="1.125em"
               unoptimized
               style={{
                 objectFit: 'contain',

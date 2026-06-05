@@ -20,7 +20,7 @@ import AppsIcon from "@mui/icons-material/Apps";
 import SearchChannelInfo from "@/components/Info/ChannelInfo/SearchChannelInfo";
 import { searchChannels } from "@/api/search";
 import { updatePreferences } from "@/utils/preferences";
-import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE } from "@/data/config";
+import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE, ENABLE_TWITCH } from "@/data/config";
 
 import { useAtom, useSetAtom } from "jotai";
 import { channelsAtom, selectedSearchPlatformAtom } from "@/atoms/setting";
@@ -30,17 +30,20 @@ const enabledPlatforms = [];
 if (ENABLE_CHZZK) enabledPlatforms.push("chzzk");
 if (ENABLE_SOOP) enabledPlatforms.push("soop");
 if (ENABLE_YOUTUBE) enabledPlatforms.push("youtube");
+if (ENABLE_TWITCH) enabledPlatforms.push("twitch");
 
 const platformLogos = {
   chzzk: "/chzzk/chzzk_logo.png",
   soop: "/soop/soop_logo.png",
   youtube: "/youtube/youtube_logo.png",
+  twitch: "/twitch/twitch_logo.png",
 };
 
 const platformNames = {
   chzzk: "CHZZK",
   soop: "SOOP",
   youtube: "YouTube",
+  twitch: "Twitch",
 };
 
 const tooltipProps = {
@@ -66,11 +69,11 @@ export default function SearchChannel() {
   const [showList, setShowList] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
 
-  const [results, setResults] = useState({ chzzk: [], soop: [], youtube: [] });
-  const [loadingPlatforms, setLoadingPlatforms] = useState({ chzzk: false, soop: false, youtube: false });
-  const [searchedPlatforms, setSearchedPlatforms] = useState({ chzzk: false, soop: false, youtube: false });
+  const [results, setResults] = useState({ chzzk: [], soop: [], youtube: [], twitch: [] });
+  const [loadingPlatforms, setLoadingPlatforms] = useState({ chzzk: false, soop: false, youtube: false, twitch: false });
+  const [searchedPlatforms, setSearchedPlatforms] = useState({ chzzk: false, soop: false, youtube: false, twitch: false });
   const containerRef = useRef(null);
-  const searchCacheRef = useRef({}); // { [keyword]: { chzzk: [], soop: [], youtube: [] } }
+  const searchCacheRef = useRef({}); // { [keyword]: { chzzk: [], soop: [], youtube: [], twitch: [] } }
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -86,9 +89,9 @@ export default function SearchChannel() {
 
   const handleSearch = useCallback(async () => {
     if (!keyword.trim()) {
-      setResults({ chzzk: [], soop: [], youtube: [] });
-      setLoadingPlatforms({ chzzk: false, soop: false, youtube: false });
-      setSearchedPlatforms({ chzzk: false, soop: false, youtube: false });
+      setResults({ chzzk: [], soop: [], youtube: [], twitch: [] });
+      setLoadingPlatforms({ chzzk: false, soop: false, youtube: false, twitch: false });
+      setSearchedPlatforms({ chzzk: false, soop: false, youtube: false, twitch: false });
       setShowList(false);
       return;
     }
@@ -103,8 +106,8 @@ export default function SearchChannel() {
         );
 
         // 캐시된 결과를 즉시 반영
-        const cachedResults = { chzzk: [], soop: [], youtube: [] };
-        const cachedSearched = { chzzk: false, soop: false, youtube: false };
+        const cachedResults = { chzzk: [], soop: [], youtube: [], twitch: [] };
+        const cachedSearched = { chzzk: false, soop: false, youtube: false, twitch: false };
         enabledPlatforms.forEach((p) => {
           if (cache[p] !== undefined) {
             cachedResults[p] = cache[p];
@@ -115,7 +118,7 @@ export default function SearchChannel() {
         setSearchedPlatforms(cachedSearched);
 
         // 아직 캐시 안된 플랫폼 로딩 표시
-        const loadingState = { chzzk: false, soop: false, youtube: false };
+        const loadingState = { chzzk: false, soop: false, youtube: false, twitch: false };
         platformsToFetch.forEach(p => { loadingState[p] = true; });
         setLoadingPlatforms(loadingState);
         setShowList(true);
@@ -306,6 +309,7 @@ export default function SearchChannel() {
                         src={platformLogos[selectedPlatform]}
                         alt={platformNames[selectedPlatform]}
                         fill
+                        sizes="24px"
                         style={{ objectFit: "cover" }}
                       />
                     </Box>
@@ -391,6 +395,7 @@ export default function SearchChannel() {
                 src={platformLogos[platform]}
                 alt={platformNames[platform]}
                 fill
+                sizes="24px"
                 style={{ objectFit: "cover" }}
               />
             </Box>
@@ -421,7 +426,7 @@ export default function SearchChannel() {
             top: "4.8rem",
             right: 0,
             left: 0,
-            ...(!selectedPlatform && { width: { md: "78.8rem" }, left: { xs: 0, sm: 0, md: "auto" } }),
+            ...(!selectedPlatform && { width: { md: "auto" }, left: { xs: 0, sm: 0, md: "auto" } }),
             zIndex: 1000,
             backgroundColor: "background.level1",
             padding: "1.0rem",
@@ -523,6 +528,7 @@ export default function SearchChannel() {
                       src={platformLogos[platform]}
                       alt={platformNames[platform]}
                       fill
+                      sizes="36px"
                       style={{ objectFit: "cover" }}
                     />
                   </Box>
@@ -553,7 +559,7 @@ export default function SearchChannel() {
                   key={platform}
                   sx={{
                     flex: { xs: "0 0 auto", md: "1" },
-                    width: { xs: "100%", md: "auto" },
+                    width: { xs: "100%", md: "245px" },
                     minWidth: { md: "22rem" },
                     backgroundColor: "background.level2",
                     borderRadius: "0.6rem",

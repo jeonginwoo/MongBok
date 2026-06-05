@@ -38,6 +38,10 @@ const nextConfig = {
         source: '/api/soop/station/:path*',
         destination: 'https://bjapi.afreecatv.com/:path*',
       },
+      {
+        source: '/api/twitch/gql',
+        destination: 'https://gql.twitch.tv/gql',
+      },
     ];
   },
   images: {
@@ -85,6 +89,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'yt3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'static-cdn.jtvnw.net',
       },
     ],
   },

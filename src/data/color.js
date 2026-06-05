@@ -14,6 +14,11 @@ export const PLATFORM_COLORS = {
     profile: "linear-gradient(140deg, rgba(255, 0, 0, 1) 0%, rgba(204, 0, 0, 1) 100%)",
     shadow: "rgba(255, 0, 0, 0.4)",
   },
+  twitch: {
+    main: "rgba(145, 70, 255, 1)",
+    profile: "linear-gradient(140deg, rgba(145, 70, 255, 1) 0%, rgba(100, 65, 165, 1) 100%)",
+    shadow: "rgba(145, 70, 255, 0.4)",
+  },
 };
 
 // YouTube 슈퍼챗 티어별 색상 (금액 기준, KRW)

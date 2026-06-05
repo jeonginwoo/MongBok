@@ -1,6 +1,6 @@
-import { chzzk_live_client, soop_search_client, youtube_search_client } from "@/api/client";
+import { chzzk_live_client, soop_search_client, youtube_search_client, twitch_gql_client } from "@/api/client";
 import { getLiveStatus } from "@/api/live";
-import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE } from "@/data/config";
+import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE, ENABLE_TWITCH } from "@/data/config";
 
 const getChzzkSearch = async (keyword) => {
   try {
@@ -98,6 +98,57 @@ const getYoutubeSearch = async (keyword) => {
   }
 };
 
+const getTwitchSearch = async (keyword) => {
+  try {
+    const body = [
+      {
+        operationName: "SearchResultsPage_SearchResults",
+        variables: {
+          platform: "web",
+          query: keyword,
+          options: {
+            targets: null,
+            shouldSkipDiscoveryControl: false,
+          },
+          requestID: crypto.randomUUID(),
+        },
+        extensions: {
+          persistedQuery: {
+            version: 1,
+            sha256Hash: "c1fe88431e82c9fc449f6478f9864ae095614baf1a0fac686d7ad8e23c6aea7e",
+          },
+        },
+      },
+    ];
+
+    const response = await twitch_gql_client.post("", body);
+    const edges = response.data?.[0]?.data?.searchFor?.channels?.edges ?? [];
+    
+    // 상위 5개 채널만 사용
+    const list = edges.slice(0, 5).map(edge => edge.item);
+
+    const result = await Promise.all(
+      list.map(async (item) => {
+        try {
+          const liveStatus = await getLiveStatus(item.login, "twitch");
+          return {
+            ...liveStatus,
+            id: item.login,
+            platform: "twitch",
+          };
+        } catch (e) {
+          return null;
+        }
+      })
+    );
+
+    return result.filter((item) => item !== null);
+  } catch (error) {
+    console.error("❌ [Twitch] 검색 실패:", error.message || error);
+    return [];
+  }
+};
+
 export const searchChannels = async (keyword, platform) => {
   if (!keyword || keyword.trim() === "") return [];
 
@@ -111,6 +162,10 @@ export const searchChannels = async (keyword, platform) => {
 
   if (platform === "youtube") {
     return await getYoutubeSearch(keyword);
+  }
+
+  if (platform === "twitch") {
+    return await getTwitchSearch(keyword);
   }
 
   console.warn(`⚠️ 지원하지 않는 플랫폼: ${platform}`);
@@ -154,8 +209,20 @@ export const searchAllPlatforms = async (keyword, limit = 6) => {
     searchPromises.push(Promise.resolve([]));
   }
 
-  const [chzzk, soop, youtube] = await Promise.all(searchPromises);
+  if (ENABLE_TWITCH) {
+    searchPromises.push(
+      getTwitchSearch(keyword).catch(err => {
+        console.error("❌ [searchAll] Twitch 검색 실패:", err.message);
+        return [];
+      })
+    );
+  } else {
+    searchPromises.push(Promise.resolve([]));
+  }
 
+  const [chzzk, soop, youtube, twitch] = await Promise.all(searchPromises);
+
+  const TWITCH_WEIGHT = 1003;
   const CHZZK_WEIGHT = 1002;
   const SOOP_WEIGHT = 1001;
   const YOUTUBE_WEIGHT = 1000;
@@ -172,6 +239,10 @@ export const searchAllPlatforms = async (keyword, limit = 6) => {
     ...youtube.map((item, i) => ({
       ...item,
       _score: YOUTUBE_WEIGHT - i * 10,
+    })),
+    ...twitch.map((item, i) => ({
+      ...item,
+      _score: TWITCH_WEIGHT - i * 10,
     })),
   ];
 

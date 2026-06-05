@@ -4,6 +4,7 @@ import {
   soop_channel_client,
   soop_live_client,
   youtube_channel_client,
+  twitch_gql_client,
 } from "@/api/client";
 
 // ✅ 치지직 라이브 상태 조회
@@ -209,6 +210,78 @@ const getYoutubeLiveStatus = async (channelId) => {
   }
 };
 
+// ✅ 트위치 라이브 상태 조회
+const getTwitchLiveStatus = async (login) => {
+  try {
+    const body = [
+      {
+        operationName: "ChannelShell",
+        variables: {
+          login: login,
+        },
+        query: `query ChannelShell($login: String!) { 
+          user(login: $login) { 
+            id 
+            login 
+            displayName 
+            description 
+            profileImageURL(width: 150) 
+            roles { isPartner } 
+            followers { totalCount } 
+            stream { 
+              id 
+              title 
+              viewersCount 
+              createdAt 
+              game { id name } 
+            } 
+          } 
+        }`,
+      },
+      {
+        operationName: "RealtimeStreamTagList",
+        variables: {
+          channelLogin: login,
+        },
+        extensions: {
+          persistedQuery: {
+            version: 1,
+            sha256Hash: "fbf9d64d09620f4b263add345261aaaa8e7010fd13b1c1df234c82b920cc2094",
+          },
+        },
+      },
+    ];
+
+    const response = await twitch_gql_client.post("", body);
+    const user = response.data?.[0]?.data?.user;
+    const tagData = response.data?.[1]?.data?.user?.stream?.freeformTags ?? [];
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const stream = user.stream;
+
+    return {
+      id: user.login,
+      twitchUserId: user.id,
+      name: user.displayName,
+      imageUrl: user.profileImageURL,
+      liveTitle: stream?.title ?? "",
+      liveImageUrl: stream ? `https://static-cdn.jtvnw.net/previews-ttv/live_user_${user.login}-440x248.jpg` : "",
+      openDate: stream?.createdAt ?? null,
+      closeDate: null,
+      isLive: !!stream,
+      userCount: stream ? stream.viewersCount : -1,
+      liveCategory: stream?.game?.name ?? null,
+      tags: tagData.map(tag => tag.name),
+    };
+  } catch (error) {
+    console.error("❌ [Twitch] 라이브 상태 가져오기 실패:", error);
+    throw error;
+  }
+};
+
 // ✅ 라이브 상태 조회
 export const getLiveStatus = async (channelId, platform) => {
   let liveStatus = null;
@@ -218,6 +291,8 @@ export const getLiveStatus = async (channelId, platform) => {
     liveStatus = await getSoopLiveStatus(channelId);
   } else if (platform === "youtube") {
     liveStatus = await getYoutubeLiveStatus(channelId);
+  } else if (platform === "twitch") {
+    liveStatus = await getTwitchLiveStatus(channelId);
   } else {
     console.warn(`⚠️ 지원하지 않는 플랫폼: ${platform}`);
     return;
@@ -260,6 +335,7 @@ export const getAllChannelsData = async (localStorageData) => {
           // Chat metadata
           chatChannelId: live.chatChannelId,
           accessToken: live.accessToken,
+          twitchUserId: live.twitchUserId,
           chatNo: live.chatNo,
           ftk: live.ftk,
           bjid: live.bjid,

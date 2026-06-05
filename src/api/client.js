@@ -55,3 +55,11 @@ export const youtube_chat_client = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+export const twitch_gql_client = axios.create({
+  baseURL: "/api/twitch/gql",
+  headers: {
+    "Client-Id": "kimne78kx3ncx6brgo4mv6wki5h1ko",
+    "Content-Type": "application/json",
+  },
+});

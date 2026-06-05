@@ -14,12 +14,13 @@ import ChatView from "@/components/View/Chat/ChatView";
 import { useAtomValue, useAtom } from "jotai";
 import { controllerExpandedAtom, chatFontSizeAdjustmentAtom, CHAT_FONT_SIZE_BASE, CHAT_FONT_SIZE_STEP, pointerEventsEnabledAtom, channelsAtom } from "@/atoms/setting";
 import { fitStyleAtom } from "@/atoms/ui";
-import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE } from "@/data/config";
+import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE, ENABLE_TWITCH } from "@/data/config";
 import { getLiveStatus } from "@/api/live";
 
 import useChzzkChat from "@/hooks/useChzzkChat";
 import useSoopChat from "@/hooks/useSoopChat";
 import useYoutubeChat from "@/hooks/useYoutubeChat";
+import useTwitchChat from "@/hooks/useTwitchChat";
 
 export default function DraggableChat({ channel, zone }) {
   if (!channel) return null;
@@ -48,13 +49,17 @@ export default function DraggableChat({ channel, zone }) {
   const youtubeChat = useYoutubeChat(
     (ENABLE_YOUTUBE && channel.platform === "youtube") ? channelId : null
   );
+  const twitchChat = useTwitchChat(
+    (ENABLE_TWITCH && channel.platform === "twitch") ? channelId : null
+  );
 
   const { chatList, status, error, retry } = useMemo(() => {
     if (channel.platform === "chzzk") return chzzkChat;
     if (channel.platform === "soop") return soopChat;
     if (channel.platform === "youtube") return youtubeChat;
+    if (channel.platform === "twitch") return twitchChat;
     return { chatList: [], status: "idle", error: null, retry: () => {} };
-  }, [channel.platform, chzzkChat, soopChat, youtubeChat]);
+  }, [channel.platform, chzzkChat, soopChat, youtubeChat, twitchChat]);
 
   const [channels, setChannels] = useAtom(channelsAtom);
 
