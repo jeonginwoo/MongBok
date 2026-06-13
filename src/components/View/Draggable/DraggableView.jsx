@@ -80,7 +80,7 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
     channel.platform === "chzzk"
       ? `https://chzzk.naver.com/live/${channelId}`
       : channel.platform === "soop"
-      ? `https://play.sooplive.co.kr/${channelId}/embed`
+      ? `https://play.sooplive.com/${channelId}/embed`
       : channel.platform === "youtube"
       ? channel.liveVideoId
         ? `https://www.youtube.com/embed/${channel.liveVideoId}?autoplay=1`
@@ -102,8 +102,10 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
       >
         <Box
           component="iframe"
-          key={channel?.isLive ? "live" : "offline"} 
+          key={channel?.isLive ? "live" : "offline"}
           src={iframeSrc}
+          allow="autoplay; fullscreen; encrypted-media; picture-in-picture; clipboard-write; loopback-network"
+          allowFullScreen
           sx={{
             width: "100%",
             height: "100%",
