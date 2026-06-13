@@ -53,6 +53,9 @@ const r16_10a31 = 69;
 // val of canvas[ratio3].layouts[4][layout1]
 const r16_10a41 = 84;
 
+// val of canvas[ratio3].layouts[5][layout1]
+const r16_10a51 = 84;
+
 export const canvas = {
   "20:9": {
     landscape: {
@@ -165,6 +168,22 @@ export const canvas = {
               4: { id: 4, type: "chat", style: { display: "none" } },
             },
           },
+          layout2: {
+            view: {
+              1: { id: 1, type: "view", style: { top: `0%`, left: `2%`, width: `${60 / r20_9}%`, height: `60%` } },
+              2: { id: 2, type: "view", style: { top: `0%`, left: `${2 + (60 / r20_9)}%`, width: `${60 / r20_9}%`, height: `60%` } },
+              3: { id: 3, type: "view", style: { top: `60%`, left: `2%`, width: `${40 / r20_9}%`, height: `40%` } },
+              4: { id: 4, type: "view", style: { top: `60%`, left: `${2 + (40 / r20_9)}%`, width: `${40 / r20_9}%`, height: `40%` } },
+              5: { id: 5, type: "view", style: { top: `60%`, left: `${2 + (40 / r20_9) * 2}%`, width: `${40 / r20_9}%`, height: `40%` } },
+            },
+            chat: {
+              1: { id: 1, type: "chat", style: { display: "none" } },
+              2: { id: 2, type: "chat", style: { display: "none" } },
+              3: { id: 3, type: "chat", style: { display: "none" } },
+              4: { id: 4, type: "chat", style: { display: "none" } },
+              5: { id: 5, type: "chat", style: { display: "none" } },
+            },
+          },
         },
       },
     },
@@ -231,7 +250,7 @@ export const canvas = {
   },
   "16:9": {
     landscape: {
-      maxViewCount: 4,
+      maxViewCount: 5,
       style: {
         aspectRatio: "16 / 9",
       },
@@ -398,6 +417,40 @@ export const canvas = {
             },
           },
         },
+        5: {
+          layout1: {
+            view: {
+              1: { id: 1, type: "view", style: { top: `0%`, left: `${100 / 3}%`, width: `50%`, height: `50%` } },
+              2: { id: 2, type: "view", style: { top: `50%`, left: `${100 / 3}%`, width: `50%`, height: `50%` } },
+              3: { id: 3, type: "view", style: { top: `0%`, left: `0%`, width: `${100 / 3}%`, height: `${100 / 3}%` } },
+              4: { id: 4, type: "view", style: { top: `${100 / 3}%`, left: `0%`, width: `${100 / 3}%`, height: `${100 / 3}%` } },
+              5: { id: 5, type: "view", style: { top: `${(100 / 3) * 2}%`, left: `0%`, width: `${100 / 3}%`, height: `${100 / 3}%` } },
+            },
+            chat: {
+              1: { id: 1, type: "chat", style: { top: `0%`, left: `${(100 / 6) * 5}%`, width: `${(100 / 6)}%`, height: `50%` } },
+              2: { id: 2, type: "chat", style: { top: `50%`, left: `${(100 / 6) * 5}%`, width: `${(100 / 6)}%`, height: `50%` } },
+              3: { id: 3, type: "chat", style: { display: "none" } },
+              4: { id: 4, type: "chat", style: { display: "none" } },
+              5: { id: 5, type: "chat", style: { display: "none" } },
+            },
+          },
+          layout2: {
+            view: {
+              1: { id: 1, type: "view", style: { top: `${(100 / 12)}%`, left: `0%`, width: `50%`, height: `50%` } },
+              2: { id: 2, type: "view", style: { top: `${(100 / 12)}%`, left: `50%`, width: `50%`, height: `50%` } },
+              3: { id: 3, type: "view", style: { top: `${(100 / 12) + 50}%`, left: `0%`, width: `${100 / 3}%`, height: `${100 / 3}%` } },
+              4: { id: 4, type: "view", style: { top: `${(100 / 12) + 50}%`, left: `${100 / 3}%`, width: `${100 / 3}%`, height: `${100 / 3}%` } },
+              5: { id: 5, type: "view", style: { top: `${(100 / 12) + 50}%`, left: `${(100 / 3) * 2}%`, width: `${100 / 3}%`, height: `${100 / 3}%` } },
+            },
+            chat: {
+              1: { id: 1, type: "chat", style: { display: "none" } },
+              2: { id: 2, type: "chat", style: { display: "none" } },
+              3: { id: 3, type: "chat", style: { display: "none" } },
+              4: { id: 4, type: "chat", style: { display: "none" } },
+              5: { id: 5, type: "chat", style: { display: "none" } },
+            },
+          },
+        },
       },
     },
     portrait: {
@@ -447,7 +500,7 @@ export const canvas = {
   },
   "16:10": {
     landscape: {
-      maxViewCount: 4,
+      maxViewCount: 5,
       style: {
         aspectRatio: "16 / 10",
       },
@@ -592,6 +645,37 @@ export const canvas = {
               2: { id: 2, type: "chat", style: { display: "none" } },
               3: { id: 3, type: "chat", style: { display: "none" } },
               4: { id: 4, type: "chat", style: { display: "none" } },
+            },
+          },
+          layout5: {
+            view: {
+              1: { id: 1, type: "view", style: { top: `${(100 - r16_10a51 * r16_10) / 2}%`, left: `0%`, width: `${r16_10a51}%`, height: `${r16_10a51 * r16_10}%` } },
+            },
+            chat: {
+              1: { id: 1, type: "chat", style: { top: `0%`, left: `${r16_10a51}%`, width: `${(100 - r16_10a51)}%`, height: `37%` } },
+              2: { id: 2, type: "chat", style: { top: `37%`, left: `${r16_10a51}%`, width: `${(100 - r16_10a51)}%`, height: `21%` } },
+              3: { id: 3, type: "chat", style: { top: `58%`, left: `${r16_10a51}%`, width: `${(100 - r16_10a51)}%`, height: `21%` } },
+              4: { id: 4, type: "chat", style: { top: `79%`, left: `${r16_10a51}%`, width: `${(100 - r16_10a51)}%`, height: `21%` } },
+            },
+          },
+        },
+        5: {
+          layout1: {
+            view: {
+              1: { id: 1, type: "view", style: { top: `0%`, left: `${25 - (100 / 6) / r16_10}%`, width: `50%`, height: `50%` } },
+              2: { id: 2, type: "view", style: { top: `50%`, left: `${25 - (100 / 6) / r16_10}%`, width: `50%`, height: `50%` } },
+              3: { id: 3, type: "view", style: { top: `0%`, left: `${75 - (100 / 6) / r16_10}%`, width: `${(100 / 3) / r16_10}%`, height: `${100 / 3}%` } },
+              4: { id: 4, type: "view", style: { top: `${100 / 3}%`, left: `${75 - (100 / 6) / r16_10}%`, width: `${(100 / 3) / r16_10}%`, height: `${100 / 3}%` } },
+              5: { id: 5, type: "view", style: { top: `${(100 / 3) * 2}%`, left: `${75 - (100 / 6) / r16_10}%`, width: `${(100 / 3) / r16_10}%`, height: `${100 / 3}%` } },
+            },
+          },
+          layout2: {
+            view: {
+              1: { id: 1, type: "view", style: { top: `${25 - (100 / 6) * r16_10}%`, left: `0%`, width: `50%`, height: `50%` } },
+              2: { id: 2, type: "view", style: { top: `${25 - (100 / 6) * r16_10}%`, left: `50%`, width: `50%`, height: `50%` } },
+              3: { id: 3, type: "view", style: { top: `${75 - (100 / 6) * r16_10}%`, left: `0%`, width: `${100 / 3}%`, height: `${(100 / 3) * r16_10}%` } },
+              4: { id: 4, type: "view", style: { top: `${75 - (100 / 6) * r16_10}%`, left: `${100 / 3}%`, width: `${100 / 3}%`, height: `${(100 / 3) * r16_10}%` } },
+              5: { id: 5, type: "view", style: { top: `${75 - (100 / 6) * r16_10}%`, left: `${(100 / 3) * 2}%`, width: `${100 / 3}%`, height: `${(100 / 3) * r16_10}%` } },
             },
           },
         },
