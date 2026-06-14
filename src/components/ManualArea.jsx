@@ -18,6 +18,7 @@ import {
   Download as DownloadIcon,
   Window as WindowsIcon,
   Apple as AppleIcon,
+  CropPortrait as CropPortraitIcon,
 } from "@mui/icons-material";
 import { PLATFORM_COLORS } from "@/data/color";
 import { pointColorAtom } from "@/atoms/setting";
@@ -148,7 +149,8 @@ export default function ManualArea() {
               '채널 목록에 추가할 항목을 channels 항목에 "채널ID": { "platform": "플랫폼명" } 형식으로 입력 후 저장하면 됩니다.',
               "채널ID는 각 채널의 URL에서 확인할 수 있습니다.",
               "유튜브의 경우 채널ID 또는 채널 핸들(ex. \"@골뱅이까지작성\") 모두 적용 가능하고, 핸들을 사용할 경우 적용 시 채널ID로 변환됩니다.",
-              "플랫폼명은 chzzk / soop / youtube 중 하나입니다.",
+              "트위치의 경우 채널 주소 끝의 로그인명(twitch.tv/로그인명)을 채널ID로 사용합니다.",
+              "플랫폼명은 chzzk / soop / youtube / twitch 중 하나입니다.",
             ]}
           />
         </Section>
@@ -212,6 +214,17 @@ export default function ManualArea() {
             ]}
           />
           <Item
+            icon={<CropPortraitIcon />}
+            primary="리모컨 (별도 창으로 분리)"
+            secondary={[
+              "컨트롤러(+설정)를 별도 창으로 분리해, 다른 모니터에 두고 리모컨처럼 사용할 수 있습니다.",
+              "분리하면 메인 화면의 방송이 가로로 넓어지고, 리모컨 창의 모든 조작(검색·배치·녹화·새로고침·설정 등)은 메인 화면에 그대로 적용됩니다.",
+              "창 너비는 내부 내용(설정창 열림 여부 등)에 맞춰 자동 조절되며, 높이는 자유롭게 조절할 수 있습니다.",
+              "리모컨 상태에서는 컨트롤러가 항상 펴짐으로 고정되며, 전체 화면은 브라우저 정책상 메인 창에서 F 키로 사용해야 합니다.",
+              "별도 창이라 방송 화면 녹화에 리모컨은 함께 잡히지 않으며, 메인 페이지를 새로고침하면 리모컨 창은 자동으로 닫힙니다.",
+            ]}
+          />
+          <Item
             icon={<FullscreenIcon />}
             primary="전체 화면 (F)"
             secondary="방송 화면을 전체 화면으로 전환합니다."
@@ -246,6 +259,17 @@ export default function ManualArea() {
               "동시 라이브가 여러 개인 경우 시청자 수가 가장 많은 방송이 표시됩니다.",
               "라이브 VOD가 없거나 삭제된 경우 '최신 라이브 정보 없음'으로 표시됩니다.",
               "스트리밍 시간, 마지막 방송 시간, 채팅 데이터를 가져오려면 YouTube 채팅 서버를 실행해야 합니다. 아래 다운로드 버튼으로 받은 파일로 서버를 실행할 수 있습니다.",
+            ]}
+          />
+          <Item
+            icon={
+              <Box sx={{ width: 20, height: 20, borderRadius: "50%", background: PLATFORM_COLORS.twitch.profile, mt: "0.2rem" }} />
+            }
+            primary="트위치 (Twitch)"
+            secondary={[
+              "채널 검색과 채팅 표시를 모두 지원합니다.",
+              "수동 추가 시 채널ID는 채널 주소 끝의 로그인명(twitch.tv/로그인명)을 사용합니다.",
+              "트위치 정책상 방송 영상 시작 전 광고가 재생될 수 있습니다.",
             ]}
           />
           <Item

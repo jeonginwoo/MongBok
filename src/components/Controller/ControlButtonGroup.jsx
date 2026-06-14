@@ -13,6 +13,7 @@ import {
   ChevronLeft as ChevronLeftIcon,
   Settings as SettingsIcon,
   FiberManualRecord as FiberManualRecordIcon,
+  CropPortrait as CropPortraitIcon,
 } from "@mui/icons-material";
 import { getLiveStatus } from "@/api/live";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
@@ -37,7 +38,7 @@ import {
   viewCountAtom,
   currentTimePositionAtom,
 } from "@/atoms/setting";
-import { snackbarAtom, isDraggingAtom, isRecordingAtom, settingsOpenAtom } from "@/atoms/ui";
+import { snackbarAtom, isDraggingAtom, isRecordingAtom, settingsOpenAtom, controllerPopupOpenAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
 import { canvas } from "@/data/canvas";
 import { useLayoutManager } from "@/hooks/useLayoutManager";
@@ -84,6 +85,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [timeToNextRefresh, setTimeToNextRefresh] = useState(60);
   const setSnackbar = useSetAtom(snackbarAtom);
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
+  const [controllerPopupOpen, setControllerPopupOpen] = useAtom(controllerPopupOpenAtom);
   const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
   const autoHideOffline = useAtomValue(autoHideOfflineAtom);
   const autoHideOfflineRef = useRef(autoHideOffline);
@@ -95,6 +97,14 @@ export default function ControlButtonGroup({ fullscreen }) {
   const refreshingRef = useRef(refreshing);
   useEffect(() => { channelsRef.current = channels; }, [channels]);
   useEffect(() => { refreshingRef.current = refreshing; }, [refreshing]);
+  const rootRef = useRef(null);
+
+  // 리모컨 팝업 상태에서는 컨트롤러를 항상 펴기로 강제 (접기 불가)
+  useEffect(() => {
+    if (controllerPopupOpen && !controllerExpanded) {
+      setControllerExpanded(true);
+    }
+  }, [controllerPopupOpen, controllerExpanded, setControllerExpanded]);
 
   const hasUnzonedChannels = useMemo(
     () => Object.values(channels).some((c) => c.zoneId === null),
@@ -384,7 +394,7 @@ export default function ControlButtonGroup({ fullscreen }) {
       switch (key) {
         case "C":
           event.preventDefault();
-          handleToggleController();
+          if (!controllerPopupOpen) handleToggleController();
           break;
         case "S":
           event.preventDefault();
@@ -476,9 +486,15 @@ export default function ControlButtonGroup({ fullscreen }) {
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    // 메인 창 + (리모컨으로 분리된 경우) 컴포넌트가 올라간 팝업 창 양쪽에 등록.
+    // 같은 창이면 Set이 중복을 제거하므로 핸들러가 두 번 실행되지 않는다.
+    const targets = new Set([window]);
+    const ownerWin = rootRef.current?.ownerDocument?.defaultView;
+    if (ownerWin) targets.add(ownerWin);
+    targets.forEach((t) => t.addEventListener("keydown", handleKeyDown));
+    return () => targets.forEach((t) => t.removeEventListener("keydown", handleKeyDown));
   }, [
+    controllerPopupOpen,
     handleToggleController,
     setSettingsOpen,
     handleToggleTheme,
@@ -499,6 +515,7 @@ export default function ControlButtonGroup({ fullscreen }) {
 
   return (
     <Box
+      ref={rootRef}
       sx={{
         display: "flex",
         justifyContent: "space-between",
@@ -513,13 +530,15 @@ export default function ControlButtonGroup({ fullscreen }) {
           </>
         }
       >
-        <IconButton onClick={handleToggleController}>
-          {controllerExpanded ? (
-            <ChevronRightIcon sx={iconStyle} />
-          ) : (
-            <ChevronLeftIcon sx={iconStyle} />
-          )}
-        </IconButton>
+        <span>
+          <IconButton onClick={handleToggleController} disabled={controllerPopupOpen}>
+            {controllerExpanded ? (
+              <ChevronRightIcon sx={iconStyle} />
+            ) : (
+              <ChevronLeftIcon sx={iconStyle} />
+            )}
+          </IconButton>
+        </span>
       </Tooltip>
 
       <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -594,17 +613,40 @@ export default function ControlButtonGroup({ fullscreen }) {
 
             <Tooltip
               slotProps={tooltipSlotProps}
+              title={controllerPopupOpen ? "리모컨 닫기" : "리모컨 분리"}
+            >
+              <IconButton
+                onClick={() => {
+                  const opening = !controllerPopupOpen;
+                  // 분리 시 펴기를 먼저 확정해, 접힘(80)→펴기(290) 폭 변화로 인한 깜빡임 방지
+                  if (opening) setControllerExpanded(true);
+                  setControllerPopupOpen(opening);
+                }}
+              >
+                <CropPortraitIcon sx={{ ...iconStyle, color: controllerPopupOpen ? activePointColor : undefined }} />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip
+              slotProps={tooltipSlotProps}
               title={
-                <>
-                  전체화면{" "}
-                  <HotkeySpan component="span" pointcolor={pointColor}>(F)</HotkeySpan>
-                </>
+                controllerPopupOpen ? (
+                  "전체화면은 메인 창에서 F키로 사용"
+                ) : (
+                  <>
+                    전체화면{" "}
+                    <HotkeySpan component="span" pointcolor={pointColor}>(F)</HotkeySpan>
+                  </>
+                )
               }
             >
               <span>
                 <IconButton
                   onClick={fullscreen}
-                  disabled={Object.values(channels).filter(c => c.isVisible).length === 0}
+                  disabled={
+                    controllerPopupOpen ||
+                    Object.values(channels).filter(c => c.isVisible).length === 0
+                  }
                 >
                   <FullscreenIcon sx={iconStyle} />
                 </IconButton>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import dayjs from "dayjs";
 import { Box, Typography, Tooltip, Skeleton } from "@mui/material";
 import { PLATFORM_COLORS } from "@/data/color";
@@ -12,11 +12,25 @@ import ChannelStatus from "@/components/Info/ChannelStatus";
 
 import { useAtomValue } from "jotai";
 import { controllerExpandedAtom } from "@/atoms/setting";
+import { controllerPopupOpenAtom, settingsOpenAtom } from "@/atoms/ui";
 
 export default function ChannelInfo({ channel, isDragging = false }) {
   if (!channel) return null;
 
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
+  const controllerPopupOpen = useAtomValue(controllerPopupOpenAtom);
+  const settingsOpen = useAtomValue(settingsOpenAtom);
+  const anchorRef = useRef(null);
+
+  // 리모컨 분리 + 설정창 닫힘: 상/하단 배치를 유지하되 오른쪽으로 쏠리게(top-end, 공간 부족 시 bottom-end로 flip) + 최대 너비 211px
+  // 설정창 열림: 우측(설정창 쪽 여백) / 그 외(도킹): 좌측
+  const isPopupNoSettings = controllerPopupOpen && !settingsOpen;
+  const tooltipPlacement = settingsOpen
+    ? "right"
+    : isPopupNoSettings
+    ? "top-end"
+    : "left";
+  const tooltipMaxWidth = isPopupNoSettings ? "211px" : "min(26rem, 90vw)";
 
   if (channel._loading) {
     return (
@@ -69,67 +83,85 @@ export default function ChannelInfo({ channel, isDragging = false }) {
   const thumbnailUrl = getThumbnailUrl();
 
   const tooltipTitle = (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+    <Box sx={{ display: "flex", flexDirection: "column" }}>
       {thumbnailUrl && (
         <Box
           component="img"
           src={thumbnailUrl}
           sx={{
+            display: "block",
             width: "100%",
             aspectRatio: "16 / 9",
-            borderRadius: "0.4rem",
             objectFit: "cover",
             backgroundColor: "background.level5",
+            // 툴팁 가장자리(테두리)에 딱 붙도록 패딩 없이, 상단 모서리만 툴팁 라운드에 맞춤
+            borderTopLeftRadius: "0.3rem",
+            borderTopRightRadius: "0.3rem",
           }}
         />
       )}
-      <Box sx={{ fontSize: "1.4rem" }}>
+      {/* 텍스트 영역에만 패딩 */}
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1, p: 1 }}>
+        <Box sx={{ fontSize: "1.4rem" }}>
+          <Box
+            component="span"
+            sx={{
+              color: (theme) => `${theme.palette.platform[channel.platform].main}`,
+              fontWeight: "bold",
+            }}
+          >
+            {channel.name || "채널명 없음"}
+          </Box>
+          {" : "}
+          {channel.liveTitle || "제목 없음"}
+        </Box>
         <Box
-          component="span"
           sx={{
-            color: (theme) => `${theme.palette.platform[channel.platform].main}`,
-            fontWeight: "bold",
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: 0.5,
+            maxWidth: "26.0rem",
           }}
         >
-          {channel.name || "채널명 없음"}
+          <LiveCategory channel={channel} isTag={true} />
+          <LiveTags channel={channel} isTag={true} />
+          {channel.isLive ? (
+            <>
+              <UserCount channel={channel} isTag={true} />
+              <LiveTime channel={channel} isTag={true} />
+            </>
+          ) : (
+            <ChannelStatus channel={channel} isTag={true} />
+          )}
         </Box>
-        {" : "}
-        {channel.liveTitle || "제목 없음"}
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          gap: 0.5,
-          maxWidth: "26.0rem",
-        }}
-      >
-        <LiveCategory channel={channel} isTag={true} />
-        <LiveTags channel={channel} isTag={true} />
-        {channel.isLive ? (
-          <>
-            <UserCount channel={channel} isTag={true} />
-            <LiveTime channel={channel} isTag={true} />
-          </>
-        ) : (
-          <ChannelStatus channel={channel} isTag={true} />
-        )}
       </Box>
     </Box>
   );
 
   return (
     <Tooltip
-      placement="left"
+      placement={tooltipPlacement}
       arrow
       title={isDragging ? null : tooltipTitle}
-      componentsProps={{
+      slotProps={{
+        popper: {
+          // 앵커가 있는 창(도킹=메인, 분리=팝업)으로 portal 해야 위치가 맞고 잘리지 않음
+          container: () => anchorRef.current?.ownerDocument?.body,
+          modifiers: [
+            { name: "preventOverflow", options: { padding: 8 } },
+            { name: "flip", options: { padding: 8 } },
+          ],
+        },
         tooltip: {
           sx: {
             fontSize: "1.2rem",
             textAlign: "left",
             pointerEvents: "auto",
+            // 미리보기 이미지가 테두리에 딱 붙도록 툴팁 기본 패딩 제거 (텍스트 패딩은 내부에서 처리)
+            p: 0,
+            // 좁은 팝업 창에서도 창 밖으로 넘치지 않도록 제한
+            maxWidth: tooltipMaxWidth,
             backgroundColor: "background.level1",
             color: "text.primary",
             border: "0.1rem solid",
@@ -142,6 +174,7 @@ export default function ChannelInfo({ channel, isDragging = false }) {
       }}
     >
       <Box
+        ref={anchorRef}
         sx={{
           position: "relative",
           display: "flex",

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Box,
   Paper,
@@ -200,6 +200,7 @@ export default function SettingsArea({ onClose }) {
 
   const setSnackbar = useSetAtom(snackbarAtom);
 
+  const paperRef = useRef(null);
   const [data, setData] = useState("");
   const [copySuccess, setCopySuccess] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -277,8 +278,12 @@ export default function SettingsArea({ onClose }) {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") onClose();
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    // 메인 창 + (리모컨 분리 시) 설정 패널이 올라간 팝업 창 양쪽에 등록
+    const targets = new Set([window]);
+    const ownerWin = paperRef.current?.ownerDocument?.defaultView;
+    if (ownerWin) targets.add(ownerWin);
+    targets.forEach((t) => t.addEventListener("keydown", handleKeyDown));
+    return () => targets.forEach((t) => t.removeEventListener("keydown", handleKeyDown));
   }, [onClose]);
 
   const handlePickRecordDirectory = async () => {
@@ -460,6 +465,7 @@ export default function SettingsArea({ onClose }) {
 
   return (
     <Paper
+      ref={paperRef}
       elevation={0}
       sx={{
         width: 340,
@@ -628,6 +634,7 @@ export default function SettingsArea({ onClose }) {
                 <Box component="ul" sx={{ pl: 2, m: 0 }}>
                   <li>화면 이동 모드: 패널을 드래그해 자유롭게 위치 조정</li>
                   <li>화면 조작 모드: 영상 플레이어를 직접 클릭·조작, 채팅창 스크롤</li>
+                  <li>화면 조작 모드여도 채팅 상단을 잡고 드래그하여 이동할 수 있습니다</li>
                 </Box>
               }
             >

@@ -46,7 +46,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
   const showCurrentTime = useAtomValue(showCurrentTimeAtom);
   const currentTimePosition = useAtomValue(currentTimePositionAtom);
   const { selectRatio } = useLayoutManager();
-  
+
   const canvasContentRef = useScreenRecorder();
 
   const ratioConfig = getRatioConfig(ratioKey);

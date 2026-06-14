@@ -15,3 +15,5 @@ export const isDraggingAtom = atom(false);
 export const isSavingRecordingAtom = atom(false);
 
 export const settingsOpenAtom = atom(false);
+
+export const controllerPopupOpenAtom = atom(false);
