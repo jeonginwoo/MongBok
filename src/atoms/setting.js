@@ -2,6 +2,7 @@ import { atom } from "jotai";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
 import { canvas } from "@/data/canvas";
 import { getLiveStatus } from "@/api/live";
+import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE, ENABLE_TWITCH } from "@/data/config";
 
 const storage = createJSONStorage(() =>
   typeof window !== "undefined" ? window.localStorage : undefined
@@ -277,6 +278,18 @@ export const recordSoundAtom = atomWithStorage(
 export const selectedSearchPlatformAtom = atomWithStorage(
   "selectedSearchPlatform",
   "",
+  storage
+);
+
+// 플랫폼별 활성화 상태 (config.js 값을 기본값으로 사용, 런타임에서 토글 가능)
+export const platformEnabledAtom = atomWithStorage(
+  "platformEnabled",
+  {
+    chzzk: ENABLE_CHZZK,
+    soop: ENABLE_SOOP,
+    youtube: ENABLE_YOUTUBE,
+    twitch: ENABLE_TWITCH,
+  },
   storage
 );
 

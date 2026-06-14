@@ -59,6 +59,7 @@ import {
   channelsAtom,
   controllerExpandedAtom,
   selectedSearchPlatformAtom,
+  platformEnabledAtom,
 } from "@/atoms/setting";
 import { getRecordDirectory, setRecordDirectory, clearRecordDirectory } from "@/utils/recordDirectoryStorage";
 import { snackbarAtom } from "@/atoms/ui";
@@ -193,6 +194,7 @@ export default function SettingsArea({ onClose }) {
   const channels = useAtomValue(channelsAtom);
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
   const selectedSearchPlatform = useAtomValue(selectedSearchPlatformAtom);
+  const platformEnabled = useAtomValue(platformEnabledAtom);
 
   const [group, orientation] = ratioKey.split("-");
   const availableLayouts = canvas[group]?.[orientation]?.layouts?.[viewCount];
@@ -271,6 +273,7 @@ export default function SettingsArea({ onClose }) {
     channels,
     controllerExpanded,
     selectedSearchPlatform,
+    platformEnabled,
     getLocalStorageDataString,
   ]);
 

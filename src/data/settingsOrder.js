@@ -17,6 +17,7 @@ export const SETTINGS_ORDER = [
   "recordSoundVolume",
   "controllerExpanded",
   "selectedSearchPlatform",
+  "platformEnabled",
 ];
 
 export const ALL_SETTINGS = ["channels", ...SETTINGS_ORDER];

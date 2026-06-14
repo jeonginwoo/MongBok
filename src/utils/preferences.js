@@ -95,6 +95,41 @@ export const validatePointColor = (value) => {
   return true;
 };
 
+export const validatePlatformEnabled = (value) => {
+  let obj = value;
+  if (typeof value === "string") {
+    try {
+      obj = JSON.parse(value);
+    } catch (e) {
+      return "'platformEnabled' 값이 유효한 JSON 객체(또는 JSON 문자열)가 아닙니다.";
+    }
+  }
+
+  if (typeof obj !== "object" || obj === null || Array.isArray(obj)) {
+    return "'platformEnabled' 값이 유효한 객체가 아닙니다.";
+  }
+
+  const allowedPlatforms = ["chzzk", "soop", "youtube", "twitch"];
+  const normalized = {};
+
+  for (const [key, val] of Object.entries(obj)) {
+    if (!allowedPlatforms.includes(key)) {
+      return `유효하지 않은 플랫폼 키 '${key}'. 허용되는 키는: ${allowedPlatforms.join(
+        ", "
+      )} 입니다.`;
+    }
+    if (typeof val === "boolean") {
+      normalized[key] = val;
+    } else if (val === "true" || val === "false") {
+      normalized[key] = val === "true";
+    } else {
+      return `'platformEnabled.${key}'에 대한 유효하지 않은 값 '${val}'. boolean이어야 합니다.`;
+    }
+  }
+
+  return { success: true, platformEnabled: normalized };
+};
+
 export const validateBoolean = (value, keyName) => {
   if (
     typeof value !== "boolean" &&
@@ -371,6 +406,13 @@ export const validatePreferences = async (dataToValidate) => {
           validationResult = await validateChannels(value);
           if (validationResult && typeof validationResult === "object" && validationResult.success) {
             normalizedData.channels = validationResult.channels;
+            validationResult = true;
+          }
+          break;
+        case "platformEnabled":
+          validationResult = validatePlatformEnabled(value);
+          if (validationResult && typeof validationResult === "object" && validationResult.success) {
+            normalizedData.platformEnabled = validationResult.platformEnabled;
             validationResult = true;
           }
           break;

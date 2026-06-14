@@ -4,6 +4,7 @@ import { Box, Typography, Divider, Button } from "@mui/material";
 import {
   Settings as SettingsIcon,
   Search as SearchIcon,
+  ToggleOn as ToggleOnIcon,
   AddToPhotos as AddToPhotosIcon,
   DeleteForever as DeleteForeverIcon,
   AspectRatio as AspectRatioIcon,
@@ -117,6 +118,16 @@ export default function ManualArea() {
               "우측 컨트롤러 상단의 검색창에서 원하는 채널을 검색할 수 있습니다.",
               "검색어 입력 후 Enter를 누르거나 0.5초 동안 입력이 없으면 자동으로 검색됩니다.",
               "검색 결과는 각 플랫폼에서 상위 5개가 출력됩니다.",
+            ]}
+          />
+          <Item
+            icon={<ToggleOnIcon />}
+            primary="검색 플랫폼 켜기/끄기"
+            secondary={[
+              "검색창 왼쪽의 플랫폼 선택 버튼을 누르면 나오는 팝업에서, 각 플랫폼의 토글로 검색 대상에서 켜고 끌 수 있습니다.",
+              "끈 플랫폼은 검색 결과와 플랫폼 선택에서만 숨겨질 뿐, 방송이 중단되거나 사라지는 것은 아닙니다.",
+              "이미 추가한 해당 플랫폼의 채널은 목록과 화면에서 그대로 시청·사용할 수 있습니다.",
+              "주로 사용하지 않는 플랫폼을 꺼 두면 검색 결과를 더 깔끔하게 볼 수 있습니다.",
             ]}
           />
           <Item

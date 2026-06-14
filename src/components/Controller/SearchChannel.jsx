@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   Box,
   TextField,
@@ -12,6 +12,7 @@ import {
   MenuItem,
   InputAdornment,
   Tooltip,
+  Switch,
 } from "@mui/material";
 import Image from "next/image";
 
@@ -20,17 +21,13 @@ import AppsIcon from "@mui/icons-material/Apps";
 import SearchChannelInfo from "@/components/Info/ChannelInfo/SearchChannelInfo";
 import { searchChannels } from "@/api/search";
 import { updatePreferences } from "@/utils/preferences";
-import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE, ENABLE_TWITCH } from "@/data/config";
 
 import { useAtom, useSetAtom } from "jotai";
-import { channelsAtom, selectedSearchPlatformAtom } from "@/atoms/setting";
+import { channelsAtom, selectedSearchPlatformAtom, platformEnabledAtom } from "@/atoms/setting";
 import { snackbarAtom } from "@/atoms/ui";
 
-const enabledPlatforms = [];
-if (ENABLE_CHZZK) enabledPlatforms.push("chzzk");
-if (ENABLE_SOOP) enabledPlatforms.push("soop");
-if (ENABLE_YOUTUBE) enabledPlatforms.push("youtube");
-if (ENABLE_TWITCH) enabledPlatforms.push("twitch");
+// 플랫폼 표시 순서
+const ALL_PLATFORMS = ["chzzk", "soop", "youtube", "twitch"];
 
 const platformLogos = {
   chzzk: "/chzzk/chzzk_logo.png",
@@ -62,7 +59,14 @@ export default function SearchChannel() {
 
   const [channels, setChannels] = useAtom(channelsAtom);
   const [selectedPlatform, setSelectedPlatform] = useAtom(selectedSearchPlatformAtom);
+  const [platformEnabled, setPlatformEnabled] = useAtom(platformEnabledAtom);
   const setSnackbar = useSetAtom(snackbarAtom);
+
+  // 활성화된 플랫폼만 (검색 대상 / 검색 결과 팝업에 표시)
+  const enabledPlatforms = useMemo(
+    () => ALL_PLATFORMS.filter((p) => platformEnabled[p]),
+    [platformEnabled]
+  );
 
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -169,7 +173,7 @@ export default function SearchChannel() {
     } finally {
       setLoading(false);
     }
-  }, [keyword, setSnackbar]);
+  }, [keyword, setSnackbar, enabledPlatforms]);
 
   const handlePlatformMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -183,6 +187,17 @@ export default function SearchChannel() {
     setSelectedPlatform(platform);
     updatePreferences({ selectedSearchPlatform: platform });
     handlePlatformMenuClose();
+  };
+
+  const togglePlatform = (platform) => {
+    const willEnable = !platformEnabled[platform];
+    setPlatformEnabled((prev) => ({ ...prev, [platform]: willEnable }));
+
+    // 비활성화 시 현재 선택된 검색 플랫폼이었다면 전체 플랫폼으로 초기화
+    if (!willEnable && selectedPlatform === platform) {
+      setSelectedPlatform("");
+      updatePreferences({ selectedSearchPlatform: "" });
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -368,42 +383,60 @@ export default function SearchChannel() {
             전체 플랫폼
           </Typography>
         </MenuItem>
-        {enabledPlatforms.map((platform) => (
-          <MenuItem
-            key={platform}
-            onClick={() => selectPlatform(platform)}
-            selected={selectedPlatform === platform}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1.5,
-              padding: "0.8rem 1.2rem",
-              borderRadius: "0.6rem",
-            }}
-          >
-            <Box
+        {ALL_PLATFORMS.map((platform) => {
+          const isEnabled = platformEnabled[platform];
+          return (
+            <MenuItem
+              key={platform}
+              onClick={() => {
+                if (isEnabled) selectPlatform(platform);
+              }}
+              disableRipple={!isEnabled}
+              selected={selectedPlatform === platform}
               sx={{
-                width: 24,
-                height: 24,
-                position: "relative",
-                borderRadius: "50%",
-                overflow: "hidden",
-                backgroundColor: "background.level3",
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                padding: "0.8rem 1.2rem",
+                borderRadius: "0.6rem",
+                cursor: isEnabled ? "pointer" : "default",
+                opacity: isEnabled ? 1 : 0.45,
+                "&.Mui-selected, &.Mui-selected:hover": {
+                  backgroundColor: "background.level3",
+                },
               }}
             >
-              <Image
-                src={platformLogos[platform]}
-                alt={platformNames[platform]}
-                fill
-                sizes="24px"
-                style={{ objectFit: "cover" }}
+              <Box
+                sx={{
+                  width: 24,
+                  height: 24,
+                  position: "relative",
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  backgroundColor: "background.level3",
+                  filter: isEnabled ? "none" : "grayscale(1)",
+                }}
+              >
+                <Image
+                  src={platformLogos[platform]}
+                  alt={platformNames[platform]}
+                  fill
+                  sizes="24px"
+                  style={{ objectFit: "cover" }}
+                />
+              </Box>
+              <Typography sx={{ fontSize: "1.3rem", color: "text.primary", flex: 1 }}>
+                {platformNames[platform]}
+              </Typography>
+              <Switch
+                size="small"
+                checked={isEnabled}
+                onClick={(e) => e.stopPropagation()}
+                onChange={() => togglePlatform(platform)}
               />
-            </Box>
-            <Typography sx={{ fontSize: "1.3rem", color: "text.primary" }}>
-              {platformNames[platform]}
-            </Typography>
-          </MenuItem>
-        ))}
+            </MenuItem>
+          );
+        })}
       </Menu>
 
       <Typography
