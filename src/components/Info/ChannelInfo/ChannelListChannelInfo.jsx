@@ -22,7 +22,7 @@ export default function ChannelInfo({ channel, isDragging = false }) {
   const settingsOpen = useAtomValue(settingsOpenAtom);
   const anchorRef = useRef(null);
 
-  // 리모컨 분리 + 설정창 닫힘: 상/하단 배치를 유지하되 오른쪽으로 쏠리게(top-end, 공간 부족 시 bottom-end로 flip) + 최대 너비 211px
+  // 리모컨 분리 + 설정창 닫힘: 상/하단 배치를 유지하되 오른쪽으로 쏠리게(top-end, 공간 부족 시 bottom-end로 flip)
   // 설정창 열림: 우측(설정창 쪽 여백) / 그 외(도킹): 좌측
   const isPopupNoSettings = controllerPopupOpen && !settingsOpen;
   const tooltipPlacement = settingsOpen
@@ -30,7 +30,6 @@ export default function ChannelInfo({ channel, isDragging = false }) {
     : isPopupNoSettings
     ? "top-end"
     : "left";
-  const tooltipMaxWidth = isPopupNoSettings ? "211px" : "min(26rem, 90vw)";
 
   if (channel._loading) {
     return (
@@ -143,6 +142,7 @@ export default function ChannelInfo({ channel, isDragging = false }) {
     <Tooltip
       placement={tooltipPlacement}
       arrow
+      disableInteractive
       title={isDragging ? null : tooltipTitle}
       slotProps={{
         popper: {
@@ -157,19 +157,15 @@ export default function ChannelInfo({ channel, isDragging = false }) {
           sx: {
             fontSize: "1.2rem",
             textAlign: "left",
-            pointerEvents: "auto",
             // 미리보기 이미지가 테두리에 딱 붙도록 툴팁 기본 패딩 제거 (텍스트 패딩은 내부에서 처리)
             p: 0,
             // 좁은 팝업 창에서도 창 밖으로 넘치지 않도록 제한
-            maxWidth: tooltipMaxWidth,
+            maxWidth: "min(26rem, 90vw)",
             backgroundColor: "background.level1",
             color: "text.primary",
             border: "0.1rem solid",
             borderColor: "border.primary",
           },
-          onClick: (e) => e.stopPropagation(),
-          onMouseDown: (e) => e.stopPropagation(),
-          onPointerDown: (e) => e.stopPropagation(),
         },
       }}
     >

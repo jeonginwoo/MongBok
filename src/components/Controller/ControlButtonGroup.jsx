@@ -99,13 +99,6 @@ export default function ControlButtonGroup({ fullscreen }) {
   useEffect(() => { refreshingRef.current = refreshing; }, [refreshing]);
   const rootRef = useRef(null);
 
-  // 리모컨 팝업 상태에서는 컨트롤러를 항상 펴기로 강제 (접기 불가)
-  useEffect(() => {
-    if (controllerPopupOpen && !controllerExpanded) {
-      setControllerExpanded(true);
-    }
-  }, [controllerPopupOpen, controllerExpanded, setControllerExpanded]);
-
   const hasUnzonedChannels = useMemo(
     () => Object.values(channels).some((c) => c.zoneId === null),
     [channels]
@@ -394,7 +387,7 @@ export default function ControlButtonGroup({ fullscreen }) {
       switch (key) {
         case "C":
           event.preventDefault();
-          if (!controllerPopupOpen) handleToggleController();
+          handleToggleController();
           break;
         case "S":
           event.preventDefault();
@@ -531,7 +524,7 @@ export default function ControlButtonGroup({ fullscreen }) {
         }
       >
         <span>
-          <IconButton onClick={handleToggleController} disabled={controllerPopupOpen}>
+          <IconButton onClick={handleToggleController}>
             {controllerExpanded ? (
               <ChevronRightIcon sx={iconStyle} />
             ) : (
