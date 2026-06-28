@@ -28,6 +28,9 @@ import {
   FolderOpen as FolderOpenIcon,
   ClearAll as ClearAllIcon,
   InfoOutlined as InfoOutlinedIcon,
+  Groups as GroupsIcon,
+  Person as PersonIcon,
+  TouchApp as TouchAppIcon,
 } from "@mui/icons-material";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
@@ -45,6 +48,7 @@ import {
   chatFontSizeAdjustmentAtom,
   autoHideOfflineAtom,
   autoRecordEnabledAtom,
+  recordStopConditionAtom,
   recordQualityAtom,
   recordFrameRateAtom,
   recordCodecAtom,
@@ -180,6 +184,7 @@ export default function SettingsArea({ onClose }) {
   const [chatFontSizeAdjustment, setChatFontSizeAdjustment] = useAtom(chatFontSizeAdjustmentAtom);
   const [autoHideOffline, setAutoHideOffline] = useAtom(autoHideOfflineAtom);
   const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
+  const [recordStopCondition, setRecordStopCondition] = useAtom(recordStopConditionAtom);
   const [recordQuality, setRecordQuality] = useAtom(recordQualityAtom);
   const [recordFrameRate, setRecordFrameRate] = useAtom(recordFrameRateAtom);
   const [recordCodec, setRecordCodec] = useAtom(recordCodecAtom);
@@ -264,6 +269,7 @@ export default function SettingsArea({ onClose }) {
     pointerEventsEnabled,
     chatFontSizeAdjustment,
     autoRecordEnabled,
+    recordStopCondition,
     recordFrameRate,
     recordQuality,
     recordCodec,
@@ -329,6 +335,13 @@ export default function SettingsArea({ onClose }) {
       }
       return nextState;
     });
+  };
+
+  const handleChangeRecordStopCondition = (event, newCondition) => {
+    if (newCondition !== null) {
+      setRecordStopCondition(newCondition);
+      window.localStorage.setItem("recordStopCondition", JSON.stringify(newCondition));
+    }
   };
 
   const handleChangeRecordQuality = (event, newQuality) => {
@@ -652,10 +665,14 @@ export default function SettingsArea({ onClose }) {
             pointcolor={pointColor}
           >
             <ToggleButton value={false} aria-label="pan tool">
-              <PanToolIcon />
+              <Tooltip slotProps={tooltipSlotProps} placement="top" title="화면 이동 모드">
+                <PanToolIcon />
+              </Tooltip>
             </ToggleButton>
             <ToggleButton value={true} aria-label="mouse">
-              <MouseIcon />
+              <Tooltip slotProps={tooltipSlotProps} placement="top" title="화면 조작 모드">
+                <MouseIcon />
+              </Tooltip>
             </ToggleButton>
           </SettingToggleGroup>
         </SettingRow>
@@ -768,7 +785,7 @@ export default function SettingsArea({ onClose }) {
               title={
                 <Box component="ul" sx={{ pl: 2, m: 0 }}>
                   <li>1번 위치의 채널이 라이브 시작 시 자동으로 녹화를 시작합니다 (브라우저 동의 필요)</li>
-                  <li>1번 위치의 채널이 오프라인 전환 시 자동으로 녹화를 종료합니다</li>
+                  <li>녹화 종료는 아래 '녹화 종료 기준' 설정을 따릅니다</li>
                 </Box>
               }
             >
@@ -776,6 +793,43 @@ export default function SettingsArea({ onClose }) {
             </Tooltip>
           </SettingLabel>
           <SettingSwitch checked={autoRecordEnabled} onChange={handleToggleAutoRecord} />
+        </SettingRow>
+
+        {/* 녹화 종료 기준 설정 */}
+        <SettingRow>
+          <SettingLabel sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            녹화 종료 기준
+            <Tooltip
+              slotProps={tooltipSlotProps}
+              placement="top"
+              title={
+                <Box component="ul" sx={{ pl: 2, m: 0 }}>
+                  <li>전체 채널: 화면에 배치된 채널이 모두 오프라인이 되면 녹화를 종료합니다</li>
+                  <li>1번 채널: 1번 위치의 채널이 오프라인이 되면 녹화를 종료합니다</li>
+                  <li>수동 종료: 자동으로 종료하지 않으며, 녹화 버튼을 직접 눌러야 종료됩니다</li>
+                </Box>
+              }
+            >
+              <InfoOutlinedIcon sx={{ fontSize: "1.4rem", color: "text.secondary", cursor: "default" }} />
+            </Tooltip>
+          </SettingLabel>
+          <SettingToggleGroup value={recordStopCondition} exclusive onChange={handleChangeRecordStopCondition} size="small" pointcolor={pointColor}>
+            <ToggleButton value="all">
+              <Tooltip slotProps={tooltipSlotProps} placement="top" title="전체 채널">
+                <GroupsIcon sx={{ fontSize: "1.8rem" }} />
+              </Tooltip>
+            </ToggleButton>
+            <ToggleButton value="zone1">
+              <Tooltip slotProps={tooltipSlotProps} placement="top" title="1번 채널">
+                <PersonIcon sx={{ fontSize: "1.8rem" }} />
+              </Tooltip>
+            </ToggleButton>
+            <ToggleButton value="manual">
+              <Tooltip slotProps={tooltipSlotProps} placement="top" title="수동 종료">
+                <TouchAppIcon sx={{ fontSize: "1.8rem" }} />
+              </Tooltip>
+            </ToggleButton>
+          </SettingToggleGroup>
         </SettingRow>
 
         {/* 녹화 프레임 설정 */}

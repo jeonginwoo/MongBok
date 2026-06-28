@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { isRecordingAtom, isSavingRecordingAtom } from "@/atoms/ui";
-import { recordQualityAtom, recordFrameRateAtom, recordCodecAtom, recordSoundEnabledAtom, recordSoundTypeAtom, recordSoundVolumeAtom, recordSaveDirHandleAtom, channelsAtom } from "@/atoms/setting";
+import { recordQualityAtom, recordFrameRateAtom, recordCodecAtom, recordSoundEnabledAtom, recordSoundTypeAtom, recordSoundVolumeAtom, recordSaveDirHandleAtom, channelsAtom, recordStopConditionAtom } from "@/atoms/setting";
 import { playNotificationSound } from "@/utils/audio";
 import { getRecordDirectory } from "@/utils/recordDirectoryStorage";
 import dayjs from "dayjs";
@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 export const useScreenRecorder = () => {
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
   const channels = useAtomValue(channelsAtom);
+  const recordStopCondition = useAtomValue(recordStopConditionAtom);
   const quality = useAtomValue(recordQualityAtom);
   const frameRate = useAtomValue(recordFrameRateAtom);
   const codec = useAtomValue(recordCodecAtom);
@@ -40,19 +41,33 @@ export const useScreenRecorder = () => {
     latestIsRecordingRef.current = isRecording;
   }, [isRecording]);
 
-  // 화면에 배치된 채널 중 라이브 중인 채널이 없으면 녹화 종료
+  // 녹화 종료 기준에 따라 녹화 종료
+  // - "all": 화면에 배치된 채널 중 라이브 중인 채널이 하나도 없으면 종료
+  // - "zone1": 1번 채널이 없거나 오프라인이면 종료
+  // - "manual": 자동 종료하지 않음 (사용자가 직접 종료)
   useEffect(() => {
-    if (isRecording) {
-      const visibleChannels = Object.values(channels).filter((c) => c.isVisible);
-      const hasLiveChannel = visibleChannels.some((c) => c.isLive);
-      const anyLoading = visibleChannels.some((c) => c._loading);
+    if (!isRecording) return;
+    if (recordStopCondition === "manual") return;
 
-      // 모든 채널이 로딩 완료되었을 때, 화면에 배치된 채널이 없거나, 배치된 채널 중 라이브 중인 채널이 없으면 녹화 종료
-      if (!anyLoading && (visibleChannels.length === 0 || !hasLiveChannel)) {
+    const visibleChannels = Object.values(channels).filter((c) => c.isVisible);
+    const anyLoading = visibleChannels.some((c) => c._loading);
+    // 로딩이 끝나기 전에는 판단 보류 (초기 플레이스홀더 상태에서 오판 방지)
+    if (anyLoading) return;
+
+    if (recordStopCondition === "zone1") {
+      const zone1Channel = Object.values(channels).find((c) => c.zoneId === 1);
+      if (!zone1Channel || !zone1Channel.isLive) {
         setIsRecording(false);
       }
+      return;
     }
-  }, [channels, isRecording, setIsRecording]);
+
+    // "all" 기준
+    const hasLiveChannel = visibleChannels.some((c) => c.isLive);
+    if (visibleChannels.length === 0 || !hasLiveChannel) {
+      setIsRecording(false);
+    }
+  }, [channels, isRecording, setIsRecording, recordStopCondition]);
 
   // 컴포넌트 언마운트 시 녹화 정리 (ViewArea가 사라질 때)
   useEffect(() => {

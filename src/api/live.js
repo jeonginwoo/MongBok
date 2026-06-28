@@ -122,7 +122,7 @@ const getSoopLiveStatus = async (channelId) => {
   try {
     const response = await soop_channel_client.get(`/api/${channelId}/station`);
     const data = response.data;
-    const detail = await getSoopLiveDetails(channelId);
+    const detail = data?.broad != null ? await getSoopLiveDetails(channelId) : null;
 
     return {
       id: channelId,

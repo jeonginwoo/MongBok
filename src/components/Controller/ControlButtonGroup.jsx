@@ -32,6 +32,7 @@ import {
   chatFontSizeAdjustmentAtom,
   autoRecordEnabledAtom,
   autoHideOfflineAtom,
+  recordStopConditionAtom,
   ratioAtom,
   layoutTypeAtom,
   viewPresetsAtom,
@@ -90,6 +91,9 @@ export default function ControlButtonGroup({ fullscreen }) {
   const autoHideOffline = useAtomValue(autoHideOfflineAtom);
   const autoHideOfflineRef = useRef(autoHideOffline);
   useEffect(() => { autoHideOfflineRef.current = autoHideOffline; }, [autoHideOffline]);
+  const recordStopCondition = useAtomValue(recordStopConditionAtom);
+  const recordStopConditionRef = useRef(recordStopCondition);
+  useEffect(() => { recordStopConditionRef.current = recordStopCondition; }, [recordStopCondition]);
   const prevZone1LiveRef = React.useRef(undefined);
   const isRecordingRef = useRef(isRecording);
   useEffect(() => { isRecordingRef.current = isRecording; }, [isRecording]);
@@ -120,12 +124,11 @@ export default function ControlButtonGroup({ fullscreen }) {
     const zone1Channel = Object.values(channels).find((c) => c.zoneId === 1);
     const isLive = zone1Channel?.isLive === true;
 
+    // 자동 녹화: 1번 채널이 라이브를 시작하면 녹화 시작
+    // (녹화 종료는 recordStopCondition 기준으로 useScreenRecorder / applyLiveStatusUpdate에서 처리)
     if (autoRecordEnabled) {
       if (prevZone1LiveRef.current === false && isLive) {
         setIsRecording(true);
-      }
-      if (prevZone1LiveRef.current === true && !isLive) {
-        setIsRecording(false);
       }
     }
 
@@ -224,8 +227,9 @@ export default function ControlButtonGroup({ fullscreen }) {
   }, [setChatFontSizeAdjustment]);
 
   const applyLiveStatusUpdate = useCallback((channelId, liveStatus) => {
-    // autoHideOffline에 의해 zone이 재배치되기 전에, zone 1 채널의 오프라인 전환을 감지하여 녹화를 먼저 중지
-    if (autoHideOfflineRef.current && isRecordingRef.current) {
+    // 녹화 종료 기준이 "1번 채널"일 때, autoHideOffline에 의해 zone이 재배치되기 전에
+    // zone 1 채널의 오프라인 전환을 감지하여 녹화를 먼저 중지
+    if (recordStopConditionRef.current === "zone1" && isRecordingRef.current) {
       const current = channelsRef.current[channelId];
       if (current && current.isLive === true && liveStatus.isLive === false && current.zoneId === 1) {
         setIsRecording(false);

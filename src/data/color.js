@@ -194,7 +194,7 @@ export const palettes = {
       level5: "rgba(235, 235, 235, 1)",
       overlay: "rgba(0, 0, 0, 0.2)",
       gradient: "linear-gradient(to bottom, rgba(245,245,245,1) 0%, rgba(245,245,245,0.8) 40%, transparent 100%)",
-      canvas: "rgba(250, 250, 250, 1)",
+      canvas: "rgba(0, 0, 0, 1)",
       chat: "rgba(255, 255, 255, 1)",
       currentTime: "rgba(0,0,0,0.6)",
       profile: "rgba(249, 249, 249, 1)",

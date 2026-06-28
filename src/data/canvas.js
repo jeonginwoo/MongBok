@@ -662,20 +662,20 @@ export const canvas = {
         5: {
           layout1: {
             view: {
-              1: { id: 1, type: "view", style: { top: `0%`, left: `${25 - (100 / 6) / r16_10}%`, width: `50%`, height: `50%` } },
-              2: { id: 2, type: "view", style: { top: `50%`, left: `${25 - (100 / 6) / r16_10}%`, width: `50%`, height: `50%` } },
-              3: { id: 3, type: "view", style: { top: `0%`, left: `${75 - (100 / 6) / r16_10}%`, width: `${(100 / 3) / r16_10}%`, height: `${100 / 3}%` } },
-              4: { id: 4, type: "view", style: { top: `${100 / 3}%`, left: `${75 - (100 / 6) / r16_10}%`, width: `${(100 / 3) / r16_10}%`, height: `${100 / 3}%` } },
-              5: { id: 5, type: "view", style: { top: `${(100 / 3) * 2}%`, left: `${75 - (100 / 6) / r16_10}%`, width: `${(100 / 3) / r16_10}%`, height: `${100 / 3}%` } },
+              1: { id: 1, type: "view", style: { top: `0%`, left: `${50 - (125 / 3) / r16_10}%`, width: `${50 / r16_10}%`, height: `50%` } },
+              2: { id: 2, type: "view", style: { top: `50%`, left: `${50 - (125 / 3) / r16_10}%`, width: `${50 / r16_10}%`, height: `50%` } },
+              3: { id: 3, type: "view", style: { top: `0%`, left: `${50 + (25 / 3) / r16_10}%`, width: `${(100 / 3) / r16_10}%`, height: `${100 / 3}%` } },
+              4: { id: 4, type: "view", style: { top: `${100 / 3}%`, left: `${50 + (25 / 3) / r16_10}%`, width: `${(100 / 3) / r16_10}%`, height: `${100 / 3}%` } },
+              5: { id: 5, type: "view", style: { top: `${(100 / 3) * 2}%`, left: `${50 + (25 / 3) / r16_10}%`, width: `${(100 / 3) / r16_10}%`, height: `${100 / 3}%` } },
             },
           },
           layout2: {
             view: {
-              1: { id: 1, type: "view", style: { top: `${25 - (100 / 6) * r16_10}%`, left: `0%`, width: `50%`, height: `50%` } },
-              2: { id: 2, type: "view", style: { top: `${25 - (100 / 6) * r16_10}%`, left: `50%`, width: `50%`, height: `50%` } },
-              3: { id: 3, type: "view", style: { top: `${75 - (100 / 6) * r16_10}%`, left: `0%`, width: `${100 / 3}%`, height: `${(100 / 3) * r16_10}%` } },
-              4: { id: 4, type: "view", style: { top: `${75 - (100 / 6) * r16_10}%`, left: `${100 / 3}%`, width: `${100 / 3}%`, height: `${(100 / 3) * r16_10}%` } },
-              5: { id: 5, type: "view", style: { top: `${75 - (100 / 6) * r16_10}%`, left: `${(100 / 3) * 2}%`, width: `${100 / 3}%`, height: `${(100 / 3) * r16_10}%` } },
+              1: { id: 1, type: "view", style: { top: `${50 - (125 / 3) * r16_10}%`, left: `0%`, width: `50%`, height: `${50 * r16_10}%` } },
+              2: { id: 2, type: "view", style: { top: `${50 - (125 / 3) * r16_10}%`, left: `50%`, width: `50%`, height: `${50 * r16_10}%` } },
+              3: { id: 3, type: "view", style: { top: `${50 + (25 / 3) * r16_10}%`, left: `0%`, width: `${100 / 3}%`, height: `${(100 / 3) * r16_10}%` } },
+              4: { id: 4, type: "view", style: { top: `${50 + (25 / 3) * r16_10}%`, left: `${100 / 3}%`, width: `${100 / 3}%`, height: `${(100 / 3) * r16_10}%` } },
+              5: { id: 5, type: "view", style: { top: `${50 + (25 / 3) * r16_10}%`, left: `${(100 / 3) * 2}%`, width: `${100 / 3}%`, height: `${(100 / 3) * r16_10}%` } },
             },
           },
         },

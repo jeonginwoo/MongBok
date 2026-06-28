@@ -175,6 +175,12 @@ export default function SearchChannel() {
     }
   }, [keyword, setSnackbar, enabledPlatforms]);
 
+  // 최신 handleSearch를 ref로 보관 (검색 effect가 plaformEnabled 변경에 반응하지 않도록)
+  const handleSearchRef = useRef(handleSearch);
+  useEffect(() => {
+    handleSearchRef.current = handleSearch;
+  }, [handleSearch]);
+
   const handlePlatformMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -214,7 +220,7 @@ export default function SearchChannel() {
     clearTimeout(debounceTimeout.current);
 
     if (keyword.trim()) {
-      debounceTimeout.current = setTimeout(handleSearch, 500);
+      debounceTimeout.current = setTimeout(() => handleSearchRef.current(), 500);
     } else {
       searchCacheRef.current = {};
       setResults({ chzzk: [], soop: [], youtube: [] });
@@ -223,7 +229,7 @@ export default function SearchChannel() {
     }
 
     return () => clearTimeout(debounceTimeout.current);
-  }, [keyword, handleSearch]);
+  }, [keyword]);
 
   const addChannel = (selectChannel) => {
     setChannels((prev) => {

@@ -115,6 +115,16 @@ export const autoRecordEnabledAtom = atomWithStorage(
   storage
 );
 
+// 녹화 종료 기준
+// "all": 배치된 채널 전체가 오프라인이면 종료
+// "zone1": 1번 채널이 오프라인이면 종료
+// "manual": 자동 종료하지 않고 사용자가 직접 종료 버튼을 눌러야 종료
+export const recordStopConditionAtom = atomWithStorage(
+  "recordStopCondition",
+  "all",
+  storage
+);
+
 // 오프라인 전환 시 자동 목록 복귀 on/off
 export const autoHideOfflineAtom = atomWithStorage(
   "autoHideOffline",

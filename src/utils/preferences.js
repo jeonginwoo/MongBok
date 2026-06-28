@@ -66,6 +66,16 @@ export const validateRecordCodec = (value) => {
   return true;
 };
 
+export const validateRecordStopCondition = (value) => {
+  const allowed = ["all", "zone1", "manual"];
+  if (!allowed.includes(value)) {
+    return `유효하지 않은 녹화 종료 기준 값 '${value}'. 허용되는 값은: ${allowed.join(
+      ", "
+    )} 입니다.`;
+  }
+  return true;
+};
+
 export const validateChatFontSizeAdjustment = (value) => {
   const num = Number(value);
   if (isNaN(num)) {
@@ -198,8 +208,8 @@ export const validateChannels = async (value) => {
         }
 
         const { platform, zoneId = null } = channelData;
-        if (!["chzzk", "soop", "youtube"].includes(platform)) {
-          throw new Error(`Validation Error: Invalid platform '${platform}' for channel '${channelId}'. Must be 'chzzk', 'soop', 'youtube'.`);
+        if (!["chzzk", "soop", "youtube", "twitch"].includes(platform)) {
+          throw new Error(`Validation Error: Invalid platform '${platform}' for channel '${channelId}'. Must be 'chzzk', 'soop', 'youtube', 'twitch'.`);
         }
 
         if (zoneId !== null) {
@@ -380,6 +390,9 @@ export const validatePreferences = async (dataToValidate) => {
           break;
         case "autoRecordEnabled":
           validationResult = validateBoolean(value, key);
+          break;
+        case "recordStopCondition":
+          validationResult = validateRecordStopCondition(value);
           break;
         case "recordFrameRate":
           validationResult = validateRecordFrameRate(value);
