@@ -32,7 +32,7 @@ export default function ChannelInfo({ searchChannel }) {
           overflow: "hidden",
         }}
       >
-        <ProfileImage channel={searchChannel} isBoardered={true} />
+        <ProfileImage channel={searchChannel} isBoardered={true} gapSize={1} />
 
         <Typography
           variant="subtitle2"

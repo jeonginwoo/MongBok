@@ -59,6 +59,7 @@ channelsAtom.onMount = (setAtom) => {
                 liveVideoId: live.liveVideoId ?? null,
                 liveCategory: live.liveCategory,
                 tags: live.tags,
+                liveHlsUrl: live.liveHlsUrl ?? null,
                 liveImageUrl: live.liveImageUrl,
                 lastRefreshed: live.lastRefreshed,
                 // Chat metadata

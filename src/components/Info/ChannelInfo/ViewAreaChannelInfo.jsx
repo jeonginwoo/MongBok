@@ -27,7 +27,7 @@ export default function ChannelInfo({ channel }) {
         ...inactiveStyle,
       }}
     >
-      <ProfileImage channel={channel} />
+      <ProfileImage channel={channel} gapSize={1} />
 
       <Box
         sx={{

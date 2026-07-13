@@ -8,6 +8,7 @@ export default function ProfileImage({
   isBoardered = false,
   imgSize = 48,
   borderSize = 6,
+  gapSize = 2, // 그라데이션 border와 이미지 사이 검은색 간격
 }) {
   return (
     <Box
@@ -35,6 +36,8 @@ export default function ProfileImage({
           boxShadow: `0 0 0.6rem ${theme.palette.background.overlay}`,
           backgroundColor: "background.profile",
           position: "relative",
+          border: `${gapSize}px solid #000`,
+          boxSizing: "border-box",
         })}
       >
         <Image
@@ -49,6 +52,7 @@ export default function ProfileImage({
             objectFit: "cover",
             userSelect: "none",
             WebkitUserDrag: "none",
+            borderRadius: "50%",
           }}
         />
       </Box>

@@ -18,6 +18,23 @@ const getChzzkLiveStatus = async (channelId) => {
       return await getChzzkLiveStatus2(channelId);
     }
 
+    // livePlaybackJson에서 HLS 재생 URL 추출 (플레이어 전용 재생용)
+    let liveHlsUrl = null;
+    if (data?.livePlaybackJson) {
+      try {
+        const playback = JSON.parse(data.livePlaybackJson);
+        const media = Array.isArray(playback?.media) ? playback.media : [];
+        // LLHLS(저지연) 우선, 없으면 일반 HLS
+        const hls =
+          media.find((m) => m?.mediaId === "LLHLS") ??
+          media.find((m) => m?.mediaId === "HLS") ??
+          media.find((m) => m?.protocol === "HLS");
+        liveHlsUrl = hls?.path ?? null;
+      } catch (e) {
+        console.warn("⚠️ [Chzzk] livePlaybackJson 파싱 실패:", e);
+      }
+    }
+
     const chatChannelId = data?.chatChannelId;
     let accessToken = null;
     if (chatChannelId) {
@@ -43,6 +60,7 @@ const getChzzkLiveStatus = async (channelId) => {
       userCount: data?.status === "CLOSE" ? -1 : data?.concurrentUserCount ?? 0,
       liveCategory: data?.liveCategoryValue || data?.liveCategory,
       tags: data?.tags,
+      liveHlsUrl,
       chatChannelId,
       accessToken,
     };
@@ -329,6 +347,7 @@ export const getAllChannelsData = async (localStorageData) => {
           liveVideoId: live.liveVideoId ?? null,
           liveCategory: live.liveCategory,
           tags: live.tags,
+          liveHlsUrl: live.liveHlsUrl ?? null,
           isVisible: item.zoneId != null,
           zoneId: item.zoneId ?? null,
           platform: item.platform,

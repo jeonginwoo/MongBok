@@ -185,7 +185,7 @@ export default function ChannelInfo({ channel, isDragging = false }) {
           ...inactiveStyle,
         }}
       >
-        <ProfileImage channel={channel} />
+        <ProfileImage channel={channel} gapSize={1} />
 
         {controllerExpanded && (
           <Box sx={{ width: "100%", marginRight: "0.5rem" }}>
