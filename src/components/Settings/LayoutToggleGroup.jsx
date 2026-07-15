@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { Box, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { canvas } from "@/data/canvas";
+import { canvas, getVisibleLayoutKeys } from "@/data/canvas";
 
 import { useAtom, useAtomValue } from "jotai";
 import {
@@ -80,7 +80,7 @@ export default function LayoutToggleGroup({ settingsMode }) {
     const historyKey = `${ratioKey}-${viewCount}`;
     setViewPresets((prev) => ({
       ...prev,
-      [historyKey]: { ...prev[historyKey], layoutType: Object.keys(availableLayouts)[0] },
+      [historyKey]: { ...prev[historyKey], layoutType: getVisibleLayoutKeys(availableLayouts)[0] },
     }));
   }, [ratio, orientation, ratioKey, viewCount, layoutType, setViewPresets]);
 
@@ -98,7 +98,7 @@ export default function LayoutToggleGroup({ settingsMode }) {
             pointcolor={pointColor}
             disabled={viewCount === 0}
           >
-            {Object.keys(availableLayouts).map((key, index) => (
+            {getVisibleLayoutKeys(availableLayouts).map((key, index) => (
               <ToggleButton
                 key={key}
                 value={key}

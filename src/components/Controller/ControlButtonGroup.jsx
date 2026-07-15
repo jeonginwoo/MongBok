@@ -41,7 +41,7 @@ import {
 } from "@/atoms/setting";
 import { snackbarAtom, isDraggingAtom, isRecordingAtom, settingsOpenAtom, controllerPopupOpenAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
-import { canvas } from "@/data/canvas";
+import { canvas, getVisibleLayoutKeys } from "@/data/canvas";
 import { useLayoutManager } from "@/hooks/useLayoutManager";
 
 const iconStyle = { fontSize: "2.4rem" };
@@ -461,7 +461,7 @@ export default function ControlButtonGroup({ fullscreen }) {
             const [ratioKey] = ratio.split("-");
             const currentLayouts = canvas[ratioKey]?.[ratio.split("-")[1]]?.layouts?.[viewCount];
             if (!currentLayouts) return;
-            const layoutKeys = Object.keys(currentLayouts);
+            const layoutKeys = getVisibleLayoutKeys(currentLayouts);
             let targetIndex;
             if (keyNumber === 0 && layoutKeys.length > 0) {
               targetIndex = layoutKeys.length - 1;

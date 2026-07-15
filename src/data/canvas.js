@@ -1,3 +1,10 @@
+// "layout_hide" 접두사 레이아웃은 UI(토글 버튼, 숫자 단축키)에 노출하지 않고
+// 설정 동기화에서 직접 입력해야만 적용된다. 항상 기본 레이아웃 뒤에 정의할 것.
+export const isHiddenLayout = (key) => key.startsWith("layout_hide");
+
+export const getVisibleLayoutKeys = (layouts) =>
+  Object.keys(layouts ?? {}).filter((key) => !isHiddenLayout(key));
+
 // view ratio
 const r20_9 = (20 / 9) / (16 / 9);
 const r9_20 = (9 / 20) / (16 / 9);
@@ -311,6 +318,15 @@ export const canvas = {
             chat: {
               1: { id: 1, type: "chat", style: { top: `0%`, left: `${r16_9a11}%`, width: `${(100 - r16_9a11)}%`, height: `${200 / 3}%` } },
               2: { id: 2, type: "chat", style: { top: `${200 / 3}%`, left: `${r16_9a11}%`, width: `${(100 - r16_9a11)}%`, height: `${100 / 3}%` } },
+            },
+          },
+          layout_hide1: {
+            view: {
+              1: { id: 1, type: "view", style: { top: `${(100 - r16_9a11) / 2}%`, left: `0%`, width: `${r16_9a11}%`, height: `${r16_9a11}%` } },
+            },
+            chat: {
+              1: { id: 1, type: "chat", style: { top: `0%`, left: `${r16_9a11}%`, width: `${(100 - r16_9a11)}%`, height: `100%` } },
+              2: { id: 2, type: "chat", style: { display: "none" } },
             },
           },
         },
