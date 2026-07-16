@@ -41,6 +41,15 @@ export const CHEESE_COLORS = {
   tier5: "rgb(197, 73, 82)",    // 빨강   — 1,000,000+ 치즈
 };
 
+// Twitch 비트 치어모트 티어별 색상
+export const BITS_COLORS = {
+  tier1: "rgb(118, 118, 118)",  // 회색  — 1 ~ 99 비트
+  tier2: "rgb(156, 62, 232)",   // 보라  — 100 ~ 999 비트
+  tier3: "rgb(29, 178, 165)",   // 청록  — 1,000 ~ 4,999 비트
+  tier4: "rgb(0, 153, 254)",    // 파랑  — 5,000 ~ 9,999 비트
+  tier5: "rgb(244, 48, 33)",    // 빨강  — 10,000+ 비트
+};
+
 export const POINT_COLORS = {
   default: {
     label: "Default",
@@ -263,6 +272,16 @@ export function getBalloonColor(balloonCount) {
   if (krw < 50000)         return SUPERCHAT_COLORS.tier5;  // 200~499개 주황
   if (krw < 100000)        return SUPERCHAT_COLORS.tier6;  // 500~999개 분홍
   return SUPERCHAT_COLORS.tier7;                           // 1,000개+  빨강
+}
+
+
+/** 비트 개수(숫자)로 티어 색상 반환 */
+export function getBitsColor(bitsAmount) {
+  if (!bitsAmount || bitsAmount < 100) return BITS_COLORS.tier1;  // 1 ~ 99 회색
+  if (bitsAmount < 1000)  return BITS_COLORS.tier2;               // 100 ~ 999 보라
+  if (bitsAmount < 5000)  return BITS_COLORS.tier3;               // 1,000 ~ 4,999 청록
+  if (bitsAmount < 10000) return BITS_COLORS.tier4;               // 5,000 ~ 9,999 파랑
+  return BITS_COLORS.tier5;                                       // 10,000+ 빨강
 }
 
 

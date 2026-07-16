@@ -8,6 +8,7 @@ import ChatRow from "./ChatRow";
 import CheeseChatRow from "./CheeseChatRow";
 import SuperChatRow from "./SuperChatRow";
 import BalloonChatRow from "./BalloonChatRow";
+import BitsChatRow from "./BitsChatRow";
 import { useTheme } from "@mui/material/styles";
 
 export default function ChatView({ chatList, layoutKey }) {
@@ -196,6 +197,8 @@ export default function ChatView({ chatList, layoutKey }) {
               <SuperChatRow key={chat.uid} chat={chat} />
             ) : chat.balloonAmount != null ? (
               <BalloonChatRow key={chat.uid} chat={chat} />
+            ) : chat.bitsAmount != null ? (
+              <BitsChatRow key={chat.uid} chat={chat} />
             ) : (
               <ChatRow key={chat.uid} chat={chat} />
             )

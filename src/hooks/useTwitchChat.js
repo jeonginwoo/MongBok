@@ -20,6 +20,12 @@ const nicknameColors = [
 
 const emojiRegex = /([^ ]+)/;
 
+const bitRegex = /^[cC]heer(\d+)$/;
+
+// [setId, version] 쌍을 배지 이미지 URL 배열로 변환
+const resolveBadges = (badgePairs, badgesMap) =>
+  badgePairs.map(([setId, version]) => badgesMap[setId]?.[version]).filter(Boolean);
+
 let globalBadgesCache = null;
 
 export default function useTwitchChat(channelId) {
@@ -66,53 +72,37 @@ export default function useTwitchChat(channelId) {
       try {
         if (!globalBadgesCache) {
           const globalRes = await twitch_gql_client.post("", {
-            query: `query { badges { setID versions { id image1x image2x image4x } } }`,
+            query: `query { badges { setID version imageURL(size: QUADRUPLE) } }`,
           });
           const globalData = globalRes.data?.data?.badges || [];
           const cache = {};
-          globalData.forEach((set) => {
-            cache[set.setID] = { versions: {} };
-            set.versions.forEach((v) => {
-              cache[set.setID].versions[v.id] = {
-                image_url_4x: v.image4x,
-                image_url_2x: v.image2x,
-                image_url_1x: v.image1x,
-              };
-            });
+          globalData.forEach((badge) => {
+            if (!badge?.setID || !badge.imageURL) return;
+            cache[badge.setID] = cache[badge.setID] || {};
+            cache[badge.setID][badge.version] = badge.imageURL;
           });
           globalBadgesCache = cache;
         }
 
-        let channelBadges = {};
+        const map = {};
+        Object.entries(globalBadgesCache).forEach(([setId, versions]) => {
+          map[setId] = { ...versions };
+        });
+
+        // 채널 전용 배지(구독, 비트 등)가 글로벌 배지를 덮어씀
         if (twitchUserId) {
           const channelRes = await twitch_gql_client.post("", {
-            query: `query($id: ID!) { user(id: $id) { broadcastBadgeSets { setID versions { id image1x image2x image4x } } } }`,
+            query: `query($id: ID!) { user(id: $id) { broadcastBadges { setID version imageURL(size: QUADRUPLE) } } }`,
             variables: { id: twitchUserId },
           });
-          const channelData = channelRes.data?.data?.user?.broadcastBadgeSets || [];
-          channelData.forEach((set) => {
-            channelBadges[set.setID] = { versions: {} };
-            set.versions.forEach((v) => {
-              channelBadges[set.setID].versions[v.id] = {
-                image_url_4x: v.image4x,
-                image_url_2x: v.image2x,
-                image_url_1x: v.image1x,
-              };
-            });
+          const channelBadges = channelRes.data?.data?.user?.broadcastBadges || [];
+          channelBadges.forEach((badge) => {
+            if (!badge?.setID || !badge.imageURL) return;
+            map[badge.setID] = map[badge.setID] || {};
+            map[badge.setID][badge.version] = badge.imageURL;
           });
         }
 
-        const merged = { ...globalBadgesCache, ...channelBadges };
-        const map = {};
-        Object.entries(merged).forEach(([setId, data]) => {
-          map[setId] = {};
-          Object.entries(data.versions || {}).forEach(([version, vData]) => {
-            const url = vData.image_url_4x || vData.image_url_2x || vData.image_url_1x;
-            if (url) {
-              map[setId][version] = url;
-            }
-          });
-        });
         setBadgesMap(map);
       } catch (e) {
         console.error("❌ [Twitch] 배지 정보를 가져오는데 실패했습니다:", e);
@@ -145,6 +135,7 @@ export default function useTwitchChat(channelId) {
     }
 
     const emotes = tags["emotes"] ?? {};
+    const bits = parseInt(tags["bits"] ?? "0");
     const emoteReplacements = [];
 
     Object.entries(emotes).forEach(([id, positions]) => {
@@ -171,6 +162,10 @@ export default function useTwitchChat(channelId) {
       .split(emojiRegex)
       .filter((part) => part !== "")
       .flatMap((part) => {
+        // 치어모트 토큰은 메시지에서 제거 (금액은 후원 카드 하단에 표시됨)
+        if (bits > 0 && bitRegex.test(part)) {
+          return [];
+        }
         const emoteIndex = emoteReplacements.findIndex(
           (r) => r.stringToReplace === part
         );
@@ -180,16 +175,9 @@ export default function useTwitchChat(channelId) {
         return [emoteReplacements[emoteIndex].replacement];
       });
 
-    // Basic badges support
-    const badges = [];
-    if (tags["badges"]) {
-      Object.entries(tags["badges"]).forEach(([setId, version]) => {
-        const url = badgesMap[setId]?.[version];
-        if (url) {
-          badges.push(url);
-        }
-      });
-    }
+    // 배지는 badgesMap 로딩 전에 도착한 메시지도 소급 갱신할 수 있도록 원본 쌍을 보존
+    const badgePairs = Object.entries(tags["badges"] ?? {});
+    const badges = resolveBadges(badgePairs, badgesMap);
 
     messageCounterRef.current += 1;
     const uniqueId = `${userId}-${tags["tmi-sent-ts"]}-${messageCounterRef.current}`;
@@ -200,10 +188,12 @@ export default function useTwitchChat(channelId) {
       userId,
       nickname,
       badges,
+      badgePairs,
       color,
       emojis,
       message,
       messageColor: isAction ? color : undefined,
+      ...(bits > 0 && { bitsAmount: bits }),
     };
   }, [badgesMap]);
 
@@ -211,6 +201,32 @@ export default function useTwitchChat(channelId) {
   useEffect(() => {
     convertChatRef.current = convertChat;
   }, [convertChat]);
+
+  // 배지 맵 로딩/갱신 전에 도착한 메시지의 배지를 소급 갱신
+  // (글로벌 subscriber 별모양 → 채널 커스텀 배지 교체 포함)
+  useEffect(() => {
+    if (Object.keys(badgesMap).length === 0) return;
+
+    const remap = (chat) => {
+      if (!chat.badgePairs?.length) return chat;
+      const badges = resolveBadges(chat.badgePairs, badgesMap);
+      const same =
+        badges.length === chat.badges.length &&
+        badges.every((url, i) => url === chat.badges[i]);
+      return same ? chat : { ...chat, badges };
+    };
+
+    pendingChatListRef.current = pendingChatListRef.current.map(remap);
+    setChatList((prev) => {
+      let changed = false;
+      const next = prev.map((chat) => {
+        const remapped = remap(chat);
+        if (remapped !== chat) changed = true;
+        return remapped;
+      });
+      return changed ? next : prev;
+    });
+  }, [badgesMap]);
 
   useEffect(() => {
     if (!channelId) {
