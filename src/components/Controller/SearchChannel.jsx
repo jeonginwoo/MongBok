@@ -23,7 +23,7 @@ import { searchChannels } from "@/api/search";
 import { updatePreferences } from "@/utils/preferences";
 
 import { useAtom, useSetAtom } from "jotai";
-import { channelsAtom, selectedSearchPlatformAtom, platformEnabledAtom } from "@/atoms/setting";
+import { channelsAtom, selectedSearchPlatformAtom, platformEnabledAtom, MAX_CHANNELS } from "@/atoms/setting";
 import { snackbarAtom } from "@/atoms/ui";
 
 // 플랫폼 표시 순서
@@ -55,8 +55,6 @@ const tooltipProps = {
 };
 
 export default function SearchChannel() {
-  const maxChannels = 30;
-
   const [channels, setChannels] = useAtom(channelsAtom);
   const [selectedPlatform, setSelectedPlatform] = useAtom(selectedSearchPlatformAtom);
   const [platformEnabled, setPlatformEnabled] = useAtom(platformEnabledAtom);
@@ -242,10 +240,10 @@ export default function SearchChannel() {
         return prev;
       }
       
-      if (Object.keys(prev).length >= maxChannels) {
+      if (Object.keys(prev).length >= MAX_CHANNELS) {
         setSnackbar({
           open: true,
-          message: `채널은 최대 ${maxChannels}개까지 추가 가능합니다.`,
+          message: `채널은 최대 ${MAX_CHANNELS}개까지 추가 가능합니다.`,
           severity: "warning",
         });
         return prev;
@@ -455,7 +453,7 @@ export default function SearchChannel() {
           userSelect: "none"
         }}
       >
-        {Object.keys(channels).length} / {maxChannels}
+        {Object.keys(channels).length} / {MAX_CHANNELS}
       </Typography>
 
       {showList && (

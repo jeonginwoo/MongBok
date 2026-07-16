@@ -38,6 +38,23 @@ const Section = ({ title, children }) => (
   </Box>
 );
 
+const Code = ({ children }) => (
+  <Box
+    component="code"
+    sx={{
+      fontSize: "1.2rem",
+      fontFamily: "monospace",
+      px: "0.5rem",
+      py: "0.1rem",
+      borderRadius: "0.4rem",
+      backgroundColor: "action.hover",
+      wordBreak: "break-all",
+    }}
+  >
+    {children}
+  </Box>
+);
+
 const Item = ({ icon, primary, secondary }) => (
   <Box sx={{ display: "flex", gap: 2.5, mb: 3.5, alignItems: "flex-start" }}>
     <Box
@@ -219,6 +236,19 @@ export default function ManualArea() {
               "녹화 시작 시 브라우저 팝업에서 '이 탭'을 선택하면 방송 화면만 녹화됩니다.",
               "설정에서 '자동 녹화'를 켜면 1번 구역 채널이 라이브를 시작할 때 자동으로 녹화가 시작됩니다.",
               "설정의 '녹화 종료 기준'에서 전체 채널(모두 오프라인 시 종료), 1번 채널(1번 채널 오프라인 시 종료), 수동 종료(직접 종료) 중 선택할 수 있습니다.",
+              <>
+                녹화 시작 시마다 뜨는 팝업이 번거롭다면, 브라우저 실행 옵션에{" "}
+                <Code>--auto-accept-this-tab-capture</Code> 를 추가해 팝업 없이 바로 '이 탭' 녹화가 시작되게 할 수 있습니다.
+                <Box component="ul" sx={{ m: 0, mt: 0.5, pl: "1.8rem", listStyleType: "circle" }}>
+                  <Box component="li" sx={{ lineHeight: 1.7 }}>
+                    적용 방법(Windows 크롬 기준): 크롬 바로가기에서 우클릭 &gt; 속성 &gt; '대상' 맨 뒤에 한 칸 띄우고{" "}
+                    <Code>--auto-accept-this-tab-capture</Code> 를 붙여 저장한 뒤, 크롬을 완전히 종료하고 해당 바로가기로 다시 실행하면 적용됩니다.
+                  </Box>
+                  <Box component="li" sx={{ lineHeight: 1.7 }}>
+                    이 옵션은 몽복뿐 아니라 모든 사이트의 '이 탭' 화면 공유 요청이 자동 수락되므로, 신뢰할 수 있는 환경에서만 사용하는 것을 권장합니다.
+                  </Box>
+                </Box>
+              </>,
               "녹화 파일은 인덱스 처리가 되어 있지 않아, 긴 영상의 경우 탐색(시간 이동)이 원활하지 않을 수 있습니다. 쾌적한 시청을 위해 별도의 인코딩 작업을 권장합니다.",
               <Box component="span" sx={{ color: pointColor === "default" ? "error.main" : "primary.main", fontWeight: 700 }}>
                 녹화된 영상의 모든 저작권은 해당 스트리머에게 있습니다. 무단 배포 및 공유를 엄격히 금하며, 반드시 개인 소장용으로만 이용해 주시기 바랍니다.
@@ -297,11 +327,6 @@ export default function ManualArea() {
           />
           <Item
             icon={<InfoIcon />}
-            primary="모바일 환경"
-            secondary="PC 사용을 권장합니다. 모바일에서는 '데스크탑 사이트 보기'를 켜고 사용하세요."
-          />
-          <Item
-            icon={<InfoIcon />}
             primary="메모리 사용량"
             secondary="4~5개 채널 동시 시청 시 약 2~3GB의 메모리가 사용될 수 있습니다."
           />
@@ -348,9 +373,7 @@ export default function ManualArea() {
           <Typography sx={{ fontSize: "1.2rem", color: "text.secondary", lineHeight: 1.7 }}>
             Windows는 Defender·백신 경고 시 예외 추가 후 실행하세요.
             macOS·Linux는 첫 실행 전{" "}
-            <Box component="code" sx={{ fontSize: "1.2rem", fontFamily: "monospace", px: "0.5rem", py: "0.1rem", borderRadius: "0.4rem", backgroundColor: "action.hover" }}>
-              chmod +x ./파일명
-            </Box>
+            <Code>chmod +x ./파일명</Code>
             {" "}으로 실행 권한을 부여해야 합니다.
           </Typography>
         </Section>

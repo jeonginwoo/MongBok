@@ -146,6 +146,9 @@ export const themeModeAtom = atomWithStorage("themeMode", "dark", storage);
 // 포인트 컬러
 export const pointColorAtom = atomWithStorage("pointColor", "default", storage);
 
+// 채널 목록 최대 개수
+export const MAX_CHANNELS = 30;
+
 // 채팅 최대 개수
 export const CHAT_MAX_COUNT = 500;
 
