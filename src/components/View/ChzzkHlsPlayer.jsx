@@ -21,6 +21,11 @@ const MAX_RETRIES = 3;
 const CHZZK_GREEN = "#00FFA3";
 const CONTROLS_HIDE_DELAY = 2500;
 const AUTO_LEVEL = -1;
+const WATCHDOG_INTERVAL = 5000;
+// 이 이상 라이브에서 뒤처지면 워치독이 라이브 엣지로 점프시킨다.
+// hls.js는 목표 지연보다 세그먼트 1개 이상 뒤처지면 DVR 시청으로 간주해
+// 배속 따라잡기를 포기하므로, 한번 크게 밀린 딜레이는 스스로 줄지 않는다
+const MAX_LIVE_LATENCY = 8;
 
 /**
  * 치지직 HLS 직접 재생 플레이어 (치지직 전체화면 스타일 커스텀 컨트롤).
@@ -65,11 +70,23 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
   const seekToLive = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
-    const livePos = hlsRef.current?.liveSyncPosition;
-    if (Number.isFinite(livePos)) {
-      video.currentTime = livePos;
-    } else if (video.seekable?.length) {
-      video.currentTime = video.seekable.end(video.seekable.length - 1);
+    const hls = hlsRef.current;
+    // hls.liveSyncPosition은 스톨이 누적되면 목표 지연이 불어나 뒤로 밀리므로
+    // 그대로 쓰면 밀린 딜레이가 유지된다. seekable 끝(버퍼 엣지)에서
+    // 플레이리스트 홀드백만 뺀 위치와 비교해 더 앞선 쪽으로 이동한다
+    const details = hls?.latestLevelDetails;
+    const holdBack =
+      (details && (details.partHoldBack || details.holdBack)) || 3;
+    let target = Number.isFinite(hls?.liveSyncPosition)
+      ? hls.liveSyncPosition
+      : null;
+    if (video.seekable?.length) {
+      const edge = video.seekable.end(video.seekable.length - 1);
+      target = Math.max(target ?? -Infinity, edge - holdBack);
+    }
+    // 0.5초 미만의 전진은 의미가 없으므로 생략 (뒤로는 절대 이동하지 않음)
+    if (Number.isFinite(target) && target > video.currentTime + 0.5) {
+      video.currentTime = target;
     }
   }, []);
 
@@ -178,8 +195,15 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
     const video = videoRef.current;
     if (!video || !latestUrlRef.current) return;
 
-    // 소리 켜진 상태로 자동재생 시도. 정책에 막히면 음소거로 시작.
-    const playWithSound = () => {
+    // 첫 재생은 소리 켜진 상태로 자동재생 시도, 정책에 막히면 음소거로 시작.
+    // 에러 복구·워치독으로 재생성될 때는 사용자의 음소거 상태를 건드리지 않는다.
+    let soundStarted = false;
+    const startPlayback = () => {
+      if (soundStarted) {
+        video.play().catch(() => {});
+        return;
+      }
+      soundStarted = true;
       video.muted = false;
       video.play().catch(() => {
         video.muted = true;
@@ -191,7 +215,7 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
     // Safari 등 네이티브 HLS 지원 브라우저 (화질은 네이티브 ABR에 위임)
     if (video.canPlayType("application/vnd.apple.mpegurl") && !Hls.isSupported()) {
       video.src = latestUrlRef.current;
-      playWithSound();
+      startPlayback();
       return;
     }
 
@@ -218,6 +242,10 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
         maxLiveSyncPlaybackRate: 1.5, // 뒤처지면 1.5배속으로 따라잡기
         backBufferLength: 60,
         enableWorker: true,
+        // 재생 에러 시 수동 선택 화질을 자동(ABR)으로 리셋하지 않는다.
+        // 리셋되면 에러 직후의 낮은 대역폭 추정치 때문에 144p까지 떨어진 채
+        // UI에는 선택 화질이 그대로 표시되는 불일치가 생긴다
+        preserveManualLevelOnError: true,
       });
       hlsRef.current = hls;
 
@@ -241,7 +269,7 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
         }
         hls.currentLevel = qualityRef.current;
 
-        playWithSound();
+        startPlayback();
       });
 
       hls.on(Hls.Events.LEVEL_SWITCHED, (_event, data) => {
@@ -283,12 +311,59 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
 
     createPlayer(latestUrlRef.current);
 
+    // 워치독: 사용자가 개입할 수 없는 상황(밤새 녹화 등)에서도 스스로 복구되도록
+    // 화면 멈춤 · 딜레이 고착 · 화질 강등을 주기적으로 감시한다
+    let lastWatchdogTime = -1;
+    let frozenTicks = 0;
+    const watchdogId = setInterval(() => {
+      const hls = hlsRef.current;
+      if (destroyed || !hls || video.paused) {
+        frozenTicks = 0;
+        lastWatchdogTime = -1;
+        return;
+      }
+
+      // 1) 화면 멈춤: 재생 중인데 currentTime이 연속 2회(~10초) 그대로면
+      //    hls.js가 스스로 복구하지 못하는 상태이므로 최신 URL로 재생성
+      if (video.currentTime === lastWatchdogTime) {
+        frozenTicks++;
+        if (frozenTicks >= 2) {
+          frozenTicks = 0;
+          lastWatchdogTime = -1;
+          hls.destroy();
+          createPlayer(latestUrlRef.current);
+          return;
+        }
+      } else {
+        frozenTicks = 0;
+      }
+      lastWatchdogTime = video.currentTime;
+
+      // 2) 딜레이 고착: 한계 이상 뒤처지면 라이브 엣지로 점프
+      //    (hls.js의 배속 따라잡기는 크게 밀린 딜레이를 복구하지 못함)
+      if (hls.latency > MAX_LIVE_LATENCY) {
+        seekToLive();
+      }
+
+      // 3) 화질 강등: 수동 선택 화질이 풀려 자동(ABR)으로 바뀌어 있으면 재적용
+      const manualLevel = qualityRef.current;
+      if (
+        manualLevel !== null &&
+        manualLevel !== AUTO_LEVEL &&
+        hls.autoLevelEnabled &&
+        hls.levels?.[manualLevel]
+      ) {
+        hls.currentLevel = manualLevel;
+      }
+    }, WATCHDOG_INTERVAL);
+
     return () => {
       destroyed = true;
+      clearInterval(watchdogId);
       hlsRef.current?.destroy();
       hlsRef.current = null;
     };
-  }, []);
+  }, [seekToLive]);
 
   const showUi = controlsVisible || !playing || qualityMenuOpen;
 
