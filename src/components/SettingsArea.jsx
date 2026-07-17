@@ -47,6 +47,10 @@ import {
   pointColorAtom,
   chatFontSizeAdjustmentAtom,
   autoHideOfflineAtom,
+  chzzkHlsLatencyAtom,
+  CHZZK_HLS_LATENCY_MIN,
+  CHZZK_HLS_LATENCY_MAX,
+  CHZZK_HLS_LATENCY_DEFAULT,
   autoRecordEnabledAtom,
   recordStopConditionAtom,
   recordQualityAtom,
@@ -183,6 +187,7 @@ export default function SettingsArea({ onClose }) {
   const [pointColor, setPointColor] = useAtom(pointColorAtom);
   const [chatFontSizeAdjustment, setChatFontSizeAdjustment] = useAtom(chatFontSizeAdjustmentAtom);
   const [autoHideOffline, setAutoHideOffline] = useAtom(autoHideOfflineAtom);
+  const [chzzkHlsLatency, setChzzkHlsLatency] = useAtom(chzzkHlsLatencyAtom);
   const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
   const [recordStopCondition, setRecordStopCondition] = useAtom(recordStopConditionAtom);
   const [recordQuality, setRecordQuality] = useAtom(recordQualityAtom);
@@ -215,6 +220,9 @@ export default function SettingsArea({ onClose }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isSliderHovered, setIsSliderHovered] = useState(false);
   const [isVolumeSliderHovered, setIsVolumeSliderHovered] = useState(false);
+  const [isLatencySliderHovered, setIsLatencySliderHovered] = useState(false);
+  // 치지직 딜레이 슬라이더 드래그 중 임시값 (null이면 드래그 중 아님)
+  const [chzzkHlsLatencyDraft, setChzzkHlsLatencyDraft] = useState(null);
 
   // 페이지 로드 시 IndexedDB에서 저장된 디렉토리 핸들 복원
   useEffect(() => {
@@ -268,6 +276,8 @@ export default function SettingsArea({ onClose }) {
     currentTimePosition,
     pointerEventsEnabled,
     chatFontSizeAdjustment,
+    autoHideOffline,
+    chzzkHlsLatency,
     autoRecordEnabled,
     recordStopCondition,
     recordFrameRate,
@@ -469,6 +479,14 @@ export default function SettingsArea({ onClose }) {
   const handleChangeChatFontSize = (event, newValue) => {
     setChatFontSizeAdjustment(newValue);
     window.localStorage.setItem("chatFontSizeAdjustment", JSON.stringify(newValue));
+  };
+
+  // 값이 바뀌면 치지직 플레이어가 재생성되므로, 드래그 중에는 draft로만 표시하고
+  // 슬라이더를 놓았을 때(onChangeCommitted)만 실제 설정에 반영한다
+  const handleCommitChzzkHlsLatency = (event, newValue) => {
+    setChzzkHlsLatencyDraft(null);
+    setChzzkHlsLatency(newValue);
+    window.localStorage.setItem("chzzkHlsLatency", JSON.stringify(newValue));
   };
 
   const successAnimation = { "100%": { color: "success.main" } };
@@ -727,6 +745,48 @@ export default function SettingsArea({ onClose }) {
             </Tooltip>
           </SettingLabel>
           <SettingSwitch checked={autoHideOffline} onChange={handleToggleAutoHideOffline} />
+        </SettingRow>
+
+        {/* 치지직 딜레이 */}
+        <SettingRow>
+          <SettingLabel sx={{ display: "flex", alignItems: "center", gap: 0.5, whiteSpace: "nowrap" }}>
+            치지직 딜레이
+            <Tooltip
+              slotProps={tooltipSlotProps}
+              placement="top"
+              title={
+                <Box component="ul" sx={{ pl: 2, m: 0 }}>
+                  <li>치지직 플레이어가 실시간으로부터 유지할 딜레이입니다 (기본 {CHZZK_HLS_LATENCY_DEFAULT}초 = 치지직 서버 권장값)</li>
+                  <li>낮출수록 실시간에 가깝지만, 너무 낮으면 버퍼링이 잦아지고 화면이 자주 끊길 수 있습니다</li>
+                  <li>실제 체감 딜레이는 여기에 방송 송출·서버 처리 지연(약 1~2초)이 더해집니다</li>
+                  <li>변경 시 치지직 플레이어가 새 설정으로 다시 로드됩니다</li>
+                </Box>
+              }
+            >
+              <InfoOutlinedIcon sx={{ fontSize: "1.4rem", color: "text.secondary", cursor: "default" }} />
+            </Tooltip>
+          </SettingLabel>
+          <Box
+            sx={{ px: 1, display: "flex", alignItems: "center", gap: 1 }}
+            onMouseEnter={() => setIsLatencySliderHovered(true)}
+            onMouseLeave={() => setIsLatencySliderHovered(false)}
+          >
+            <Box component="span" sx={{ color: "text.secondary", fontSize: "1.2rem", whiteSpace: "nowrap" }}>
+              {Number(chzzkHlsLatencyDraft ?? chzzkHlsLatency).toFixed(1)}초
+            </Box>
+            <Slider
+              size="small"
+              value={chzzkHlsLatencyDraft ?? chzzkHlsLatency}
+              min={CHZZK_HLS_LATENCY_MIN}
+              max={CHZZK_HLS_LATENCY_MAX}
+              step={0.1}
+              valueLabelDisplay={isLatencySliderHovered ? "on" : "auto"}
+              valueLabelFormat={(v) => `${v.toFixed(1)}초`}
+              onChange={(e, v) => setChzzkHlsLatencyDraft(v)}
+              onChangeCommitted={handleCommitChzzkHlsLatency}
+              sx={{ color: "primary.main", width: 130, "& .MuiSlider-mark": { backgroundColor: "transparent" } }}
+            />
+          </Box>
         </SettingRow>
 
         <Divider />

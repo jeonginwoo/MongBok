@@ -2,7 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
+import { useAtomValue } from "jotai";
 import { useTheme } from "@mui/material";
+import {
+  chzzkHlsLatencyAtom,
+  CHZZK_HLS_LATENCY_MIN,
+  CHZZK_HLS_LATENCY_MAX,
+  CHZZK_HLS_LATENCY_DEFAULT,
+} from "@/atoms/setting";
 import { useLiveTime } from "@/hooks/useLiveTime";
 import ProfileImage from "@/components/Info/ProfileImage";
 import Box from "@mui/material/Box";
@@ -22,10 +29,10 @@ const CHZZK_GREEN = "#00FFA3";
 const CONTROLS_HIDE_DELAY = 2500;
 const AUTO_LEVEL = -1;
 const WATCHDOG_INTERVAL = 5000;
-// 이 이상 라이브에서 뒤처지면 워치독이 라이브 엣지로 점프시킨다.
+// 목표 딜레이보다 이만큼 이상 뒤처지면 워치독이 라이브 엣지로 점프시킨다.
 // hls.js는 목표 지연보다 세그먼트 1개 이상 뒤처지면 DVR 시청으로 간주해
 // 배속 따라잡기를 포기하므로, 한번 크게 밀린 딜레이는 스스로 줄지 않는다
-const MAX_LIVE_LATENCY = 8;
+const LATENCY_JUMP_MARGIN = 5;
 
 /**
  * 치지직 HLS 직접 재생 플레이어 (치지직 전체화면 스타일 커스텀 컨트롤).
@@ -66,6 +73,18 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
   const latestUrlRef = useRef(hlsUrl);
   latestUrlRef.current = hlsUrl;
 
+  // 목표 딜레이 설정 (설정 패널에서 0.1초 단위 조절, 잘못된 저장값은 기본값으로)
+  const rawLatency = Number(useAtomValue(chzzkHlsLatencyAtom));
+  const targetLatency = Number.isFinite(rawLatency)
+    ? Math.min(CHZZK_HLS_LATENCY_MAX, Math.max(CHZZK_HLS_LATENCY_MIN, rawLatency))
+    : CHZZK_HLS_LATENCY_DEFAULT;
+  const targetLatencyRef = useRef(targetLatency);
+  targetLatencyRef.current = targetLatency;
+
+  // 자동재생 소리 켜기 시도는 최초 1회만 (설정 변경·에러 복구로 플레이어를
+  // 재생성해도 사용자의 음소거/볼륨 상태를 건드리지 않는다)
+  const soundStartedRef = useRef(false);
+
   // 라이브 엣지로 이동 (딜레이 리셋)
   const seekToLive = useCallback(() => {
     const video = videoRef.current;
@@ -73,10 +92,8 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
     const hls = hlsRef.current;
     // hls.liveSyncPosition은 스톨이 누적되면 목표 지연이 불어나 뒤로 밀리므로
     // 그대로 쓰면 밀린 딜레이가 유지된다. seekable 끝(버퍼 엣지)에서
-    // 플레이리스트 홀드백만 뺀 위치와 비교해 더 앞선 쪽으로 이동한다
-    const details = hls?.latestLevelDetails;
-    const holdBack =
-      (details && (details.partHoldBack || details.holdBack)) || 3;
+    // 목표 딜레이만 뺀 위치와 비교해 더 앞선 쪽으로 이동한다
+    const holdBack = targetLatencyRef.current;
     let target = Number.isFinite(hls?.liveSyncPosition)
       ? hls.liveSyncPosition
       : null;
@@ -197,13 +214,12 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
 
     // 첫 재생은 소리 켜진 상태로 자동재생 시도, 정책에 막히면 음소거로 시작.
     // 에러 복구·워치독으로 재생성될 때는 사용자의 음소거 상태를 건드리지 않는다.
-    let soundStarted = false;
     const startPlayback = () => {
-      if (soundStarted) {
+      if (soundStartedRef.current) {
         video.play().catch(() => {});
         return;
       }
-      soundStarted = true;
+      soundStartedRef.current = true;
       video.muted = false;
       video.play().catch(() => {
         video.muted = true;
@@ -236,9 +252,11 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
 
     const createPlayer = (url) => {
       const hls = new Hls({
-        // LLHLS 파트 단위 로딩. liveSyncDuration류를 명시하면 플레이리스트의
-        // PART-HOLD-BACK(~3초)보다 우선 적용되어 지연이 커지므로 설정하지 않는다
+        // LLHLS 파트 단위 로딩
         lowLatencyMode: true,
+        // 사용자가 설정한 목표 딜레이. 명시하면 플레이리스트의 PART-HOLD-BACK보다
+        // 우선 적용된다 (기본 3초 = 치지직 PART-HOLD-BACK 권장값과 동일)
+        liveSyncDuration: targetLatencyRef.current,
         maxLiveSyncPlaybackRate: 1.5, // 뒤처지면 1.5배속으로 따라잡기
         backBufferLength: 60,
         enableWorker: true,
@@ -339,9 +357,9 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
       }
       lastWatchdogTime = video.currentTime;
 
-      // 2) 딜레이 고착: 한계 이상 뒤처지면 라이브 엣지로 점프
+      // 2) 딜레이 고착: 목표 딜레이보다 한계 이상 뒤처지면 라이브 엣지로 점프
       //    (hls.js의 배속 따라잡기는 크게 밀린 딜레이를 복구하지 못함)
-      if (hls.latency > MAX_LIVE_LATENCY) {
+      if (hls.latency > targetLatencyRef.current + LATENCY_JUMP_MARGIN) {
         seekToLive();
       }
 
@@ -363,7 +381,8 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
       hlsRef.current?.destroy();
       hlsRef.current = null;
     };
-  }, [seekToLive]);
+    // targetLatency 변경 시 새 목표 딜레이로 플레이어 재생성 (hls 설정은 생성 시점 고정)
+  }, [seekToLive, targetLatency]);
 
   const showUi = controlsVisible || !playing || qualityMenuOpen;
 

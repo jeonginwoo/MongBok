@@ -10,6 +10,7 @@ import {
   showCurrentTimeAtom,
   pointerEventsEnabledAtom,
   chatFontSizeAdjustmentAtom,
+  chzzkHlsLatencyAtom,
   controllerExpandedAtom,
   currentTimePositionAtom,
   autoRecordEnabledAtom,
@@ -42,6 +43,7 @@ export default function SettingChangeIndicator() {
   const showCurrentTime = useAtomValue(showCurrentTimeAtom);
   const pointerEventsEnabled = useAtomValue(pointerEventsEnabledAtom);
   const chatFontSizeAdjustment = useAtomValue(chatFontSizeAdjustmentAtom);
+  const chzzkHlsLatency = useAtomValue(chzzkHlsLatencyAtom);
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
   const currentTimePosition = useAtomValue(currentTimePositionAtom);
   const autoRecordEnabled = useAtomValue(autoRecordEnabledAtom);
@@ -60,6 +62,7 @@ export default function SettingChangeIndicator() {
   const prevShowCurrentTime = usePrevious(showCurrentTime);
   const prevPointerEventsEnabled = usePrevious(pointerEventsEnabled);
   const prevChatFontSizeAdjustment = usePrevious(chatFontSizeAdjustment);
+  const prevChzzkHlsLatency = usePrevious(chzzkHlsLatency);
   const prevControllerExpanded = usePrevious(controllerExpanded);
   const prevCurrentTimePosition = usePrevious(currentTimePosition);
   const prevAutoRecordEnabled = usePrevious(autoRecordEnabled);
@@ -107,6 +110,11 @@ export default function SettingChangeIndicator() {
       message = `채팅 글자 크기: ${
         chatFontSizeAdjustment > 0 ? "+" : ""
       }${chatFontSizeAdjustment}`;
+    } else if (
+      prevChzzkHlsLatency !== undefined &&
+      chzzkHlsLatency !== prevChzzkHlsLatency
+    ) {
+      message = `치지직 딜레이: ${Number(chzzkHlsLatency).toFixed(1)}초`;
     } else if (
       prevControllerExpanded !== undefined &&
       controllerExpanded !== prevControllerExpanded
@@ -164,11 +172,11 @@ export default function SettingChangeIndicator() {
     }
   }, [
     ratioKey, layoutType, themeMode, showCurrentTime, pointerEventsEnabled,
-    chatFontSizeAdjustment, controllerExpanded, currentTimePosition,
+    chatFontSizeAdjustment, chzzkHlsLatency, controllerExpanded, currentTimePosition,
     autoRecordEnabled, recordStopCondition, pointColor, recordQuality, recordFrameRate,
     recordCodec, recordSoundEnabled, recordSoundType, recordSoundVolume,
     prevRatioKey, prevLayoutType, prevThemeMode, prevShowCurrentTime,
-    prevPointerEventsEnabled, prevChatFontSizeAdjustment,
+    prevPointerEventsEnabled, prevChatFontSizeAdjustment, prevChzzkHlsLatency,
     prevControllerExpanded, prevCurrentTimePosition, prevAutoRecordEnabled,
     prevRecordStopCondition,
     prevPointColor, prevRecordQuality, prevRecordFrameRate, prevRecordCodec,

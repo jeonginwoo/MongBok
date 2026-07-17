@@ -2,6 +2,10 @@ import { canvas } from "@/data/canvas";
 import { palettes, POINT_COLORS } from "@/data/color";
 import { getLiveStatus } from "@/api/live";
 import { ALL_SETTINGS } from "@/data/settingsOrder";
+import {
+  CHZZK_HLS_LATENCY_MIN,
+  CHZZK_HLS_LATENCY_MAX,
+} from "@/atoms/setting";
 
 const ALLOWED_KEYS = ALL_SETTINGS;
 
@@ -72,6 +76,18 @@ export const validateRecordStopCondition = (value) => {
     return `유효하지 않은 녹화 종료 기준 값 '${value}'. 허용되는 값은: ${allowed.join(
       ", "
     )} 입니다.`;
+  }
+  return true;
+};
+
+export const validateChzzkHlsLatency = (value) => {
+  const num = Number(value);
+  if (
+    isNaN(num) ||
+    num < CHZZK_HLS_LATENCY_MIN ||
+    num > CHZZK_HLS_LATENCY_MAX
+  ) {
+    return `유효하지 않은 치지직 딜레이 값 '${value}'. ${CHZZK_HLS_LATENCY_MIN}에서 ${CHZZK_HLS_LATENCY_MAX} 사이의 숫자여야 합니다.`;
   }
   return true;
 };
@@ -387,6 +403,12 @@ export const validatePreferences = async (dataToValidate) => {
           break;
         case "chatFontSizeAdjustment":
           validationResult = validateChatFontSizeAdjustment(value);
+          break;
+        case "autoHideOffline":
+          validationResult = validateBoolean(value, key);
+          break;
+        case "chzzkHlsLatency":
+          validationResult = validateChzzkHlsLatency(value);
           break;
         case "autoRecordEnabled":
           validationResult = validateBoolean(value, key);

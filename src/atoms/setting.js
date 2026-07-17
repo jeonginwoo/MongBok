@@ -133,6 +133,18 @@ export const autoHideOfflineAtom = atomWithStorage(
   storage
 );
 
+// 치지직 HLS 플레이어 목표 딜레이 (초, 라이브 엣지로부터 유지할 버퍼 거리)
+// 기본 3초는 치지직 플레이리스트의 PART-HOLD-BACK 권장값과 동일.
+// 낮출수록 실시간에 가깝지만 버퍼링(스톨) 위험이 커진다
+export const CHZZK_HLS_LATENCY_MIN = 1;
+export const CHZZK_HLS_LATENCY_MAX = 5;
+export const CHZZK_HLS_LATENCY_DEFAULT = 3;
+export const chzzkHlsLatencyAtom = atomWithStorage(
+  "chzzkHlsLatency",
+  CHZZK_HLS_LATENCY_DEFAULT,
+  storage
+);
+
 // 컨트롤러 확장/축소
 export const controllerExpandedAtom = atomWithStorage(
   "controllerExpanded",
