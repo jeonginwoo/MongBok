@@ -16,6 +16,7 @@ import { controllerExpandedAtom, chatFontSizeAdjustmentAtom, CHAT_FONT_SIZE_BASE
 import { fitStyleAtom } from "@/atoms/ui";
 import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE, ENABLE_TWITCH } from "@/data/config";
 import { getLiveStatus } from "@/api/live";
+import { getTouchZoomBoost } from "@/utils/displayScale";
 
 import useChzzkChat from "@/hooks/useChzzkChat";
 import useSoopChat from "@/hooks/useSoopChat";
@@ -78,7 +79,9 @@ export default function DraggableChat({ channel, zone }) {
     retry();
   };
 
-  const BASE_WIDTH = 360;
+  // 캔버스의 긴 변이 이 값일 때 배율 1 (가로형 1920×1080, 세로형 1080×1920 기준).
+  // 캔버스 크기에 비례해 모든 채팅 영역이 동일한 배율로 커지고 작아진다.
+  const BASE_CANVAS_LONG_SIDE = 1920;
 
   const layoutKey = `${zone?.style?.width}-${zone?.style?.height}-${controllerExpanded}-${JSON.stringify(fitStyle)}`;
 
@@ -89,19 +92,10 @@ export default function DraggableChat({ channel, zone }) {
       const canvas = containerRef.current.closest(".canvas");
       if (!canvas) return;
 
-      const canvasWidth = canvas.clientWidth;
+      const longSide = Math.max(canvas.clientWidth, canvas.clientHeight);
+      if (!longSide) return;
 
-      const widthStr = zone?.style.width;
-      let percent = 1;
-      if (typeof widthStr === "string" && widthStr.endsWith("%")) {
-        percent = parseFloat(widthStr) / 100;
-      }
-
-      const zonePixelWidth = canvasWidth * percent;
-
-      const newZoom =
-        zonePixelWidth < BASE_WIDTH ? zonePixelWidth / BASE_WIDTH : 1;
-      setZoom(newZoom);
+      setZoom((longSide * getTouchZoomBoost()) / BASE_CANVAS_LONG_SIDE);
     };
 
     updateZoom();
@@ -112,7 +106,7 @@ export default function DraggableChat({ channel, zone }) {
       window.removeEventListener("resize", updateZoom);
       clearTimeout(timer);
     };
-  }, [zone?.style.width, controllerExpanded, fitStyle]);
+  }, [controllerExpanded, fitStyle]);
 
   const style = (theme) => ({
     position: "absolute",

@@ -169,7 +169,7 @@ export const CHAT_RENDER_INTERVAL = 150;
 
 // 채팅창 폰트 크기 조절
 export const CHAT_FONT_SIZE_STEP = 0.05;
-export const CHAT_FONT_SIZE_BASE = 1 + 3 * CHAT_FONT_SIZE_STEP;
+export const CHAT_FONT_SIZE_BASE = 0.85 + 3 * CHAT_FONT_SIZE_STEP;
 export const chatFontSizeAdjustmentAtom = atomWithStorage(
   "chatFontSizeAdjustment",
   0,

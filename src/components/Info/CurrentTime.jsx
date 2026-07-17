@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import dayjs from "dayjs";
+import { getTouchZoomBoost } from "@/utils/displayScale";
 
 const CurrentTime = ({ onClick, sx }) => {
   const [time, setTime] = useState(() => dayjs());
@@ -40,6 +41,7 @@ const CurrentTime = ({ onClick, sx }) => {
         color: "common.white",
         fontSize: "1.2vmin",
         lineHeight: 1,
+        zoom: getTouchZoomBoost(),
         zIndex: 1000,
         "&:hover": {
           cursor: "pointer",
