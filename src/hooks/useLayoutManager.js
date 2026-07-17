@@ -43,16 +43,16 @@ export const useLayoutManager = () => {
         });
 
         const channelsToSave = Object.fromEntries(
-          Object.entries(newChannels).map(([id, channel]) => [
-            id,
-            { platform: channel.platform, zoneId: channel.zoneId },
+          Object.entries(newChannels).map(([key, channel]) => [
+            key,
+            { zoneId: channel.zoneId },
           ])
         );
 
-        // 유효성 검사 후 저장
+        // 유효성 검사 후 저장 (성공 시 { success, channels } 객체 반환)
         validateChannels(channelsToSave).then((result) => {
-          if (result === true) {
-            updatePreferences({ channels: channelsToSave });
+          if (result && typeof result === "object" && result.success) {
+            updatePreferences({ channels: result.channels });
           } else {
             console.error("채널 데이터 유효성 검사 실패:", result);
           }

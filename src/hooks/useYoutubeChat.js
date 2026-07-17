@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSetAtom, useAtomValue } from "jotai";
 import { CHAT_MAX_COUNT, CHAT_RENDER_INTERVAL, channelsAtom } from "@/atoms/setting";
+import { makeChannelKey } from "@/utils/channelKey";
 import { snackbarAtom } from "@/atoms/ui";
 const REQUIRED_SERVER_VERSION = process.env.NEXT_PUBLIC_REQUIRED_SERVER_VERSION;
 
@@ -24,7 +25,7 @@ export default function useYoutubeChat(channelId) {
   const [retryBuster, setRetryBuster] = useState(0);
 
   const channels = useAtomValue(channelsAtom);
-  const channelData = channels[channelId];
+  const channelData = channels[makeChannelKey("youtube", channelId)];
   const { liveVideoId, isLive, lastRefreshed } = channelData || {};
 
   const updateStatus = useCallback((newStatus) => {

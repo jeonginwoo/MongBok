@@ -3,6 +3,7 @@ import { atomWithStorage, createJSONStorage, RESET } from "jotai/utils";
 import { canvas } from "@/data/canvas";
 import { getLiveStatus } from "@/api/live";
 import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE, ENABLE_TWITCH } from "@/data/config";
+import { normalizeChannelsShape, parseChannelKey } from "@/utils/channelKey";
 
 const storage = createJSONStorage(() =>
   typeof window !== "undefined" ? window.localStorage : undefined
@@ -11,17 +12,21 @@ const storage = createJSONStorage(() =>
 // 채널 데이터 초기 셋팅
 export const channelsAtom = atom({});
 
-// 저장된 채널 목록({ id: { platform, zoneId } })을 플레이스홀더로 즉시 표시하고
+// 저장된 채널 목록({ "플랫폼:채널ID": { zoneId } })을 플레이스홀더로 즉시 표시하고
 // 라이브 데이터를 비동기로 채운다 (초기 마운트와 프리셋 전환에서 공용)
+// 구형(채널ID 키 + platform 필드) 데이터가 들어와도 신형 키로 정규화해서 로드한다
 const loadChannels = (savedChannels, setAtom) => {
-  const entries = Object.entries(savedChannels);
+  const { channels: normalized } = normalizeChannelsShape(savedChannels);
+  const entries = Object.entries(normalized);
   if (entries.length === 0) return;
 
   // 즉시 플레이스홀더 데이터로 채널 목록 표시
   const placeholder = {};
-  for (const [channelId, item] of entries) {
-    placeholder[channelId] = {
-      id: channelId,
+  for (const [channelKey, item] of entries) {
+    const parsed = parseChannelKey(channelKey);
+    placeholder[channelKey] = {
+      id: parsed?.channelId ?? channelKey,
+      key: channelKey,
       name: "",
       imageUrl: "",
       liveTitle: "",
@@ -34,20 +39,21 @@ const loadChannels = (savedChannels, setAtom) => {
       tags: [],
       isVisible: item.zoneId != null,
       zoneId: item.zoneId ?? null,
-      platform: item.platform,
+      platform: parsed?.platform ?? item.platform,
       _loading: true,
     };
   }
   setAtom(placeholder);
 
   // 각 채널 데이터를 비동기로 개별 fetch → 도착하는 대로 atom 업데이트
-  for (const [channelId, item] of entries) {
-    getLiveStatus(channelId, item.platform)
+  for (const [channelKey] of entries) {
+    const { id: channelId, platform } = placeholder[channelKey];
+    getLiveStatus(channelId, platform)
       .then((live) => {
         setAtom((prev) => ({
           ...prev,
-          [channelId]: {
-            ...prev[channelId],
+          [channelKey]: {
+            ...prev[channelKey],
             name: live.name,
             imageUrl: live.imageUrl,
             liveTitle: live.liveTitle,
@@ -78,8 +84,8 @@ const loadChannels = (savedChannels, setAtom) => {
         console.error(`⚠️ ${channelId} 데이터 불러오기 실패:`, err);
         setAtom((prev) => ({
           ...prev,
-          [channelId]: {
-            ...prev[channelId],
+          [channelKey]: {
+            ...prev[channelKey],
             _loading: false,
           },
         }));
@@ -92,7 +98,12 @@ channelsAtom.onMount = (setAtom) => {
   try {
     const saved = window.localStorage.getItem("channels");
     const savedChannels = saved ? JSON.parse(saved) : {};
-    loadChannels(savedChannels, setAtom);
+    // 구형(채널ID 키) 형식이면 신형(플랫폼:채널ID 키)으로 마이그레이션 후 저장
+    const { changed, channels: normalized } = normalizeChannelsShape(savedChannels);
+    if (changed) {
+      window.localStorage.setItem("channels", JSON.stringify(normalized));
+    }
+    loadChannels(normalized, setAtom);
   } catch (e) {
     console.error("❌ localStorage 파싱 실패:", e);
   }

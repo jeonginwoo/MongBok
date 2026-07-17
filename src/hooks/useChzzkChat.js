@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAtomValue } from "jotai";
 import { CHAT_MAX_COUNT, CHAT_RENDER_INTERVAL, channelsAtom } from "@/atoms/setting";
+import { makeChannelKey } from "@/utils/channelKey";
 
 const nicknameColors = [
   "#ECA843", "#EEA05D", "#EA723D", "#EAA35F", "#E98158", "#E97F58",
@@ -57,7 +58,7 @@ export default function useChzzkChat(channelId) {
   const [error, setError] = useState(null);
 
   const channels = useAtomValue(channelsAtom);
-  const channelData = channels[channelId];
+  const channelData = channels[makeChannelKey("chzzk", channelId)];
   const { chatChannelId, accessToken, isLive, lastRefreshed } = channelData || {};
 
   const updateStatus = useCallback((newStatus) => {

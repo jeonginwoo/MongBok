@@ -31,7 +31,7 @@ export default function DraggableChat({ channel, zone }) {
   const chatFontSizeAdjustment = useAtomValue(chatFontSizeAdjustmentAtom);
   const pointerEventsEnabled = useAtomValue(pointerEventsEnabledAtom);
 
-  const draggableId = `${channel.id}-chat`;
+  const draggableId = `${channel.key}-chat`;
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: draggableId,
@@ -70,7 +70,7 @@ export default function DraggableChat({ channel, zone }) {
         const liveStatus = await getLiveStatus(channelId, channel.platform);
         setChannels((prev) => ({
           ...prev,
-          [channelId]: { ...prev[channelId], ...liveStatus },
+          [channel.key]: { ...prev[channel.key], ...liveStatus },
         }));
       } catch (err) {
         console.error("❌ 라이브 상태 갱신 실패:", err);

@@ -10,7 +10,7 @@ import OfflineScreen from "@/components/View/OfflineScreen";
 export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
   if (!channel) return null;
 
-  const draggableId = `${channel.id}-view`;
+  const draggableId = `${channel.key}-view`;
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: draggableId,

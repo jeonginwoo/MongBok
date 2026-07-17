@@ -41,9 +41,9 @@ export const captureSnapshot = (channels) => {
 
   if (channels && Object.keys(channels).length > 0) {
     settings.channels = Object.fromEntries(
-      Object.entries(channels).map(([id, channel]) => [
-        id,
-        { platform: channel.platform, zoneId: channel.zoneId ?? null },
+      Object.entries(channels).map(([key, channel]) => [
+        key,
+        { zoneId: channel.zoneId ?? null },
       ])
     );
   } else {

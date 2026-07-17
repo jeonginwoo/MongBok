@@ -66,15 +66,15 @@ export default function ChannelList() {
   }, [hidden]);
 
   const activeChannel = activeId
-    ? channelArray.find((c) => c.id === activeId)
+    ? channelArray.find((c) => c.key === activeId)
     : null;
 
   const handleDragEnd = ({ active, over }) => {
     setActiveId(null);
     if (!over || active.id === over.id) return;
 
-    const oldIndex = visible.findIndex((c) => c.id === active.id);
-    const newIndex = visible.findIndex((c) => c.id === over.id);
+    const oldIndex = visible.findIndex((c) => c.key === active.id);
+    const newIndex = visible.findIndex((c) => c.key === over.id);
     const reordered = arrayMove(visible, oldIndex, newIndex);
 
     setChannels((prev) => {
@@ -82,20 +82,20 @@ export default function ChannelList() {
 
       reordered.forEach((c, i) => {
         const zoneId = i + 1;
-        updated[c.id].zoneId = zoneId;
+        updated[c.key].zoneId = zoneId;
       });
 
       hidden.forEach((c) => {
-        updated[c.id].zoneId = null;
+        updated[c.key].zoneId = null;
       });
 
       window.localStorage.setItem(
         "channels",
         JSON.stringify(
           Object.fromEntries(
-            Object.entries(updated).map(([id, ch]) => [
-              id,
-              { platform: ch.platform, zoneId: ch.zoneId },
+            Object.entries(updated).map(([key, ch]) => [
+              key,
+              { zoneId: ch.zoneId },
             ])
           )
         )
@@ -105,13 +105,13 @@ export default function ChannelList() {
     });
   };
 
-  const handleToggle = (id) => {
+  const handleToggle = (channelKey) => {
     setChannels((prev) => {
       const updated = structuredClone(prev);
-      const target = updated[id];
+      const target = updated[channelKey];
 
       const currentVisibleCount = Object.values(updated).filter(
-        (c) => c.isVisible && c.id !== id
+        (c) => c.isVisible && c.key !== channelKey
       ).length;
 
       if (!target.isVisible) {
@@ -135,16 +135,16 @@ export default function ChannelList() {
         .sort((a, b) => (a.zoneId ?? Infinity) - (b.zoneId ?? Infinity));
 
       visibleList.forEach((c, index) => {
-        updated[c.id].zoneId = index + 1;
+        updated[c.key].zoneId = index + 1;
       });
 
       window.localStorage.setItem(
         "channels",
         JSON.stringify(
           Object.fromEntries(
-            Object.entries(updated).map(([id, ch]) => [
-              id,
-              { platform: ch.platform, zoneId: ch.zoneId },
+            Object.entries(updated).map(([key, ch]) => [
+              key,
+              { zoneId: ch.zoneId },
             ])
           )
         )
@@ -154,15 +154,15 @@ export default function ChannelList() {
     });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (channelKey) => {
     setChannels((prev) => {
       const updated = structuredClone(prev);
-      delete updated[id];
+      delete updated[channelKey];
 
       const storeObj = Object.fromEntries(
-        Object.entries(updated).map(([id, ch]) => [
-          id,
-          { platform: ch.platform, zoneId: ch.zoneId },
+        Object.entries(updated).map(([key, ch]) => [
+          key,
+          { zoneId: ch.zoneId },
         ])
       );
       
@@ -202,13 +202,13 @@ export default function ChannelList() {
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={visible.map((c) => c.id)}
+          items={visible.map((c) => c.key)}
           strategy={verticalListSortingStrategy}
         >
           <List sx={{ pr: 1.5, pl: 1.5, pt: 0, pb: 0 }}>
             {visible.map((channel) => (
               <SortableItem
-                key={channel.id}
+                key={channel.key}
                 channel={channel}
                 onToggle={handleToggle}
               />
@@ -258,7 +258,7 @@ export default function ChannelList() {
             <List disablePadding>
               {sortedHidden.map((channel) => (
                 <HiddenItem
-                  key={channel.id}
+                  key={channel.key}
                   channel={channel}
                   onToggle={handleToggle}
                   onDelete={handleDelete}
@@ -281,7 +281,7 @@ function SortableItem({ channel, onToggle }) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: channel.id });
+  } = useSortable({ id: channel.key });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -295,7 +295,7 @@ function SortableItem({ channel, onToggle }) {
       style={style}
       {...listeners}
       {...attributes}
-      onClick={() => onToggle(channel.id)}
+      onClick={() => onToggle(channel.key)}
       sx={{
         position: "relative",
         mb: 1,
@@ -323,7 +323,7 @@ function HiddenItem({ channel, onToggle, onDelete }) {
 
   return (
     <ListItem
-      onClick={() => onToggle(channel.id)}
+      onClick={() => onToggle(channel.key)}
       sx={{
         position: "relative",
         padding: controllerExpanded ? "0 1.3rem 0 0" : "0",
@@ -350,7 +350,7 @@ function HiddenItem({ channel, onToggle, onDelete }) {
           className="delete-icon"
           onClick={(e) => {
             e.stopPropagation();
-            onDelete(channel.id);
+            onDelete(channel.key);
           }}
           sx={{
             zIndex: 10,

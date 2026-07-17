@@ -6,6 +6,11 @@ import {
   CHZZK_HLS_LATENCY_MIN,
   CHZZK_HLS_LATENCY_MAX,
 } from "@/atoms/setting";
+import {
+  CHANNEL_PLATFORMS,
+  makeChannelKey,
+  parseChannelKey,
+} from "@/utils/channelKey";
 
 const ALLOWED_KEYS = ALL_SETTINGS;
 
@@ -213,19 +218,26 @@ export const validateChannels = async (value) => {
     }
     
     const zoneIds = [];
-    const validationPromises = Object.keys(channelsObj).map(
-      async (channelId) => {
-        const channelData = channelsObj[channelId];
-        if (typeof channelId !== "string" || !channelId) {
-          throw new Error(`Validation Error: Invalid channelId '${channelId}'.`);
+    const channelEntries = Object.entries(channelsObj);
+    const validationPromises = channelEntries.map(
+      async ([rawKey, channelData]) => {
+        if (typeof rawKey !== "string" || !rawKey) {
+          throw new Error(`Validation Error: Invalid channel key '${rawKey}'.`);
         }
         if (typeof channelData !== "object" || channelData === null) {
-          throw new Error(`Validation Error: Channel data for '${channelId}' is not a valid object.`);
+          throw new Error(`Validation Error: Channel data for '${rawKey}' is not a valid object.`);
         }
 
-        const { platform, zoneId = null } = channelData;
-        if (!["chzzk", "soop", "youtube", "twitch"].includes(platform)) {
-          throw new Error(`Validation Error: Invalid platform '${platform}' for channel '${channelId}'. Must be 'chzzk', 'soop', 'youtube', 'twitch'.`);
+        // 키는 "플랫폼:채널ID"(신형) 또는 "채널ID"(구형) 모두 허용하고 신형으로 정규화
+        const parsedKey = parseChannelKey(rawKey);
+        const channelId = parsedKey ? parsedKey.channelId : rawKey;
+        const { zoneId = null } = channelData;
+        const platform = channelData.platform ?? parsedKey?.platform;
+        if (!CHANNEL_PLATFORMS.includes(platform)) {
+          throw new Error(`Validation Error: Invalid platform '${platform}' for channel '${rawKey}'. Must be ${CHANNEL_PLATFORMS.map((p) => `'${p}'`).join(", ")}.`);
+        }
+        if (parsedKey && channelData.platform && parsedKey.platform !== channelData.platform) {
+          throw new Error(`Validation Error: Key '${rawKey}' does not match platform '${channelData.platform}'.`);
         }
 
         if (zoneId !== null) {
@@ -234,16 +246,16 @@ export const validateChannels = async (value) => {
             !Number.isInteger(zoneId) ||
             zoneId < 1
           ) {
-            throw new Error(`Validation Error: Invalid zoneId '${zoneId}' for channel '${channelId}'. Must be null or a positive integer.`);
+            throw new Error(`Validation Error: Invalid zoneId '${zoneId}' for channel '${rawKey}'. Must be null or a positive integer.`);
           }
           zoneIds.push(zoneId);
         }
 
         const live = await getLiveStatus(channelId, platform);
+        // 플랫폼은 키에 포함되므로 value에는 zoneId만 저장
         return {
-          originalId: channelId,
-          resolvedId: live.id || channelId,
-          data: channelData
+          resolvedKey: makeChannelKey(platform, live.id || channelId),
+          data: { zoneId },
         };
       }
     );
@@ -253,12 +265,12 @@ export const validateChannels = async (value) => {
     const normalizedChannels = {};
 
     results.forEach((result, index) => {
-      const originalId = Object.keys(channelsObj)[index];
+      const originalKey = channelEntries[index][0];
       if (result.status === "rejected") {
-        invalidChannels.push(originalId);
+        invalidChannels.push(originalKey);
       } else {
-        const { resolvedId, data } = result.value;
-        normalizedChannels[resolvedId] = data;
+        const { resolvedKey, data } = result.value;
+        normalizedChannels[resolvedKey] = data;
       }
     });
 

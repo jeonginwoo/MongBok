@@ -238,18 +238,18 @@ export default function ControlButtonGroup({ fullscreen }) {
     );
   }, [setChatFontSizeAdjustment]);
 
-  const applyLiveStatusUpdate = useCallback((channelId, liveStatus) => {
+  const applyLiveStatusUpdate = useCallback((channelKey, liveStatus) => {
     // 녹화 종료 기준이 "1번 채널"일 때, autoHideOffline에 의해 zone이 재배치되기 전에
     // zone 1 채널의 오프라인 전환을 감지하여 녹화를 먼저 중지
     if (recordStopConditionRef.current === "zone1" && isRecordingRef.current) {
-      const current = channelsRef.current[channelId];
+      const current = channelsRef.current[channelKey];
       if (current && current.isLive === true && liveStatus.isLive === false && current.zoneId === 1) {
         setIsRecording(false);
       }
     }
 
     setChannels((prev) => {
-      const prevChannel = prev[channelId];
+      const prevChannel = prev[channelKey];
       if (!prevChannel) return prev;
 
       const wasLive = prevChannel.isLive === true;
@@ -257,25 +257,25 @@ export default function ControlButtonGroup({ fullscreen }) {
 
       if (autoHideOfflineRef.current && wasLive && isNowOffline && prevChannel.zoneId !== null) {
         const updated = structuredClone(prev);
-        updated[channelId] = { ...updated[channelId], ...liveStatus, isVisible: false, zoneId: null };
+        updated[channelKey] = { ...updated[channelKey], ...liveStatus, isVisible: false, zoneId: null };
 
         const visibleList = Object.values(updated)
           .filter((c) => c.isVisible)
           .sort((a, b) => (a.zoneId ?? Infinity) - (b.zoneId ?? Infinity));
-        visibleList.forEach((c, index) => { updated[c.id].zoneId = index + 1; });
+        visibleList.forEach((c, index) => { updated[c.key].zoneId = index + 1; });
 
         window.localStorage.setItem(
           "channels",
           JSON.stringify(
             Object.fromEntries(
-              Object.entries(updated).map(([id, ch]) => [id, { platform: ch.platform, zoneId: ch.zoneId }])
+              Object.entries(updated).map(([key, ch]) => [key, { zoneId: ch.zoneId }])
             )
           )
         );
         return updated;
       }
 
-      return { ...prev, [channelId]: { ...prev[channelId], ...liveStatus } };
+      return { ...prev, [channelKey]: { ...prev[channelKey], ...liveStatus } };
     });
   }, [setChannels, setIsRecording]);
 
@@ -288,12 +288,12 @@ export default function ControlButtonGroup({ fullscreen }) {
     try {
       const entries = Object.entries(channels);
       await Promise.all(
-        entries.map(async ([channelId, item]) => {
+        entries.map(async ([channelKey, item]) => {
           try {
-            const liveStatus = await getLiveStatus(channelId, item.platform);
-            applyLiveStatusUpdate(channelId, liveStatus);
+            const liveStatus = await getLiveStatus(item.id, item.platform);
+            applyLiveStatusUpdate(channelKey, liveStatus);
           } catch (err) {
-            console.error(`⚠️ ${channelId} 라이브 상태 갱신 실패:`, err);
+            console.error(`⚠️ ${item.id} 라이브 상태 갱신 실패:`, err);
           }
         })
       );
@@ -313,12 +313,12 @@ export default function ControlButtonGroup({ fullscreen }) {
     try {
       const entries = Object.entries(channelsRef.current).filter(([, item]) => item.zoneId !== null);
       await Promise.all(
-        entries.map(async ([channelId, item]) => {
+        entries.map(async ([channelKey, item]) => {
           try {
-            const liveStatus = await getLiveStatus(channelId, item.platform);
-            applyLiveStatusUpdate(channelId, liveStatus);
+            const liveStatus = await getLiveStatus(item.id, item.platform);
+            applyLiveStatusUpdate(channelKey, liveStatus);
           } catch (err) {
-            console.error(`⚠️ ${channelId} 라이브 상태 갱신 실패:`, err);
+            console.error(`⚠️ ${item.id} 라이브 상태 갱신 실패:`, err);
           }
         })
       );
@@ -338,15 +338,15 @@ export default function ControlButtonGroup({ fullscreen }) {
     try {
       const entries = Object.entries(channelsRef.current).filter(([, item]) => item.zoneId === null);
       await Promise.all(
-        entries.map(async ([channelId, item]) => {
+        entries.map(async ([channelKey, item]) => {
           try {
-            const liveStatus = await getLiveStatus(channelId, item.platform);
+            const liveStatus = await getLiveStatus(item.id, item.platform);
             setChannels((prev) => ({
               ...prev,
-              [channelId]: { ...prev[channelId], ...liveStatus },
+              [channelKey]: { ...prev[channelKey], ...liveStatus },
             }));
           } catch (err) {
-            console.error(`⚠️ ${channelId} 라이브 상태 갱신 실패:`, err);
+            console.error(`⚠️ ${item.id} 라이브 상태 갱신 실패:`, err);
           }
         })
       );

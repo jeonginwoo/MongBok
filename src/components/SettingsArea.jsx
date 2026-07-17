@@ -256,9 +256,9 @@ export default function SettingsArea({ onClose }) {
     // channelsAtom의 현재 상태를 직접 반영하여 localStorage 저장 지연 문제 해결
     if (channels && Object.keys(channels).length > 0) {
       settings.channels = Object.fromEntries(
-        Object.entries(channels).map(([id, channel]) => [
-          id,
-          { platform: channel.platform, zoneId: channel.zoneId ?? null },
+        Object.entries(channels).map(([key, channel]) => [
+          key,
+          { zoneId: channel.zoneId ?? null },
         ])
       );
     }

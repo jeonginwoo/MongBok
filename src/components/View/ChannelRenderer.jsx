@@ -15,7 +15,7 @@ export default function ChannelRenderer({
   };
 
   return (
-    <React.Fragment key={channel.id}>
+    <React.Fragment key={channel.key}>
       {layout["view"]?.[channel.zoneId] && (
         <DraggableView
           channel={channel}

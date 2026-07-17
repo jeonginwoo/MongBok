@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { defaultEmojis, afreecaNicknameColors } from "../data/soopConstants";
 import useSoopEmoticons from "./useSoopEmoticons";
 import { CHAT_MAX_COUNT, CHAT_RENDER_INTERVAL, channelsAtom } from "@/atoms/setting";
+import { makeChannelKey } from "@/utils/channelKey";
 import { useAtomValue } from "jotai";
 
 function parseMessage(message) {
@@ -46,7 +47,7 @@ export default function useSoopChat(channelId) {
   const [error, setError] = useState(null);
 
   const channels = useAtomValue(channelsAtom);
-  const channelData = channels[channelId];
+  const channelData = channels[makeChannelKey("soop", channelId)];
   const { 
     chatNo, ftk, bjid, chDomain, chPt, pconObject, isLive, lastRefreshed 
   } = channelData || {};

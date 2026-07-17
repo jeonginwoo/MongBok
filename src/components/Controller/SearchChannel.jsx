@@ -21,6 +21,7 @@ import AppsIcon from "@mui/icons-material/Apps";
 import SearchChannelInfo from "@/components/Info/ChannelInfo/SearchChannelInfo";
 import { searchChannels } from "@/api/search";
 import { updatePreferences } from "@/utils/preferences";
+import { makeChannelKey } from "@/utils/channelKey";
 
 import { useAtom, useSetAtom } from "jotai";
 import { channelsAtom, selectedSearchPlatformAtom, platformEnabledAtom, MAX_CHANNELS } from "@/atoms/setting";
@@ -231,7 +232,8 @@ export default function SearchChannel() {
 
   const addChannel = (selectChannel) => {
     setChannels((prev) => {
-      if (prev[selectChannel.id]) {
+      const channelKey = makeChannelKey(selectChannel.platform, selectChannel.id);
+      if (prev[channelKey]) {
         setSnackbar({
           open: true,
           message: "이미 추가된 채널입니다.",
@@ -239,7 +241,7 @@ export default function SearchChannel() {
         });
         return prev;
       }
-      
+
       if (Object.keys(prev).length >= MAX_CHANNELS) {
         setSnackbar({
           open: true,
@@ -251,17 +253,18 @@ export default function SearchChannel() {
 
       const updated = {
         ...prev,
-        [selectChannel.id]: {
+        [channelKey]: {
           ...selectChannel,
+          key: channelKey,
           isVisible: false,
           zoneId: null,
         },
       };
 
       const channelsToSave = Object.fromEntries(
-        Object.entries(updated).map(([id, ch]) => [
-          id,
-          { platform: ch.platform, zoneId: ch.zoneId ?? null },
+        Object.entries(updated).map(([key, ch]) => [
+          key,
+          { zoneId: ch.zoneId ?? null },
         ])
       );
 

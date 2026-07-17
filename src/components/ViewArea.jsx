@@ -306,7 +306,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
             .filter((c) => c.isVisible)
             .map((channel) => (
               <ChannelRenderer
-                key={channel.id}
+                key={channel.key}
                 channel={channel}
                 layout={layout}
                 pointerEventsEnabled={pointerEventsEnabled}

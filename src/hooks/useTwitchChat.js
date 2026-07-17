@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { useAtomValue } from "jotai";
 import { CHAT_MAX_COUNT, CHAT_RENDER_INTERVAL, channelsAtom } from "@/atoms/setting";
+import { makeChannelKey } from "@/utils/channelKey";
 import { parseMessage } from "@/utils/twitch";
 import { twitch_gql_client } from "@/api/client";
 
@@ -43,7 +44,7 @@ export default function useTwitchChat(channelId) {
   const [badgesMap, setBadgesMap] = useState({});
 
   const channels = useAtomValue(channelsAtom);
-  const channelData = channels[channelId];
+  const channelData = channels[makeChannelKey("twitch", channelId)];
   const { isLive, lastRefreshed, twitchUserId } = channelData || {};
 
   const updateStatus = useCallback((newStatus) => {
