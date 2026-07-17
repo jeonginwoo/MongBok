@@ -20,7 +20,7 @@ export default function ProfileImage({
         userSelect: "none",
         background:
           isBoardered || channel.isLive
-            ? theme.palette.platform[channel.platform].profile
+            ? theme.palette.platform[channel.platform]?.profile ?? "transparent"
             : "transparent",
         display: "flex",
         alignItems: "center",

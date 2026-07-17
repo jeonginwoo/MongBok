@@ -105,7 +105,7 @@ export default function ChannelInfo({ channel, isDragging = false }) {
           <Box
             component="span"
             sx={{
-              color: (theme) => `${theme.palette.platform[channel.platform].main}`,
+              color: (theme) => theme.palette.platform[channel.platform]?.main ?? theme.palette.text.primary,
               fontWeight: "bold",
             }}
           >

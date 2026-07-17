@@ -50,45 +50,52 @@ const loadChannels = (savedChannels, setAtom) => {
     const { id: channelId, platform } = placeholder[channelKey];
     getLiveStatus(channelId, platform)
       .then((live) => {
-        setAtom((prev) => ({
-          ...prev,
-          [channelKey]: {
-            ...prev[channelKey],
-            name: live.name,
-            imageUrl: live.imageUrl,
-            liveTitle: live.liveTitle,
-            openDate: live.openDate,
-            closeDate: live.closeDate,
-            isLive: live.isLive,
-            userCount: live.userCount,
-            liveVideoId: live.liveVideoId ?? null,
-            liveCategory: live.liveCategory,
-            tags: live.tags,
-            liveHlsUrl: live.liveHlsUrl ?? null,
-            liveImageUrl: live.liveImageUrl,
-            lastRefreshed: live.lastRefreshed,
-            // Chat metadata
-            chatChannelId: live.chatChannelId,
-            accessToken: live.accessToken,
-            chatNo: live.chatNo,
-            ftk: live.ftk,
-            bjid: live.bjid,
-            chDomain: live.chDomain,
-            chPt: live.chPt,
-            pconObject: live.pconObject,
-            _loading: false,
-          },
-        }));
+        setAtom((prev) => {
+          // 프리셋 전환 등으로 채널이 교체된 뒤 도착한 응답은 무시 (유령 채널 생성 방지)
+          if (!prev[channelKey]) return prev;
+          return {
+            ...prev,
+            [channelKey]: {
+              ...prev[channelKey],
+              name: live.name,
+              imageUrl: live.imageUrl,
+              liveTitle: live.liveTitle,
+              openDate: live.openDate,
+              closeDate: live.closeDate,
+              isLive: live.isLive,
+              userCount: live.userCount,
+              liveVideoId: live.liveVideoId ?? null,
+              liveCategory: live.liveCategory,
+              tags: live.tags,
+              liveHlsUrl: live.liveHlsUrl ?? null,
+              liveImageUrl: live.liveImageUrl,
+              lastRefreshed: live.lastRefreshed,
+              // Chat metadata
+              chatChannelId: live.chatChannelId,
+              accessToken: live.accessToken,
+              chatNo: live.chatNo,
+              ftk: live.ftk,
+              bjid: live.bjid,
+              chDomain: live.chDomain,
+              chPt: live.chPt,
+              pconObject: live.pconObject,
+              _loading: false,
+            },
+          };
+        });
       })
       .catch((err) => {
         console.error(`⚠️ ${channelId} 데이터 불러오기 실패:`, err);
-        setAtom((prev) => ({
-          ...prev,
-          [channelKey]: {
-            ...prev[channelKey],
-            _loading: false,
-          },
-        }));
+        setAtom((prev) => {
+          if (!prev[channelKey]) return prev;
+          return {
+            ...prev,
+            [channelKey]: {
+              ...prev[channelKey],
+              _loading: false,
+            },
+          };
+        });
       });
   }
 };

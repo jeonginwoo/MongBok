@@ -68,10 +68,11 @@ export default function DraggableChat({ channel, zone }) {
     if (status === "offline") {
       try {
         const liveStatus = await getLiveStatus(channelId, channel.platform);
-        setChannels((prev) => ({
-          ...prev,
-          [channel.key]: { ...prev[channel.key], ...liveStatus },
-        }));
+        setChannels((prev) => {
+          // 갱신 도중 채널이 삭제/교체된 경우 무시 (유령 채널 생성 방지)
+          if (!prev[channel.key]) return prev;
+          return { ...prev, [channel.key]: { ...prev[channel.key], ...liveStatus } };
+        });
       } catch (err) {
         console.error("❌ 라이브 상태 갱신 실패:", err);
       }

@@ -224,14 +224,14 @@ export default function ChannelList() {
                 overflow: "hidden",
                 border: (theme) =>
                   `0.1rem solid ${
-                    theme.palette.platform[activeChannel.platform].main
+                    theme.palette.platform[activeChannel.platform]?.main ?? theme.palette.divider
                   }`,
                 borderRadius: "10rem",
                 background: (theme) => theme.palette.background.level5,
                 cursor: "grabbing",
                 boxShadow: (theme) =>
                   `0 0 1rem ${
-                    theme.palette.platform[activeChannel.platform].shadow
+                    theme.palette.platform[activeChannel.platform]?.shadow ?? "transparent"
                   }`,
               }}
             >

@@ -341,10 +341,11 @@ export default function ControlButtonGroup({ fullscreen }) {
         entries.map(async ([channelKey, item]) => {
           try {
             const liveStatus = await getLiveStatus(item.id, item.platform);
-            setChannels((prev) => ({
-              ...prev,
-              [channelKey]: { ...prev[channelKey], ...liveStatus },
-            }));
+            setChannels((prev) => {
+              // 갱신 도중 채널이 삭제/교체된 경우 무시 (유령 채널 생성 방지)
+              if (!prev[channelKey]) return prev;
+              return { ...prev, [channelKey]: { ...prev[channelKey], ...liveStatus } };
+            });
           } catch (err) {
             console.error(`⚠️ ${item.id} 라이브 상태 갱신 실패:`, err);
           }
