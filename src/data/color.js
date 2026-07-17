@@ -59,26 +59,12 @@ export const POINT_COLORS = {
     gradient: "linear-gradient(to right, #838383 0%, #dddddd 100%)",
     brand: "#FF6B6B",
   },
-  blue: {
-    label: "Blue",
-    value: "blue",
-    light: "rgba(33, 150, 243, 1)", // Blue 500
-    dark: "rgba(100, 181, 246, 1)", // Blue 300
-    gradient: "linear-gradient(to right, #2196F3 0%, #00BCD4 100%)",
-  },
-  green: {
-    label: "Green",
-    value: "green",
-    light: "rgba(76, 175, 80, 1)", // Green 500
-    dark: "rgba(129, 199, 132, 1)", // Green 300
-    gradient: "linear-gradient(to right, #4CAF50 0%, #CDDC39 100%)",
-  },
-  purple: {
-    label: "Purple",
-    value: "purple",
-    light: "rgba(156, 39, 176, 1)", // Purple 500
-    dark: "rgba(186, 104, 200, 1)", // Purple 300
-    gradient: "linear-gradient(to right, #9C27B0 0%, #E91E63 100%)",
+  red: {
+    label: "Red",
+    value: "red",
+    light: "rgba(239, 83, 80, 1)", // Red 400
+    dark: "rgba(229, 115, 115, 1)", // Red 300
+    gradient: "linear-gradient(to right, #EF5350 0%, #FF9800 100%)",
   },
   orange: {
     label: "Orange",
@@ -87,12 +73,26 @@ export const POINT_COLORS = {
     dark: "rgba(255, 183, 77, 1)", // Orange 300
     gradient: "linear-gradient(to right, #FF9800 0%, #FFEB3B 100%)",
   },
-  red: {
-    label: "Red",
-    value: "red",
-    light: "rgba(239, 83, 80, 1)", // Red 400
-    dark: "rgba(229, 115, 115, 1)", // Red 300
-    gradient: "linear-gradient(to right, #EF5350 0%, #FF9800 100%)",
+  green: {
+    label: "Green",
+    value: "green",
+    light: "rgba(76, 175, 80, 1)", // Green 500
+    dark: "rgba(129, 199, 132, 1)", // Green 300
+    gradient: "linear-gradient(to right, #4CAF50 0%, #CDDC39 100%)",
+  },
+  blue: {
+    label: "Blue",
+    value: "blue",
+    light: "rgba(33, 150, 243, 1)", // Blue 500
+    dark: "rgba(100, 181, 246, 1)", // Blue 300
+    gradient: "linear-gradient(to right, #2196F3 0%, #00BCD4 100%)",
+  },
+  purple: {
+    label: "Purple",
+    value: "purple",
+    light: "rgba(156, 39, 176, 1)", // Purple 500
+    dark: "rgba(186, 104, 200, 1)", // Purple 300
+    gradient: "linear-gradient(to right, #9C27B0 0%, #E91E63 100%)",
   },
 };
 

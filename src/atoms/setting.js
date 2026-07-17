@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { atomWithStorage, createJSONStorage } from "jotai/utils";
+import { atomWithStorage, createJSONStorage, RESET } from "jotai/utils";
 import { canvas } from "@/data/canvas";
 import { getLiveStatus } from "@/api/live";
 import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE, ENABLE_TWITCH } from "@/data/config";
@@ -10,83 +10,89 @@ const storage = createJSONStorage(() =>
 
 // 채널 데이터 초기 셋팅
 export const channelsAtom = atom({});
+
+// 저장된 채널 목록({ id: { platform, zoneId } })을 플레이스홀더로 즉시 표시하고
+// 라이브 데이터를 비동기로 채운다 (초기 마운트와 프리셋 전환에서 공용)
+const loadChannels = (savedChannels, setAtom) => {
+  const entries = Object.entries(savedChannels);
+  if (entries.length === 0) return;
+
+  // 즉시 플레이스홀더 데이터로 채널 목록 표시
+  const placeholder = {};
+  for (const [channelId, item] of entries) {
+    placeholder[channelId] = {
+      id: channelId,
+      name: "",
+      imageUrl: "",
+      liveTitle: "",
+      openDate: null,
+      closeDate: null,
+      isLive: false,
+      userCount: 0,
+      liveVideoId: null,
+      liveCategory: null,
+      tags: [],
+      isVisible: item.zoneId != null,
+      zoneId: item.zoneId ?? null,
+      platform: item.platform,
+      _loading: true,
+    };
+  }
+  setAtom(placeholder);
+
+  // 각 채널 데이터를 비동기로 개별 fetch → 도착하는 대로 atom 업데이트
+  for (const [channelId, item] of entries) {
+    getLiveStatus(channelId, item.platform)
+      .then((live) => {
+        setAtom((prev) => ({
+          ...prev,
+          [channelId]: {
+            ...prev[channelId],
+            name: live.name,
+            imageUrl: live.imageUrl,
+            liveTitle: live.liveTitle,
+            openDate: live.openDate,
+            closeDate: live.closeDate,
+            isLive: live.isLive,
+            userCount: live.userCount,
+            liveVideoId: live.liveVideoId ?? null,
+            liveCategory: live.liveCategory,
+            tags: live.tags,
+            liveHlsUrl: live.liveHlsUrl ?? null,
+            liveImageUrl: live.liveImageUrl,
+            lastRefreshed: live.lastRefreshed,
+            // Chat metadata
+            chatChannelId: live.chatChannelId,
+            accessToken: live.accessToken,
+            chatNo: live.chatNo,
+            ftk: live.ftk,
+            bjid: live.bjid,
+            chDomain: live.chDomain,
+            chPt: live.chPt,
+            pconObject: live.pconObject,
+            _loading: false,
+          },
+        }));
+      })
+      .catch((err) => {
+        console.error(`⚠️ ${channelId} 데이터 불러오기 실패:`, err);
+        setAtom((prev) => ({
+          ...prev,
+          [channelId]: {
+            ...prev[channelId],
+            _loading: false,
+          },
+        }));
+      });
+  }
+};
+
 channelsAtom.onMount = (setAtom) => {
   if (typeof window === "undefined") return;
   try {
     const saved = window.localStorage.getItem("channels");
     const savedChannels = saved ? JSON.parse(saved) : {};
-    const entries = Object.entries(savedChannels);
-
-    if (entries.length > 0) {
-      // 즉시 플레이스홀더 데이터로 채널 목록 표시
-      const placeholder = {};
-      for (const [channelId, item] of entries) {
-        placeholder[channelId] = {
-          id: channelId,
-          name: "",
-          imageUrl: "",
-          liveTitle: "",
-          openDate: null,
-          closeDate: null,
-          isLive: false,
-          userCount: 0,
-          liveVideoId: null,
-          liveCategory: null,
-          tags: [],
-          isVisible: item.zoneId != null,
-          zoneId: item.zoneId ?? null,
-          platform: item.platform,
-          _loading: true,
-        };
-      }
-      setAtom(placeholder);
-
-      // 각 채널 데이터를 비동기로 개별 fetch → 도착하는 대로 atom 업데이트
-      for (const [channelId, item] of entries) {
-        getLiveStatus(channelId, item.platform)
-          .then((live) => {
-            setAtom((prev) => ({
-              ...prev,
-              [channelId]: {
-                ...prev[channelId],
-                name: live.name,
-                imageUrl: live.imageUrl,
-                liveTitle: live.liveTitle,
-                openDate: live.openDate,
-                closeDate: live.closeDate,
-                isLive: live.isLive,
-                userCount: live.userCount,
-                liveVideoId: live.liveVideoId ?? null,
-                liveCategory: live.liveCategory,
-                tags: live.tags,
-                liveHlsUrl: live.liveHlsUrl ?? null,
-                liveImageUrl: live.liveImageUrl,
-                lastRefreshed: live.lastRefreshed,
-                // Chat metadata
-                chatChannelId: live.chatChannelId,
-                accessToken: live.accessToken,
-                chatNo: live.chatNo,
-                ftk: live.ftk,
-                bjid: live.bjid,
-                chDomain: live.chDomain,
-                chPt: live.chPt,
-                pconObject: live.pconObject,
-                _loading: false,
-              },
-            }));
-          })
-          .catch((err) => {
-            console.error(`⚠️ ${channelId} 데이터 불러오기 실패:`, err);
-            setAtom((prev) => ({
-              ...prev,
-              [channelId]: {
-                ...prev[channelId],
-                _loading: false,
-              },
-            }));
-          });
-      }
-    }
+    loadChannels(savedChannels, setAtom);
   } catch (e) {
     console.error("❌ localStorage 파싱 실패:", e);
   }
@@ -186,6 +192,13 @@ export const viewCountAtom = atom((get) => {
 
 // 비율+뷰카운트별 뷰 프리셋 (레이아웃 + 시간 위치 등)
 export const viewPresetsAtom = atomWithStorage("viewPresets", {}, storage);
+
+// 사용 중인 설정 프리셋 번호 (1~4). 설정 동기화 대상에는 포함하지 않는다.
+export const activeSettingPresetAtom = atomWithStorage(
+  "activeSettingPreset",
+  1,
+  storage
+);
 
 // layoutType (비율+뷰카운트별 프리셋에서 파생)
 export const layoutTypeAtom = atom((get) => {
@@ -329,3 +342,42 @@ export const recordSaveDirNameAtom = atomWithStorage(
   "",
   storage
 );
+
+// ----------------------------------------------------
+
+// 설정 동기화 키 → atom 매핑 (channels와 viewPresets 파생 키 제외)
+const SETTING_ATOM_MAP = {
+  themeMode: themeModeAtom,
+  pointColor: pointColorAtom,
+  ratio: ratioAtom,
+  showCurrentTime: showCurrentTimeAtom,
+  pointerEventsEnabled: pointerEventsEnabledAtom,
+  chatFontSizeAdjustment: chatFontSizeAdjustmentAtom,
+  autoHideOffline: autoHideOfflineAtom,
+  chzzkHlsLatency: chzzkHlsLatencyAtom,
+  autoRecordEnabled: autoRecordEnabledAtom,
+  recordStopCondition: recordStopConditionAtom,
+  recordFrameRate: recordFrameRateAtom,
+  recordQuality: recordQualityAtom,
+  recordCodec: recordCodecAtom,
+  recordSoundEnabled: recordSoundEnabledAtom,
+  recordSoundType: recordSoundTypeAtom,
+  recordSoundVolume: recordSoundVolumeAtom,
+  controllerExpanded: controllerExpandedAtom,
+  selectedSearchPlatform: selectedSearchPlatformAtom,
+  platformEnabled: platformEnabledAtom,
+};
+
+// 프리셋 스냅샷({ settings, viewPresets })을 새로고침 없이 메모리 상태에 즉시 적용.
+// 스냅샷에 없는 키는 RESET으로 기본값 복귀. localStorage 반영은 atomWithStorage가 담당한다.
+export const applySettingsSnapshotAtom = atom(null, (_get, set, snapshot) => {
+  const settings = snapshot.settings || {};
+
+  for (const [key, settingAtom] of Object.entries(SETTING_ATOM_MAP)) {
+    set(settingAtom, key in settings ? settings[key] : RESET);
+  }
+  set(viewPresetsAtom, snapshot.viewPresets || {});
+
+  set(channelsAtom, {});
+  loadChannels(settings.channels || {}, (update) => set(channelsAtom, update));
+});

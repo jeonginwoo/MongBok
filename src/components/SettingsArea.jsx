@@ -76,6 +76,7 @@ import { playNotificationSound } from "@/utils/audio";
 import { canvas } from "@/data/canvas";
 import RatioSelector from "./Settings/RatioSelector";
 import LayoutToggleGroup from "@/components/Settings/LayoutToggleGroup";
+import PresetSelector from "@/components/Settings/PresetSelector";
 import Editor from "react-simple-code-editor";
 import Prism from "prismjs";
 import { ALL_SETTINGS } from "@/data/settingsOrder";
@@ -548,6 +549,29 @@ export default function SettingsArea({ onClose }) {
           gap: 2,
         }}
       >
+        {/* 설정 프리셋 */}
+        <SettingRow>
+          <SettingLabel sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            프리셋
+            <Tooltip
+              slotProps={tooltipSlotProps}
+              placement="top"
+              title={
+                <Box component="ul" sx={{ pl: 2, m: 0 }}>
+                  <li>설정 전체(채널, 레이아웃, 레이아웃별 시계 위치 포함)를 번호별로 저장해두고 전환합니다</li>
+                  <li>전환 시 현재 설정은 사용 중이던 프리셋에 자동 저장됩니다</li>
+                  <li>처음 사용하는 프리셋은 기본 설정에서 시작합니다</li>
+                </Box>
+              }
+            >
+              <InfoOutlinedIcon sx={{ fontSize: "1.4rem", color: "text.secondary", cursor: "default" }} />
+            </Tooltip>
+          </SettingLabel>
+          <PresetSelector />
+        </SettingRow>
+
+        <Divider />
+
         {/* 테마 설정 */}
         <SettingRow>
           <SettingLabel>

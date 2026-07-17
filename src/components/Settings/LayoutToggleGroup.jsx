@@ -15,7 +15,7 @@ import {
   pointColorAtom,
 } from "@/atoms/setting";
 
-const StyledToggleButtonGroup = styled(ToggleButtonGroup, {
+export const StyledToggleButtonGroup = styled(ToggleButtonGroup, {
   shouldForwardProp: (prop) => prop !== "pointcolor",
 })(({ theme, pointcolor }) => {
   const accentColor =
