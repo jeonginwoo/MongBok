@@ -5,6 +5,7 @@ import { ALL_SETTINGS } from "@/data/settingsOrder";
 import {
   CHZZK_HLS_LATENCY_MIN,
   CHZZK_HLS_LATENCY_MAX,
+  RATIO_DEFAULT,
 } from "@/atoms/setting";
 import {
   CHANNEL_PLATFORMS,
@@ -311,12 +312,16 @@ export const validateLayout = async (parsedData) => {
     }
   }
 
-  const ratio = parsedData.ratio;
-  const layout = parsedData.layout;
-
-  if (!ratio) {
-    return "'layout' 유효성 검사를 위해 'ratio'가 필요합니다.";
+  // 동기화 데이터에 ratio가 없으면 적용 단계(updatePreferences)와 동일하게
+  // 현재 저장된 비율로 검증하고, 그것도 없으면 기본값으로 본다
+  let ratio = parsedData.ratio;
+  if (!ratio && typeof window !== "undefined") {
+    try {
+      ratio = JSON.parse(window.localStorage.getItem("ratio"));
+    } catch {}
   }
+  if (!ratio) ratio = RATIO_DEFAULT;
+  const layout = parsedData.layout;
 
   try {
     const visibleCount = Object.values(channelsObj).filter(

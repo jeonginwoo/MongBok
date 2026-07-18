@@ -27,6 +27,10 @@ import FullscreenExitRoundedIcon from "@mui/icons-material/FullscreenExitRounded
 const MAX_RETRIES = 3;
 const CHZZK_GREEN = "#00FFA3";
 const CONTROLS_HIDE_DELAY = 2500;
+// 컨트롤 바 축소 기준 너비: compact에서는 화질 라벨 등 부가 텍스트를 숨기고,
+// tiny에서는 LIVE 뱃지까지 숨겨 음량 슬라이더가 찌그러지지 않을 공간을 확보한다
+const COMPACT_WIDTH = 480;
+const TINY_WIDTH = 340;
 const AUTO_LEVEL = -1;
 const WATCHDOG_INTERVAL = 5000;
 // 목표 딜레이보다 이만큼 이상 뒤처지면 워치독이 라이브 엣지로 점프시킨다.
@@ -57,6 +61,8 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
   const [volume, setVolume] = useState(1);
   const [controlsVisible, setControlsVisible] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  // 플레이어 실제 너비 (컨트롤 바 축소 판단용)
+  const [wrapperWidth, setWrapperWidth] = useState(Infinity);
   // 자동재생 정책에 막혀 음소거로 시작한 상태 (첫 사용자 입력 시 소리 켬)
   const [needsUnmute, setNeedsUnmute] = useState(false);
 
@@ -188,6 +194,17 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
       clearTimeout(hideTimerRef.current);
     };
   }, [seekToLive]);
+
+  // 플레이어 너비 감시: 좁아지면 컨트롤 바를 단계적으로 축소
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    const observer = new ResizeObserver((entries) => {
+      setWrapperWidth(entries[0].contentRect.width);
+    });
+    observer.observe(wrapper);
+    return () => observer.disconnect();
+  }, []);
 
   // 음소거 자동 시작 시: 첫 사용자 입력(클릭/키)에 소리 켬
   useEffect(() => {
@@ -386,6 +403,10 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
 
   const showUi = controlsVisible || !playing || qualityMenuOpen;
 
+  // 컨트롤 바 축소 단계 (compact: 화질 라벨 숨김, tiny: LIVE 뱃지까지 숨김)
+  const compact = wrapperWidth < COMPACT_WIDTH;
+  const tiny = wrapperWidth < TINY_WIDTH;
+
   // 방송 경과 시간 (LiveTime과 동일한 공용 훅)
   const liveTime = useLiveTime(channel);
 
@@ -554,8 +575,8 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
           bottom: 0,
           display: "flex",
           alignItems: "center",
-          gap: 1,
-          px: 1.5,
+          gap: tiny ? 0.5 : 1,
+          px: tiny ? 1 : 1.5,
           pt: 4,
           pb: 1,
           background:
@@ -573,41 +594,44 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
           )}
         </IconButton>
 
-        {/* LIVE 뱃지: 클릭 시 라이브 엣지로 이동 */}
-        <Box
-          onClick={() => {
-            seekToLive();
-            videoRef.current?.play().catch(() => {});
-          }}
-          title="실시간 보기"
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 0.75,
-            px: 0.5,
-            cursor: "pointer",
-            userSelect: "none",
-          }}
-        >
+        {/* LIVE 뱃지: 클릭 시 라이브 엣지로 이동 (tiny에서는 숨겨 공간 확보) */}
+        {!tiny && (
           <Box
-            sx={{
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              bgcolor: playing ? CHZZK_GREEN : "#888",
+            onClick={() => {
+              seekToLive();
+              videoRef.current?.play().catch(() => {});
             }}
-          />
-          <Typography
+            title="실시간 보기"
             sx={{
-              color: "#fff",
-              fontSize: 14,
-              fontWeight: 700,
-              letterSpacing: "0.05em",
+              display: "flex",
+              alignItems: "center",
+              gap: 0.75,
+              px: 0.5,
+              cursor: "pointer",
+              userSelect: "none",
+              flexShrink: 0,
             }}
           >
-            LIVE
-          </Typography>
-        </Box>
+            <Box
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                bgcolor: playing ? CHZZK_GREEN : "#888",
+              }}
+            />
+            <Typography
+              sx={{
+                color: "#fff",
+                fontSize: 14,
+                fontWeight: 700,
+                letterSpacing: "0.05em",
+              }}
+            >
+              LIVE
+            </Typography>
+          </Box>
+        )}
 
         <IconButton onClick={toggleMute} sx={{ color: "#fff", p: 0.75 }}>
           {muted || volume === 0 ? (
@@ -616,6 +640,8 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
             <VolumeUpRoundedIcon sx={{ fontSize: 26 }} />
           )}
         </IconButton>
+        {/* flexShrink: 0 — 슬라이더가 공간 부족 시 찌그러지는 유일한 요소가
+            되지 않도록 고정하고, 대신 위 단계별 축소로 공간을 확보한다 */}
         <Slider
           size="small"
           min={0}
@@ -624,7 +650,8 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
           value={muted ? 0 : volume}
           onChange={handleVolumeChange}
           sx={{
-            width: 90,
+            width: tiny ? 64 : 90,
+            flexShrink: 0,
             color: "#fff",
             "& .MuiSlider-thumb": {
               width: 12,
@@ -636,26 +663,30 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
 
         <Box sx={{ flexGrow: 1 }} />
 
-        {/* 화질 선택 (hls.js 경로에서만 노출) */}
+        {/* 화질 선택 (hls.js 경로에서만 노출, compact에서는 라벨 없이 아이콘만) */}
         {levels.length > 0 && (
           <Box
             onClick={() => setQualityMenuOpen((prev) => !prev)}
+            title={qualityLabel}
             sx={{
               display: "flex",
               alignItems: "center",
               gap: 0.5,
-              px: 1,
+              px: compact ? 0.5 : 1,
               py: 0.5,
               borderRadius: 1,
               cursor: "pointer",
               userSelect: "none",
+              flexShrink: 0,
               "&:hover": { bgcolor: "rgba(255,255,255,0.08)" },
             }}
           >
             <SettingsRoundedIcon sx={{ fontSize: 22, color: "#fff" }} />
-            <Typography sx={{ color: "#fff", fontSize: 13, fontWeight: 600 }}>
-              {qualityLabel}
-            </Typography>
+            {!compact && (
+              <Typography sx={{ color: "#fff", fontSize: 13, fontWeight: 600 }}>
+                {qualityLabel}
+              </Typography>
+            )}
           </Box>
         )}
 

@@ -117,7 +117,8 @@ channelsAtom.onMount = (setAtom) => {
 };
 
 // ratio
-export const ratioAtom = atomWithStorage("ratio", "16:9-landscape", storage);
+export const RATIO_DEFAULT = "16:9-landscape";
+export const ratioAtom = atomWithStorage("ratio", RATIO_DEFAULT, storage);
 
 // 화면 조작/이동
 export const pointerEventsEnabledAtom = atomWithStorage(

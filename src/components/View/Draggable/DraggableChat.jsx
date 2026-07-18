@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useRef, useMemo } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -16,7 +16,7 @@ import { controllerExpandedAtom, chatFontSizeAdjustmentAtom, CHAT_FONT_SIZE_BASE
 import { fitStyleAtom } from "@/atoms/ui";
 import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE, ENABLE_TWITCH } from "@/data/config";
 import { getLiveStatus } from "@/api/live";
-import { getTouchZoomBoost } from "@/utils/displayScale";
+import useCanvasZoom from "@/hooks/useCanvasZoom";
 
 import useChzzkChat from "@/hooks/useChzzkChat";
 import useSoopChat from "@/hooks/useSoopChat";
@@ -38,7 +38,8 @@ export default function DraggableChat({ channel, zone }) {
     });
 
   const containerRef = useRef(null);
-  const [zoom, setZoom] = useState(1);
+  // 캔버스 크기에 비례하는 배율 (현재시간 등 다른 오버레이와 공용 훅으로 통일)
+  const zoom = useCanvasZoom(containerRef);
   const channelId = channel.id;
 
   const chzzkChat = useChzzkChat(
@@ -80,34 +81,7 @@ export default function DraggableChat({ channel, zone }) {
     retry();
   };
 
-  // 캔버스의 긴 변이 이 값일 때 배율 1 (가로형 1920×1080, 세로형 1080×1920 기준).
-  // 캔버스 크기에 비례해 모든 채팅 영역이 동일한 배율로 커지고 작아진다.
-  const BASE_CANVAS_LONG_SIDE = 1920;
-
   const layoutKey = `${zone?.style?.width}-${zone?.style?.height}-${controllerExpanded}-${JSON.stringify(fitStyle)}`;
-
-  useEffect(() => {
-    const updateZoom = () => {
-      if (!containerRef.current) return;
-
-      const canvas = containerRef.current.closest(".canvas");
-      if (!canvas) return;
-
-      const longSide = Math.max(canvas.clientWidth, canvas.clientHeight);
-      if (!longSide) return;
-
-      setZoom((longSide * getTouchZoomBoost()) / BASE_CANVAS_LONG_SIDE);
-    };
-
-    updateZoom();
-    const timer = setTimeout(updateZoom, 300);
-    window.addEventListener("resize", updateZoom);
-
-    return () => {
-      window.removeEventListener("resize", updateZoom);
-      clearTimeout(timer);
-    };
-  }, [controllerExpanded, fitStyle]);
 
   const style = (theme) => ({
     position: "absolute",
