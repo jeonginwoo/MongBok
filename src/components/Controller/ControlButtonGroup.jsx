@@ -619,7 +619,7 @@ export default function ControlButtonGroup({ fullscreen }) {
               <span>
                 <IconButton
                   onClick={handleRecordButtonClick}
-                  disabled={!Object.values(channels).some(c => c.isVisible && c.isLive) && !isRecording}
+                  disabled={!Object.values(channels).some(c => c.isVisible) && !isRecording}
                   sx={{
                     "& .MuiSvgIcon-root": {
                       color: isRecording

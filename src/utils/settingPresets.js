@@ -24,7 +24,8 @@ export const writePresets = (presets) => {
 };
 
 // 현재 설정 전체(설정 동기화 내용 + viewPresets)를 스냅샷으로 캡처
-// channels는 localStorage 저장 지연 문제가 있어 atom 상태를 우선 반영한다
+// channels 인자를 주면 localStorage 저장 지연 문제를 피해 atom 상태를 우선 반영하고,
+// 생략하면 localStorage의 channels를 그대로 사용한다
 export const captureSnapshot = (channels) => {
   const settings = ALL_SETTINGS.reduce((obj, key) => {
     if (DERIVED_KEYS.includes(key)) return obj;
@@ -39,15 +40,17 @@ export const captureSnapshot = (channels) => {
     return obj;
   }, {});
 
-  if (channels && Object.keys(channels).length > 0) {
-    settings.channels = Object.fromEntries(
-      Object.entries(channels).map(([key, channel]) => [
-        key,
-        { zoneId: channel.zoneId ?? null },
-      ])
-    );
-  } else {
-    delete settings.channels;
+  if (channels) {
+    if (Object.keys(channels).length > 0) {
+      settings.channels = Object.fromEntries(
+        Object.entries(channels).map(([key, channel]) => [
+          key,
+          { zoneId: channel.zoneId ?? null },
+        ])
+      );
+    } else {
+      delete settings.channels;
+    }
   }
 
   let viewPresets = {};

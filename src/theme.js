@@ -26,7 +26,8 @@ export const getTheme = (mode, pointColorName = 'default') => {
                     scrollbarColor: `${palette.scrollbar.thumb}`,
                     "&::-webkit-scrollbar, & *::-webkit-scrollbar": {
                         backgroundColor: "transparent",
-                        width: "0.4rem",
+                        width: "0.4rem", // 세로 스크롤바 두께
+                        height: "0.4rem", // 가로 스크롤바 두께
                     },
                     "&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb": {
                         borderRadius: 8,

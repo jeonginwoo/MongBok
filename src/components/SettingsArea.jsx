@@ -68,7 +68,9 @@ import {
   controllerExpandedAtom,
   selectedSearchPlatformAtom,
   platformEnabledAtom,
+  applySettingsSnapshotAtom,
 } from "@/atoms/setting";
+import { captureSnapshot } from "@/utils/settingPresets";
 import { getRecordDirectory, setRecordDirectory, clearRecordDirectory } from "@/utils/recordDirectoryStorage";
 import { snackbarAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
@@ -80,6 +82,7 @@ import PresetSelector from "@/components/Settings/PresetSelector";
 import Editor from "react-simple-code-editor";
 import Prism from "prismjs";
 import { ALL_SETTINGS } from "@/data/settingsOrder";
+import { CHANNEL_PLATFORMS, parseChannelKey } from "@/utils/channelKey";
 import "prismjs/components/prism-json";
 import { styled } from "@mui/material/styles";
 
@@ -178,6 +181,35 @@ function SettingSelect({ pointcolor, sx, children, ...props }) {
   );
 }
 
+// 설정 동기화 JSON 표시용 포맷터.
+// channels는 채널당 한 줄로 압축해, 긴 채널ID(치지직 등)로 인한 줄넘김 정렬 깨짐을 줄인다.
+// 채널은 플랫폼별로 모이게만 하고, 같은 플랫폼 내에서는 기존 순서를 유지한다 (안정 정렬)
+const platformOrder = (channelKey) => {
+  const index = CHANNEL_PLATFORMS.indexOf(parseChannelKey(channelKey)?.platform);
+  return index === -1 ? CHANNEL_PLATFORMS.length : index;
+};
+
+const formatSettingsJson = (settings) => {
+  const entries = Object.entries(settings);
+  if (entries.length === 0) return "{}";
+
+  const lines = entries.map(([key, value]) => {
+    if (key === "channels" && value && Object.keys(value).length > 0) {
+      const channelLines = Object.entries(value)
+        .sort(([aKey], [bKey]) => platformOrder(aKey) - platformOrder(bKey))
+        .map(([channelKey, data]) => {
+          const inlineData = JSON.stringify(data, null, 1).replace(/\n\s*/g, " ");
+          return `    ${JSON.stringify(channelKey)}: ${inlineData}`;
+        });
+      return `  "channels": {\n${channelLines.join(",\n")}\n  }`;
+    }
+    const nested = JSON.stringify(value, null, 2).replace(/\n/g, "\n  ");
+    return `  ${JSON.stringify(key)}: ${nested}`;
+  });
+
+  return `{\n${lines.join(",\n")}\n}`;
+};
+
 // ── Main component ────────────────────────────────────────────────
 
 export default function SettingsArea({ onClose }) {
@@ -212,6 +244,7 @@ export default function SettingsArea({ onClose }) {
   const layoutKeys = availableLayouts ? Object.keys(availableLayouts) : [];
 
   const setSnackbar = useSetAtom(snackbarAtom);
+  const applySettingsSnapshot = useSetAtom(applySettingsSnapshotAtom);
 
   const paperRef = useRef(null);
   const [data, setData] = useState("");
@@ -263,7 +296,7 @@ export default function SettingsArea({ onClose }) {
       );
     }
 
-    return JSON.stringify(settings, null, 2);
+    return formatSettingsJson(settings);
   }, [channels, layoutType, viewCount]);
 
   useEffect(() => {
@@ -424,14 +457,12 @@ export default function SettingsArea({ onClose }) {
       }
 
       applyPreferences(validationResult);
+      // localStorage에 반영된 결과를 새로고침 없이 메모리 상태에 즉시 적용 (설정창 유지)
+      applySettingsSnapshot(captureSnapshot());
 
       setSaveSuccess(true);
       setSnackbar({ open: true, message: "설정이 성공적으로 저장되었습니다!", severity: "success" });
-      setTimeout(() => {
-        setSaveSuccess(false);
-        onClose();
-        window.location.reload();
-      }, 750);
+      setTimeout(() => setSaveSuccess(false), 750);
     } catch (e) {
       const message =
         e.message === "Timeout"
@@ -1085,6 +1116,12 @@ export default function SettingsArea({ onClose }) {
               "& .token.boolean": { color: themeMode === "dark" ? "#9cdcfe" : "#0451a5" },
               "& .token.punctuation": { color: "text.secondary" },
               "& textarea": { outline: "none" },
+              // 긴 채널ID 등은 줄바꿈 대신 가로 스크롤로 처리 (라이브러리 인라인 스타일 오버라이드)
+              "& textarea, & pre": {
+                whiteSpace: "pre !important",
+                wordBreak: "normal !important",
+                overflowWrap: "normal !important",
+              },
             }}
           >
             <Editor
@@ -1092,7 +1129,14 @@ export default function SettingsArea({ onClose }) {
               onValueChange={(code) => setData(code)}
               highlight={(code) => Prism.highlight(code, Prism.languages.json, "json")}
               padding={10}
-              style={{ fontFamily: '"Fira code", "Fira Mono", monospace', fontSize: "1.2rem" }}
+              style={{
+                fontFamily: '"Fira code", "Fira Mono", monospace',
+                fontSize: "1.2rem",
+                // 내용 폭만큼 늘어나 바깥 Box가 가로 스크롤을 담당하게 한다
+                overflow: "visible",
+                width: "max-content",
+                minWidth: "100%",
+              }}
               placeholder="설정 데이터를 여기에 붙여넣거나 복사하세요."
             />
           </Box>

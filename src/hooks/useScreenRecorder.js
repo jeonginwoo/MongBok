@@ -41,12 +41,19 @@ export const useScreenRecorder = () => {
     latestIsRecordingRef.current = isRecording;
   }, [isRecording]);
 
-  // 녹화 종료 기준에 따라 녹화 종료
-  // - "all": 화면에 배치된 채널 중 라이브 중인 채널이 하나도 없으면 종료
-  // - "zone1": 1번 채널이 없거나 오프라인이면 종료
+  // 이번 녹화 세션 중 종료 기준 대상이 라이브였던 적이 있는지.
+  // 방송 시작 전에 미리 녹화를 켠 경우, 라이브 전에는 자동 종료하지 않기 위한 플래그
+  const hasBeenLiveRef = useRef(false);
+
+  // 녹화 종료 기준에 따라 녹화 종료 (라이브 → 오프라인 전환 시에만 동작)
+  // - "all": 화면에 배치된 채널 중 라이브 중인 채널이 하나도 없어지면 종료
+  // - "zone1": 1번 채널이 오프라인이 되면 종료
   // - "manual": 자동 종료하지 않음 (사용자가 직접 종료)
   useEffect(() => {
-    if (!isRecording) return;
+    if (!isRecording) {
+      hasBeenLiveRef.current = false;
+      return;
+    }
     if (recordStopCondition === "manual") return;
 
     const visibleChannels = Object.values(channels).filter((c) => c.isVisible);
@@ -54,17 +61,21 @@ export const useScreenRecorder = () => {
     // 로딩이 끝나기 전에는 판단 보류 (초기 플레이스홀더 상태에서 오판 방지)
     if (anyLoading) return;
 
-    if (recordStopCondition === "zone1") {
-      const zone1Channel = Object.values(channels).find((c) => c.zoneId === 1);
-      if (!zone1Channel || !zone1Channel.isLive) {
-        setIsRecording(false);
-      }
+    // 배치된 채널이 하나도 없으면 녹화 대상이 없으므로 종료
+    if (visibleChannels.length === 0) {
+      setIsRecording(false);
       return;
     }
 
-    // "all" 기준
-    const hasLiveChannel = visibleChannels.some((c) => c.isLive);
-    if (visibleChannels.length === 0 || !hasLiveChannel) {
+    const isTargetLive =
+      recordStopCondition === "zone1"
+        ? Object.values(channels).find((c) => c.zoneId === 1)?.isLive === true
+        : visibleChannels.some((c) => c.isLive);
+
+    if (isTargetLive) {
+      hasBeenLiveRef.current = true;
+    } else if (hasBeenLiveRef.current) {
+      // 라이브였다가 오프라인으로 전환된 경우에만 자동 종료
       setIsRecording(false);
     }
   }, [channels, isRecording, setIsRecording, recordStopCondition]);

@@ -493,8 +493,10 @@ export const validatePreferences = async (dataToValidate) => {
 
 export const applyPreferences = (parsedData) => {
   // 먼저 모든 허용된 키를 로컬 스토리지에서 삭제합니다.
+  // viewPresets는 지우지 않는다 — 동기화 데이터에는 현재 비율·뷰카운트 슬롯의
+  // layout/currentTimePosition만 담기므로, 통째로 지우면 다른 슬롯의 레이아웃과
+  // 레이아웃별 시계 위치가 복구 불가능하게 사라진다. updatePreferences가 해당 슬롯만 병합 갱신한다.
   ALLOWED_KEYS.forEach((key) => window.localStorage.removeItem(key));
-  window.localStorage.removeItem("viewPresets");
 
   updatePreferences(parsedData);
 };
