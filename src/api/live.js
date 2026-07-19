@@ -246,14 +246,17 @@ const getTwitchLiveStatus = async (login) => {
             profileImageURL(width: 150) 
             roles { isPartner } 
             followers { totalCount } 
-            stream { 
-              id 
-              title 
-              viewersCount 
-              createdAt 
-              game { id name } 
-            } 
-          } 
+            stream {
+              id
+              title
+              viewersCount
+              createdAt
+              game { id name }
+            }
+            lastBroadcast {
+              startedAt
+            }
+          }
         }`,
       },
       {
@@ -280,6 +283,10 @@ const getTwitchLiveStatus = async (login) => {
 
     const stream = user.stream;
 
+    // lastBroadcast.startedAt은 이름과 달리 방송 종료 시 종료 시각으로 덮어써짐
+    // (방송 중에는 시작 시각과 동일 — 오프라인 전환 실험으로 확인)
+    const lastCloseDate = stream ? null : user.lastBroadcast?.startedAt ?? null;
+
     return {
       id: user.login,
       twitchUserId: user.id,
@@ -288,7 +295,7 @@ const getTwitchLiveStatus = async (login) => {
       liveTitle: stream?.title ?? "",
       liveImageUrl: stream ? `https://static-cdn.jtvnw.net/previews-ttv/live_user_${user.login}-440x248.jpg` : "",
       openDate: stream?.createdAt ?? null,
-      closeDate: null,
+      closeDate: lastCloseDate,
       isLive: !!stream,
       userCount: stream ? stream.viewersCount : -1,
       liveCategory: stream?.game?.name ?? null,

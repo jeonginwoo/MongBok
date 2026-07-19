@@ -26,6 +26,12 @@ function parseFlag(flag) {
   };
 }
 
+// 다중 접속 시 채팅 패킷의 userId에는 "아이디(1)" 형태로 접미사가 붙지만
+// 별풍선 패킷에는 붙지 않아, 병합 매칭을 위해 접미사를 제거해 통일
+function normalizeUserId(userId) {
+  return (userId || "").replace(/\(\d+\)$/, "");
+}
+
 function splitWithSpace(message) {
   return message
     .split(/([^ ]+)/)
@@ -132,7 +138,7 @@ export default function useSoopChat(channelId) {
       )?.FILENAME;
 
       const message = soopMessage[1];
-      const userId = soopMessage[2];
+      const userId = normalizeUserId(soopMessage[2]);
       const color =
         afreecaNicknameColors[
           userId
@@ -215,7 +221,7 @@ export default function useSoopChat(channelId) {
         ({ MONTH }) => subscriptionMonths >= MONTH
       )?.FILENAME;
 
-      const userId = soopMessage[6];
+      const userId = normalizeUserId(soopMessage[6]);
       const color =
         afreecaNicknameColors[
           userId
@@ -263,7 +269,7 @@ export default function useSoopChat(channelId) {
   const convertBalloonChat = useCallback(
     (soopMessage) => {
       const balloonAmount = parseInt(soopMessage[4], 10) || 0;
-      const userId = soopMessage[2];
+      const userId = normalizeUserId(soopMessage[2]);
       const nickname = soopMessage[3];
 
       const color =
@@ -399,7 +405,7 @@ export default function useSoopChat(channelId) {
       const data = event.data;
       const soopMessage = parseMessage(data);
       if (soopMessage[0].startsWith("0005")) {
-        const userId = soopMessage[2];
+        const userId = normalizeUserId(soopMessage[2]);
         const pending = pendingChatListRef.current;
         let balloonItem = null;
         for (let i = pending.length - 1; i >= 0; i--) {
@@ -440,7 +446,8 @@ export default function useSoopChat(channelId) {
   }, []);
 
   useEffect(() => {
-    const BALLOON_WAIT_MS = 500;
+    // 별풍선(0018)과 메시지(0005)는 대부분 동시에 오지만 최대 수백 ms 벌어지는 경우가 관찰됨
+    const BALLOON_WAIT_MS = 1000;
     const interval = setInterval(() => {
       if (pendingChatListRef.current.length > 0) {
         const now = Date.now();

@@ -11,7 +11,7 @@ function ChannelStatus({ channel, isTag = false }) {
   //   statusText = `on ${dayjs(channel.openDate).format("MM/DD HH:mm")}`;
   // }
 
-  if (!channel.openDate) {
+  if (!channel.openDate && !channel.closeDate) {
     const noInfoText = "최신 라이브 정보 없음";
     if (isTag) {
       return (
@@ -27,7 +27,9 @@ function ChannelStatus({ channel, isTag = false }) {
     );
   }
 
-  const startTime = `${dayjs(channel.openDate).format("MM/DD HH:mm")}`;
+  const startTime = channel.openDate
+    ? `${dayjs(channel.openDate).format("MM/DD HH:mm")}`
+    : "?";
   const endTime = channel.closeDate
     ? `${dayjs(channel.closeDate).format("MM/DD HH:mm")}`
     : "?";
