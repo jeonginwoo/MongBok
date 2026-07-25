@@ -110,8 +110,21 @@ export const useScreenRecorder = () => {
           }
         }
 
-        // 파일명 미리 결정
-        const fileName = `${dayjs().format("YYMMDD HHmmss")}.webm`;
+        // 파일명 미리 결정: 녹화 시작 시간 + 1번 채널명(있으면 방송 타이틀까지)
+        // 파일명에 쓸 수 없는 문자는 제거하고, 너무 길지 않게 자른다
+        const sanitizeForFileName = (str) =>
+          str.replace(/[\\/:*?"<>|]/g, "").trim();
+        const zone1Channel = Object.values(channels).find((c) => c.zoneId === 1);
+        let suffix = "";
+        if (zone1Channel?.name) {
+          const namePart = sanitizeForFileName(zone1Channel.name);
+          const titlePart = zone1Channel.liveTitle
+            ? sanitizeForFileName(zone1Channel.liveTitle)
+            : "";
+          const combined = titlePart ? `${namePart}-${titlePart}` : namePart;
+          if (combined) suffix = ` ${combined.slice(0, 100)}`;
+        }
+        const fileName = `${dayjs().format("YYMMDD HHmmss")}${suffix}.webm`;
 
         // 1순위: 설정에서 지정된 디렉터리 핸들 사용
         // 2순위: File System Access API showSaveFilePicker
@@ -305,7 +318,7 @@ export const useScreenRecorder = () => {
 
             a.style.display = "none";
             a.href = url;
-            a.download = `${dayjs().format("YYMMDD_HHmmss")}.webm`;
+            a.download = fileName;
 
             document.body.appendChild(a);
             a.click();

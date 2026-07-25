@@ -96,6 +96,9 @@ export default function DraggableChat({ channel, zone }) {
     alignItems: "center",
     justifyContent: "center",
     cursor: !pointerEventsEnabled ? "grab" : undefined,
+    // dnd-kit이 부여하는 tabIndex 때문에 드래그 후 키 입력 시 포커스 링이 뜬다.
+    // 녹화에 잡히는 UA 기본 outline(Light 검정/Dark 흰색)을 제거
+    outline: "none",
     transition: isDragging ? "none" : "0.5s ease",
     boxSizing: "border-box",
     overflow: "hidden",

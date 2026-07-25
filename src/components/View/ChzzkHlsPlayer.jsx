@@ -24,7 +24,10 @@ import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import FullscreenRoundedIcon from "@mui/icons-material/FullscreenRounded";
 import FullscreenExitRoundedIcon from "@mui/icons-material/FullscreenExitRounded";
 
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 5;
+// 재시도 백오프 기준 (1s → 2s → 4s → 8s → 16s). 딜레이 없이 연달아 재시도하면
+// 순간적인 네트워크 장애에도 수 초 안에 재시도 횟수가 전부 소진되어 버린다
+const RETRY_BACKOFF_BASE = 1000;
 const CHZZK_GREEN = "#00FFA3";
 const CONTROLS_HIDE_DELAY = 2500;
 // 컨트롤 바 축소 기준 너비: compact에서는 화질 라벨 등 부가 텍스트를 숨기고,
@@ -32,7 +35,19 @@ const CONTROLS_HIDE_DELAY = 2500;
 const COMPACT_WIDTH = 480;
 const TINY_WIDTH = 340;
 const AUTO_LEVEL = -1;
-const WATCHDOG_INTERVAL = 5000;
+// 워치독 감시 주기. 짧을수록 멈춤을 빨리 감지하지만 너무 잦으면 불필요한 개입이
+// 늘어난다. 2초 주기로 감지 지연을 기존(5초)보다 크게 줄인다
+const WATCHDOG_INTERVAL = 2000;
+// 이 횟수만큼 연속으로 currentTime이 정지해 있으면 멈춤으로 판단하고 복구 시작
+// (2틱 × 2초 = 약 4초 정지 시 개입)
+const FREEZE_TICKS_TO_ACT = 2;
+// 복구 조치 후 이 횟수만큼 연속 정상 재생되면 "복구됨"으로 보고 복구 단계 초기화.
+// 1틱만 전진해도 리셋하면, 재생성 직후의 일시적 전진을 정상으로 오판해
+// 다시 무한 재생성 루프에 빠지므로 여러 틱의 지속 재생을 요구한다
+const HEALTHY_TICKS_TO_RESET = 3;
+// 단계적 복구를 이 횟수까지 시도하고도 계속 멈추면 iframe 폴백으로 넘긴다.
+// (예전엔 상한이 없어 재생성만 무한 반복 → 복구까지 10분 넘게 걸리는 원인)
+const MAX_FREEZE_RECOVERIES = 4;
 // 목표 딜레이보다 이만큼 이상 뒤처지면 워치독이 라이브 엣지로 점프시킨다.
 // hls.js는 목표 지연보다 세그먼트 1개 이상 뒤처지면 DVR 시청으로 간주해
 // 배속 따라잡기를 포기하므로, 한번 크게 밀린 딜레이는 스스로 줄지 않는다
@@ -260,11 +275,23 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
     let destroyed = false;
     let networkRetries = 0;
     let mediaRetries = 0;
+    let retryTimerId = null;
 
     const fail = () => {
       hlsRef.current?.destroy();
       hlsRef.current = null;
       onErrorRef.current?.();
+    };
+
+    // 백오프 딜레이 후 최신 URL로 플레이어 재생성 (즉시 재시도는 순간 장애에
+    // 재시도 횟수만 소진하므로, 대기 중 60초 폴링으로 토큰이 갱신될 여유도 준다)
+    const recreateAfterBackoff = (hls, attempt) => {
+      hls.destroy();
+      hlsRef.current = null;
+      clearTimeout(retryTimerId);
+      retryTimerId = setTimeout(() => {
+        if (!destroyed) createPlayer(latestUrlRef.current);
+      }, RETRY_BACKOFF_BASE * 2 ** attempt);
     };
 
     const createPlayer = (url) => {
@@ -322,10 +349,8 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
         switch (data.type) {
           case Hls.ErrorTypes.NETWORK_ERROR:
             if (networkRetries < MAX_RETRIES) {
-              networkRetries++;
               // 토큰 만료 가능성이 있으므로 최신 URL로 플레이어를 재생성
-              hls.destroy();
-              createPlayer(latestUrlRef.current);
+              recreateAfterBackoff(hls, networkRetries++);
             } else {
               fail();
             }
@@ -339,7 +364,12 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
             }
             break;
           default:
-            fail();
+            // 기타 fatal 에러도 즉시 포기하지 않고 재생성을 시도한다
+            if (networkRetries < MAX_RETRIES) {
+              recreateAfterBackoff(hls, networkRetries++);
+            } else {
+              fail();
+            }
         }
       });
     };
@@ -350,6 +380,9 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
     // 화면 멈춤 · 딜레이 고착 · 화질 강등을 주기적으로 감시한다
     let lastWatchdogTime = -1;
     let frozenTicks = 0;
+    let healthyTicks = 0;
+    // 이번 멈춤에 대해 지금까지 시도한 복구 단계 수 (지속 재생되면 0으로 리셋)
+    let freezeRecoveries = 0;
     const watchdogId = setInterval(() => {
       const hls = hlsRef.current;
       if (destroyed || !hls || video.paused) {
@@ -358,21 +391,51 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
         return;
       }
 
-      // 1) 화면 멈춤: 재생 중인데 currentTime이 연속 2회(~10초) 그대로면
-      //    hls.js가 스스로 복구하지 못하는 상태이므로 최신 URL로 재생성
-      if (video.currentTime === lastWatchdogTime) {
+      // 1) 화면 멈춤 감지 및 단계적 복구.
+      //    가벼운 조치부터 시도해 대부분의 스톨을 수 초 안에 풀고, 그래도 안 되면
+      //    점점 강한 조치로 escalate하며, 끝내 복구 안 되면 iframe 폴백으로 탈출한다
+      //    (곧장 전체 재생성만 반복하던 기존 방식은 느리고 무한 루프 위험이 있었다)
+      const advanced = video.currentTime !== lastWatchdogTime;
+      lastWatchdogTime = video.currentTime;
+
+      if (advanced) {
+        frozenTicks = 0;
+        healthyTicks++;
+        // 충분히 오래 정상 재생되면 복구 단계 초기화 (재생성 직후의 순간 전진에
+        // 속아 리셋하지 않도록 여러 틱의 지속 재생을 확인)
+        if (healthyTicks >= HEALTHY_TICKS_TO_RESET) freezeRecoveries = 0;
+      } else {
+        healthyTicks = 0;
         frozenTicks++;
-        if (frozenTicks >= 2) {
+        if (frozenTicks >= FREEZE_TICKS_TO_ACT) {
           frozenTicks = 0;
-          lastWatchdogTime = -1;
-          hls.destroy();
-          createPlayer(latestUrlRef.current);
+          freezeRecoveries++;
+
+          if (freezeRecoveries > MAX_FREEZE_RECOVERIES) {
+            // 단계적 복구를 모두 시도해도 계속 멈춤 → iframe 폴백으로 넘긴다
+            fail();
+            return;
+          }
+
+          if (freezeRecoveries === 1) {
+            // 1단계: 로딩 재개 + 라이브 엣지 점프 (가장 저렴, 버퍼 스톨 대부분 해결)
+            hls.startLoad();
+            seekToLive();
+            video.play().catch(() => {});
+          } else if (freezeRecoveries === 2) {
+            // 2단계: 미디어 디코더 오류 복구
+            hls.recoverMediaError();
+            video.play().catch(() => {});
+          } else {
+            // 3단계 이상: 최신 URL로 플레이어 완전 재생성 (재시도 카운터도 초기화)
+            networkRetries = 0;
+            mediaRetries = 0;
+            hls.destroy();
+            createPlayer(latestUrlRef.current);
+          }
           return;
         }
-      } else {
-        frozenTicks = 0;
       }
-      lastWatchdogTime = video.currentTime;
 
       // 2) 딜레이 고착: 목표 딜레이보다 한계 이상 뒤처지면 라이브 엣지로 점프
       //    (hls.js의 배속 따라잡기는 크게 밀린 딜레이를 복구하지 못함)
@@ -395,6 +458,7 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
     return () => {
       destroyed = true;
       clearInterval(watchdogId);
+      clearTimeout(retryTimerId);
       hlsRef.current?.destroy();
       hlsRef.current = null;
     };

@@ -92,7 +92,7 @@ export const POINT_COLORS = {
     value: "purple",
     light: "rgba(156, 39, 176, 1)", // Purple 500
     dark: "rgba(186, 104, 200, 1)", // Purple 300
-    gradient: "linear-gradient(to right, #9C27B0 0%, #E91E63 100%)",
+    gradient: "linear-gradient(to right, #9C27B0 0%, #c86885 100%)",
   },
 };
 

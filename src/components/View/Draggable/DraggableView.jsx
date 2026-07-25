@@ -7,6 +7,10 @@ import Box from "@mui/material/Box";
 import ChzzkHlsPlayer from "@/components/View/ChzzkHlsPlayer";
 import OfflineScreen from "@/components/View/OfflineScreen";
 
+// HLS 실패 후 iframe 폴백에서 HLS 재시도까지 대기 시간.
+// 60초 폴링 주기와 맞춰 새로 서명된 HLS URL이 확보된 뒤 재시도하게 한다
+const HLS_RETRY_DELAY = 60 * 1000;
+
 export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
   if (!channel) return null;
 
@@ -26,6 +30,15 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
     setHlsFailed(false);
   }, [channel.isLive, channel.openDate]);
 
+  // iframe 폴백은 임시 상태로만 사용: 일정 시간 뒤 최신 URL로 HLS를 재시도한다.
+  // 폴백 상태를 방치하면 iframe(치지직 전체 페이지)이 깨져도 감시하는 로직이
+  // 없어 방송이 끝날 때까지 복구가 불가능하다 (밤샘 녹화 중 흰 화면 고착 원인)
+  useEffect(() => {
+    if (!hlsFailed) return;
+    const timerId = setTimeout(() => setHlsFailed(false), HLS_RETRY_DELAY);
+    return () => clearTimeout(timerId);
+  }, [hlsFailed]);
+
   const style = (theme) => ({
     position: "absolute",
     transform: transform
@@ -37,6 +50,9 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
     alignItems: "center",
     justifyContent: "center",
     cursor: pointerEventsEnabled ? "default" : "grab",
+    // dnd-kit이 부여하는 tabIndex 때문에 드래그 후 키 입력 시 포커스 링이 뜬다.
+    // 녹화에 잡히는 UA 기본 outline(Light 검정/Dark 흰색)을 제거
+    outline: "none",
     transition: isDragging ? "none" : "0.5s ease",
     boxSizing: "border-box",
     touchAction: pointerEventsEnabled ? "auto" : "none",
