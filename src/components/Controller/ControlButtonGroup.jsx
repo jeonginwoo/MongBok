@@ -442,7 +442,7 @@ export default function ControlButtonGroup({ fullscreen }) {
           fullscreen();
           break;
         case "ARROWUP":
-        case "ARROWDOWN":
+        case "ARROWDOWN": {
           event.preventDefault();
           const landscapeRatios = Object.entries(canvas)
             .filter(([, orientations]) => orientations.landscape)
@@ -464,6 +464,7 @@ export default function ControlButtonGroup({ fullscreen }) {
             selectRatio(nextRatio);
           }
           break;
+        }
         case "ARROWRIGHT":
           event.preventDefault();
           if (chatFontSizeAdjustment < 10) {
@@ -476,7 +477,7 @@ export default function ControlButtonGroup({ fullscreen }) {
             handleChangeChatFontSize(null, chatFontSizeAdjustment - 1);
           }
           break;
-        default:
+        default: {
           const keyNumber = parseInt(event.key, 10);
           if (!isNaN(keyNumber)) {
             const [ratioKey] = ratio.split("-");
@@ -501,6 +502,7 @@ export default function ControlButtonGroup({ fullscreen }) {
             }
           }
           break;
+        }
       }
     };
 

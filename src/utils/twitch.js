@@ -160,17 +160,18 @@ function parseTags(tags) {
         }
 
         break;
-      case "emote-sets":
+      case "emote-sets": {
         // emote-sets=0,33,50,237
 
-        let emoteSetIds = tagValue.split(","); // Array of emote set IDs.
+        const emoteSetIds = tagValue.split(","); // Array of emote set IDs.
         dictParsedTags[parsedTag[0]] = emoteSetIds;
         break;
+      }
       default:
         // If the tag is in the list of tags to ignore, ignore
         // it; otherwise, add it.
 
-        if (!tagsToIgnore.hasOwnProperty(parsedTag[0])) {
+        if (!Object.prototype.hasOwnProperty.call(tagsToIgnore, parsedTag[0])) {
           dictParsedTags[parsedTag[0]] = tagValue;
         }
     }

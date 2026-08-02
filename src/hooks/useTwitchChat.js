@@ -320,10 +320,11 @@ export default function useTwitchChat(channelId) {
         if (parsedMessage == null) return;
 
         switch (parsedMessage.command.command) {
-          case "PRIVMSG":
+          case "PRIVMSG": {
             const chat = convertChatRef.current(parsedMessage);
             pendingChatListRef.current.push(chat);
             break;
+          }
           case "PING":
             ws.send("PONG");
             break;

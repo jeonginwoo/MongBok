@@ -16,6 +16,9 @@ node_modules/
 /build
 dist/
 
+# claude code (개인 설정)
+.claude/settings.local.json
+
 # misc
 .DS_Store
 Thumbs.db
