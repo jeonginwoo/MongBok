@@ -53,10 +53,14 @@ export async function GET(request, context) {
     });
 
     if (!channel) {
-      return NextResponse.json(
-        { error: "Channel not found" },
-        { status: 404 }
-      );
+      // fail-soft: 소비측(live.js)이 channel 부재를 판단하므로 404 대신 빈 데이터 200
+      return NextResponse.json({
+        channel: null,
+        liveVideo: null,
+        isLive: false,
+        viewerCount: 0,
+        lastLiveInfo: null,
+      });
     }
 
     // 채널 이름 추출 (여러 경로 시도)
@@ -244,9 +248,13 @@ export async function GET(request, context) {
     });
   } catch (error) {
     console.error("❌ [YouTube API] 채널 정보 가져오기 실패:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch channel", message: error.message },
-      { status: 500 }
-    );
+    // fail-soft: 플랫폼 하나의 장애가 전체 화면을 깨지 않도록 500 대신 빈 데이터 200
+    return NextResponse.json({
+      channel: null,
+      liveVideo: null,
+      isLive: false,
+      viewerCount: 0,
+      lastLiveInfo: null,
+    });
   }
 }

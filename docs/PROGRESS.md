@@ -29,8 +29,8 @@
 - [ ] 미사용 변수 정리 (~35건): 데드코드는 삭제, 의도적 보존(레이아웃 정의 등)은 `_` 프리픽스. 완료 후 eslint `no-unused-vars`를 error로 복원
 - [x] `"use client"` 누락 11개 파일 명시 (컨벤션 전수 검토 2026-08-06에서 발견): 컴포넌트 8(ControllerArea · ManualArea · ChannelListChannelInfo · LiveCategory · LiveTags · UserCount · ChatRow · RatioSelector) + 훅 3(useLayoutManager · usePopupWindow · useScreenRecorder). 완료 2026-08-06 — verify 초록, 브라우저 화면 로드 확인은 미실시
 - [x] 상대경로 import 9건 `@/` 별칭 전환: useSoopChat(2) · SettingsArea(1) · ChatView(5) · PresetSelector(1). 완료 2026-08-06 — verify 초록
-- [ ] 숲 이모티콘 조회를 `api/live.js` + `soop_live_client` 경유로 이전 (useSoopEmoticons.js의 플랫폼 REST 직접 fetch — 불변식 1 위반). ※ 브라우저에서 숲 채팅 이모티콘 렌더 확인 필수
-- [ ] 유튜브 채널 route fail-soft 적용: `channel/[id]/route.js`의 404/500을 빈 데이터 200으로. 소비측(live.js)의 404/500 처리 방식 먼저 확인 후 진행 — 브라우저에서 없는 채널 검색으로 확인
+- [x] 숲 이모티콘 조회를 `api/live.js` + `soop_live_client` 경유로 이전 (useSoopEmoticons.js의 플랫폼 REST 직접 fetch — 불변식 1 위반). 코드 완료 2026-08-06, verify 초록 — **※ 브라우저에서 숲 채팅 시그니처 이모티콘 렌더 확인 아직 안 됨**
+- [x] 유튜브 채널 route fail-soft 적용: `channel/[id]/route.js`의 404/500을 빈 데이터 200으로. 소비측(live.js)은 `!data.channel`이면 throw라 동작 동일 확인. 코드 완료 2026-08-06, verify 초록 — **※ 브라우저에서 없는 채널 검색 확인 아직 안 됨**
 
 ## 세션 로그
 
