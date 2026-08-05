@@ -1,3 +1,5 @@
+"use client";
+
 import { useRef, useEffect } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { isRecordingAtom, isSavingRecordingAtom } from "@/atoms/ui";

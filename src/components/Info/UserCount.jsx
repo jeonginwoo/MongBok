@@ -1,3 +1,5 @@
+"use client";
+
 import Box from "@mui/material/Box";
 import CircleIcon from "@mui/icons-material/Circle";
 import TagWrap from "@/components/Common/TagWrap";

@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Box, Paper } from "@mui/material";
 import SearchChannel from "@/components/Controller/SearchChannel";

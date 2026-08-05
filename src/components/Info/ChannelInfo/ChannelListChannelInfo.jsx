@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useRef } from "react";
 import dayjs from "dayjs";
 import { Box, Typography, Tooltip, Skeleton } from "@mui/material";

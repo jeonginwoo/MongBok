@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 
 // 스타일 노드를 대상 문서로 복제한다.
