@@ -168,6 +168,29 @@ const getSoopLiveStatus = async (channelId) => {
   }
 };
 
+// ✅ 숲 시그니처 이모티콘 조회
+// JSONP 전용 API라 `hello({...});` 형태의 텍스트로 받아 콜백 래퍼를 벗겨 파싱한다
+export const getSoopEmoticons = async (channelId) => {
+  try {
+    const response = await soop_live_client.get(`/api/signature_emoticon_api.php`, {
+      params: {
+        szCallBack: "hello",
+        work: "list",
+        szBjId: channelId,
+        _: Date.now(), // 캐시 무효화용 타임스탬프
+      },
+      responseType: "text",
+    });
+    const text = response.data;
+    const jsonData = JSON.parse(text.slice(6, text.length - 2));
+    return jsonData.result === 1 ? jsonData.data : [];
+  } catch (error) {
+    // 이모티콘은 부가 기능 — 실패해도 채팅 자체는 동작해야 하므로 빈 배열로 fail-soft
+    console.error("❌ [Soop] 시그니처 이모티콘 가져오기 실패:", error);
+    return [];
+  }
+};
+
 // ✅ 유튜브 라이브 상태 조회
 const processYoutubeChannelData = (data) => {
   const { channel, liveVideo, isLive, viewerCount, lastLiveInfo } = data;
