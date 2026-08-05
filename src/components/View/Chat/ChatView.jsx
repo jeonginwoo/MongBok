@@ -4,11 +4,11 @@ import { useEffect, useRef, useCallback, useState, useLayoutEffect } from "react
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import ChatRow from "./ChatRow";
-import CheeseChatRow from "./CheeseChatRow";
-import SuperChatRow from "./SuperChatRow";
-import BalloonChatRow from "./BalloonChatRow";
-import BitsChatRow from "./BitsChatRow";
+import ChatRow from "@/components/View/Chat/ChatRow";
+import CheeseChatRow from "@/components/View/Chat/CheeseChatRow";
+import SuperChatRow from "@/components/View/Chat/SuperChatRow";
+import BalloonChatRow from "@/components/View/Chat/BalloonChatRow";
+import BitsChatRow from "@/components/View/Chat/BitsChatRow";
 import { useTheme } from "@mui/material/styles";
 
 export default function ChatView({ chatList, layoutKey }) {

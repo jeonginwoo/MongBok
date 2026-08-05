@@ -8,7 +8,7 @@ import {
   activeSettingPresetAtom,
   applySettingsSnapshotAtom,
 } from "@/atoms/setting";
-import { StyledToggleButtonGroup } from "./LayoutToggleGroup";
+import { StyledToggleButtonGroup } from "@/components/Settings/LayoutToggleGroup";
 import {
   PRESET_IDS,
   captureSnapshot,

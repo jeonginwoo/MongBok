@@ -76,7 +76,7 @@ import { snackbarAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
 import { playNotificationSound } from "@/utils/audio";
 import { canvas } from "@/data/canvas";
-import RatioSelector from "./Settings/RatioSelector";
+import RatioSelector from "@/components/Settings/RatioSelector";
 import LayoutToggleGroup from "@/components/Settings/LayoutToggleGroup";
 import PresetSelector from "@/components/Settings/PresetSelector";
 import Editor from "react-simple-code-editor";
