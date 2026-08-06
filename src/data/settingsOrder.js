@@ -12,6 +12,7 @@ export const SETTINGS_ORDER = [
   "chzzkHlsVolume",
   "autoRecordEnabled",
   "recordStopCondition",
+  "recordSplitOnZone1Change",
   "recordFrameRate",
   "recordQuality",
   "recordCodec",

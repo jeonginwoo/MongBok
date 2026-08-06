@@ -15,6 +15,7 @@ import {
   currentTimePositionAtom,
   autoRecordEnabledAtom,
   recordStopConditionAtom,
+  recordSplitOnZone1ChangeAtom,
   pointColorAtom,
   recordQualityAtom,
   recordFrameRateAtom,
@@ -48,6 +49,7 @@ export default function SettingChangeIndicator() {
   const currentTimePosition = useAtomValue(currentTimePositionAtom);
   const autoRecordEnabled = useAtomValue(autoRecordEnabledAtom);
   const recordStopCondition = useAtomValue(recordStopConditionAtom);
+  const recordSplitOnZone1Change = useAtomValue(recordSplitOnZone1ChangeAtom);
   const pointColor = useAtomValue(pointColorAtom);
   const recordQuality = useAtomValue(recordQualityAtom);
   const recordFrameRate = useAtomValue(recordFrameRateAtom);
@@ -67,6 +69,7 @@ export default function SettingChangeIndicator() {
   const prevCurrentTimePosition = usePrevious(currentTimePosition);
   const prevAutoRecordEnabled = usePrevious(autoRecordEnabled);
   const prevRecordStopCondition = usePrevious(recordStopCondition);
+  const prevRecordSplitOnZone1Change = usePrevious(recordSplitOnZone1Change);
   const prevPointColor = usePrevious(pointColor);
   const prevRecordQuality = usePrevious(recordQuality);
   const prevRecordFrameRate = usePrevious(recordFrameRate);
@@ -136,6 +139,11 @@ export default function SettingChangeIndicator() {
           ? "수동 종료"
           : "전체 채널"
       }`;
+    } else if (
+      prevRecordSplitOnZone1Change !== undefined &&
+      recordSplitOnZone1Change !== prevRecordSplitOnZone1Change
+    ) {
+      message = `녹화 분할(방제·카테고리): ${recordSplitOnZone1Change ? "켜짐" : "꺼짐"}`;
     } else if (prevPointColor !== undefined && pointColor !== prevPointColor) {
       message = `포인트 컬러: ${POINT_COLORS[pointColor]?.label}`;
     } else if (
@@ -173,12 +181,13 @@ export default function SettingChangeIndicator() {
   }, [
     ratioKey, layoutType, themeMode, showCurrentTime, pointerEventsEnabled,
     chatFontSizeAdjustment, chzzkHlsLatency, controllerExpanded, currentTimePosition,
-    autoRecordEnabled, recordStopCondition, pointColor, recordQuality, recordFrameRate,
+    autoRecordEnabled, recordStopCondition, recordSplitOnZone1Change, pointColor,
+    recordQuality, recordFrameRate,
     recordCodec, recordSoundEnabled, recordSoundType, recordSoundVolume,
     prevRatioKey, prevLayoutType, prevThemeMode, prevShowCurrentTime,
     prevPointerEventsEnabled, prevChatFontSizeAdjustment, prevChzzkHlsLatency,
     prevControllerExpanded, prevCurrentTimePosition, prevAutoRecordEnabled,
-    prevRecordStopCondition,
+    prevRecordStopCondition, prevRecordSplitOnZone1Change,
     prevPointColor, prevRecordQuality, prevRecordFrameRate, prevRecordCodec,
     prevRecordSoundEnabled, prevRecordSoundType, prevRecordSoundVolume,
   ]);

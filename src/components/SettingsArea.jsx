@@ -53,6 +53,7 @@ import {
   CHZZK_HLS_LATENCY_DEFAULT,
   autoRecordEnabledAtom,
   recordStopConditionAtom,
+  recordSplitOnZone1ChangeAtom,
   recordQualityAtom,
   recordFrameRateAtom,
   recordCodecAtom,
@@ -222,13 +223,14 @@ export default function SettingsArea({ onClose }) {
   const [chzzkHlsLatency, setChzzkHlsLatency] = useAtom(chzzkHlsLatencyAtom);
   const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
   const [recordStopCondition, setRecordStopCondition] = useAtom(recordStopConditionAtom);
+  const [recordSplitOnZone1Change, setRecordSplitOnZone1Change] = useAtom(recordSplitOnZone1ChangeAtom);
   const [recordQuality, setRecordQuality] = useAtom(recordQualityAtom);
   const [recordFrameRate, setRecordFrameRate] = useAtom(recordFrameRateAtom);
   const [recordCodec, setRecordCodec] = useAtom(recordCodecAtom);
   const [recordSoundEnabled, setRecordSoundEnabled] = useAtom(recordSoundEnabledAtom);
   const [recordSoundType, setRecordSoundType] = useAtom(recordSoundTypeAtom);
   const [recordSoundVolume, setRecordSoundVolume] = useAtom(recordSoundVolumeAtom);
-  const setRecordSaveDirHandle = useSetAtom(recordSaveDirHandleAtom);
+  const [recordSaveDirHandle, setRecordSaveDirHandle] = useAtom(recordSaveDirHandleAtom);
   const [recordSaveDirName, setRecordSaveDirName] = useAtom(recordSaveDirNameAtom);
   const layoutType = useAtomValue(layoutTypeAtom);
   const ratioKey = useAtomValue(ratioAtom);
@@ -309,6 +311,7 @@ export default function SettingsArea({ onClose }) {
     chzzkHlsLatency,
     autoRecordEnabled,
     recordStopCondition,
+    recordSplitOnZone1Change,
     recordFrameRate,
     recordQuality,
     recordCodec,
@@ -352,6 +355,18 @@ export default function SettingsArea({ onClose }) {
     setRecordSaveDirHandle(null);
     setRecordSaveDirName("");
     window.localStorage.removeItem("recordSaveDirName");
+
+    // 녹화 분할은 저장 폴더가 전제이므로 폴더 해제 시 함께 끈다
+    // ("폴더 미지정 + 분할 켜짐" 상태가 남지 않도록)
+    if (recordSplitOnZone1Change) {
+      setRecordSplitOnZone1Change(false);
+      window.localStorage.setItem("recordSplitOnZone1Change", JSON.stringify(false));
+      setSnackbar({
+        open: true,
+        message: "녹화 저장 폴더가 해제되어 녹화 분할도 함께 꺼졌습니다.",
+        severity: "info",
+      });
+    }
   };
 
   const handleToggleAutoHideOffline = () => {
@@ -371,6 +386,26 @@ export default function SettingsArea({ onClose }) {
       const validation = validateBoolean(nextState, "autoRecordEnabled");
       if (validation === true) {
         window.localStorage.setItem("autoRecordEnabled", JSON.stringify(nextState));
+      }
+      return nextState;
+    });
+  };
+
+  const handleToggleRecordSplitOnZone1Change = () => {
+    // 저장 폴더 없이는 분할 시점에 새 파일을 열 수 없으므로 켜기 자체를 막는다
+    if (!recordSplitOnZone1Change && !recordSaveDirHandle) {
+      setSnackbar({
+        open: true,
+        message: "녹화 분할을 켜려면 먼저 녹화 저장 폴더를 지정하세요.",
+        severity: "warning",
+      });
+      return;
+    }
+    setRecordSplitOnZone1Change((prev) => {
+      const nextState = !prev;
+      const validation = validateBoolean(nextState, "recordSplitOnZone1Change");
+      if (validation === true) {
+        window.localStorage.setItem("recordSplitOnZone1Change", JSON.stringify(nextState));
       }
       return nextState;
     });
@@ -940,6 +975,27 @@ export default function SettingsArea({ onClose }) {
               </Tooltip>
             </ToggleButton>
           </SettingToggleGroup>
+        </SettingRow>
+
+        {/* 방제/카테고리 변경 시 녹화 분할 설정 */}
+        <SettingRow>
+          <SettingLabel sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            녹화 분할
+            <Tooltip
+              slotProps={tooltipSlotProps}
+              placement="top"
+              title={
+                <Box component="ul" sx={{ pl: 2, m: 0 }}>
+                  <li>녹화 중 1번 위치의 채널이 바뀌거나 그 채널의 방송 제목·라이브 카테고리가 바뀌면, 현재 파일을 저장하고 새 파일로 끊김 없이 이어서 녹화합니다 (화면 공유 권한을 다시 묻지 않음)</li>
+                  <li>켜려면 '녹화 저장 폴더' 지정이 필요합니다 — 폴더를 해제하면 분할도 함께 꺼집니다</li>
+                  <li>방송 정보는 1분 주기로 갱신되므로 변경 감지에 최대 1분이 걸립니다</li>
+                </Box>
+              }
+            >
+              <InfoOutlinedIcon sx={{ fontSize: "1.4rem", color: "text.secondary", cursor: "default" }} />
+            </Tooltip>
+          </SettingLabel>
+          <SettingSwitch checked={recordSplitOnZone1Change} onChange={handleToggleRecordSplitOnZone1Change} />
         </SettingRow>
 
         {/* 녹화 프레임 설정 */}

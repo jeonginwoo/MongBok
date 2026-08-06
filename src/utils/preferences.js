@@ -12,6 +12,7 @@ import {
   makeChannelKey,
   parseChannelKey,
 } from "@/utils/channelKey";
+import { getRecordDirectory } from "@/utils/recordDirectoryStorage";
 
 const ALLOWED_KEYS = ALL_SETTINGS;
 
@@ -160,6 +161,26 @@ export const validatePlatformEnabled = (value) => {
   }
 
   return { success: true, platformEnabled: normalized };
+};
+
+// 녹화 분할은 지정된 저장 폴더가 있어야만 동작한다 (분할 시점엔 저장 대화상자를
+// 다시 띄울 수 없음) — 폴더 미지정 상태에서 true로 켜지는 것을 동기화 단계에서도 막는다
+export const validateRecordSplitOnZone1Change = async (value) => {
+  const boolCheck = validateBoolean(value, "recordSplitOnZone1Change");
+  if (boolCheck !== true) return boolCheck;
+
+  const enabled = value === true || value === "true";
+  if (!enabled) return true;
+
+  try {
+    const dirHandle = await getRecordDirectory();
+    if (!dirHandle) {
+      return "'recordSplitOnZone1Change'를 켜려면 녹화 저장 폴더가 지정되어 있어야 합니다. 설정에서 녹화 저장 폴더를 먼저 지정하세요.";
+    }
+  } catch (e) {
+    return `'recordSplitOnZone1Change' 검사 중 녹화 저장 폴더 조회에 실패했습니다: ${e.message}`;
+  }
+  return true;
 };
 
 export const validateBoolean = (value, keyName) => {
@@ -432,6 +453,9 @@ export const validatePreferences = async (dataToValidate) => {
           break;
         case "recordStopCondition":
           validationResult = validateRecordStopCondition(value);
+          break;
+        case "recordSplitOnZone1Change":
+          validationResult = await validateRecordSplitOnZone1Change(value);
           break;
         case "recordFrameRate":
           validationResult = validateRecordFrameRate(value);
