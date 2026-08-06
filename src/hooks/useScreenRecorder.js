@@ -293,6 +293,10 @@ export const useScreenRecorder = () => {
           }
         }
 
+        // 이 녹화가 디스크 파일 기반인지 (첫 세그먼트 기준) — 분할 회전 시
+        // 디스크 유지가 필수인지 판단하는 데 쓴다
+        const diskBacked = writableStreamRef.current !== null;
+
         // 사용자가 선택한 스트림의 비디오 트랙을 가져옴
         const [videoTrack] = stream.getVideoTracks();
 
@@ -397,18 +401,36 @@ export const useScreenRecorder = () => {
 
           if (canContinue) {
             currentFileName = buildFileName();
-            // 회전 세그먼트는 지정 폴더가 있을 때만 새 파일을 연다 — 무인 녹화 중
-            // 저장 대화상자를 다시 띄울 수 없으므로, 실패 시 메모리 폴백으로 이어간다
-            writableStreamRef.current = await openFileInDir();
-            try {
-              startRecorderSegment();
-              return;
-            } catch (e) {
-              console.error("분할 녹화 재시작 실패, 녹화를 종료합니다:", e);
-              if (writableStreamRef.current) {
-                writableStreamRef.current.close().catch(() => {});
-                writableStreamRef.current = null;
+            // 디스크 기반 녹화에서 회전 파일 생성이 실패하면(디스크 가득 참·폴더
+            // 삭제·권한 만료) 메모리 폴백으로 이어가지 않고 전체 종료한다 —
+            // 무인 녹화에서 고비트레이트 데이터가 메모리에 무한 누적되다 탭이
+            // 죽어 세그먼트를 통째로 잃는 것보다 알림음과 함께 종료가 낫다.
+            // 처음부터 메모리 모드였다면 평소와 같은 부담이므로 그대로 계속한다
+            const nextWritable = diskBacked ? await openFileInDir() : null;
+            const fileReady = !diskBacked || nextWritable !== null;
+            // openFileInDir await 사이에 사용자가 종료했거나 공유가 끊겼을 수
+            // 있으므로 여기서 다시 확인한다 (stale canContinue 방지)
+            const stillLive =
+              latestIsRecordingRef.current &&
+              stream.getVideoTracks()[0]?.readyState === "live";
+
+            if (fileReady && stillLive) {
+              writableStreamRef.current = nextWritable;
+              try {
+                startRecorderSegment();
+                return;
+              } catch (e) {
+                console.error("분할 녹화 재시작 실패, 녹화를 종료합니다:", e);
+                if (writableStreamRef.current) {
+                  writableStreamRef.current.close().catch(() => {});
+                  writableStreamRef.current = null;
+                }
               }
+            } else if (!fileReady) {
+              console.error("분할 파일 생성 실패 — 메모리 누적을 피하기 위해 녹화를 종료합니다");
+            } else if (nextWritable) {
+              // 이어가지 못하게 됐는데 파일은 이미 열렸다면 빈 파일만 정리
+              nextWritable.close().catch(() => {});
             }
           }
 
