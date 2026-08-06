@@ -6,9 +6,8 @@
 
 - **버전:** v1.6.0 — 멀티뷰 핵심 기능(4개 플랫폼·레이아웃·녹화·프리셋) 안정화 단계
 - **진행:** Next.js 컨벤션 전수 검토 완료 — 발견된 위반 4건 모두 수정·커밋됨
-- **검증 상태:** verify.sh 초록. 단, 이번 세션 변경분의 브라우저 런타임 확인 미실시
-  (숲 이모티콘 렌더 · 유튜브 없는 채널 검색 · 화면 전체 로드 — 아래 세션 로그 참고)
-- **다음 작업:** 브라우저 확인 3건 → 이상 없으면 작업 큐 최상단(훅 조기 반환 리팩터링)
+- **검증 상태:** verify.sh 초록 + 컨벤션 검토 변경분 브라우저 확인 완료 (2026-08-06, 이상 없음)
+- **다음 작업:** 작업 큐 최상단 — 훅 조기 반환 리팩터링 (브랜치 파서 진행)
 - **차단 요소:** 없음
 
 ## 결정 기록 (Decision Log)
@@ -28,10 +27,10 @@
 
 - [ ] 훅 조기 반환 리팩터링: `if (!x) return null`이 훅 호출보다 앞에 있는 패턴 제거 (대상 5개 파일: `ChannelListChannelInfo.jsx` · `LiveCategory.jsx` · `LiveTags.jsx` · `DraggableChat.jsx` · `DraggableView.jsx`). 완료 후 eslint `react-hooks/rules-of-hooks`를 error로 복원. ※ 렌더 순서에 영향 주는 변경이므로 파일당 브라우저 동작 확인 필수 — react-compiler 활성화 상태라 특히 위험
 - [ ] 미사용 변수 정리 (~35건): 데드코드는 삭제, 의도적 보존(레이아웃 정의 등)은 `_` 프리픽스. 완료 후 eslint `no-unused-vars`를 error로 복원
-- [x] `"use client"` 누락 11개 파일 명시 (컨벤션 전수 검토 2026-08-06에서 발견): 컴포넌트 8(ControllerArea · ManualArea · ChannelListChannelInfo · LiveCategory · LiveTags · UserCount · ChatRow · RatioSelector) + 훅 3(useLayoutManager · usePopupWindow · useScreenRecorder). 완료 2026-08-06 — verify 초록, 브라우저 화면 로드 확인은 미실시
+- [x] `"use client"` 누락 11개 파일 명시 (컨벤션 전수 검토 2026-08-06에서 발견): 컴포넌트 8(ControllerArea · ManualArea · ChannelListChannelInfo · LiveCategory · LiveTags · UserCount · ChatRow · RatioSelector) + 훅 3(useLayoutManager · usePopupWindow · useScreenRecorder). 완료 2026-08-06 — verify 초록, 브라우저 화면 로드 확인 완료
 - [x] 상대경로 import 9건 `@/` 별칭 전환: useSoopChat(2) · SettingsArea(1) · ChatView(5) · PresetSelector(1). 완료 2026-08-06 — verify 초록
-- [x] 숲 이모티콘 조회를 `api/live.js` + `soop_live_client` 경유로 이전 (useSoopEmoticons.js의 플랫폼 REST 직접 fetch — 불변식 1 위반). 코드 완료 2026-08-06, verify 초록 — **※ 브라우저에서 숲 채팅 시그니처 이모티콘 렌더 확인 아직 안 됨**
-- [x] 유튜브 채널 route fail-soft 적용: `channel/[id]/route.js`의 404/500을 빈 데이터 200으로. 소비측(live.js)은 `!data.channel`이면 throw라 동작 동일 확인. 코드 완료 2026-08-06, verify 초록 — **※ 브라우저에서 없는 채널 검색 확인 아직 안 됨**
+- [x] 숲 이모티콘 조회를 `api/live.js` + `soop_live_client` 경유로 이전 (useSoopEmoticons.js의 플랫폼 REST 직접 fetch — 불변식 1 위반). 완료 2026-08-06 — verify 초록, 브라우저에서 이모티콘 렌더 확인 완료
+- [x] 유튜브 채널 route fail-soft 적용: `channel/[id]/route.js`의 404/500을 빈 데이터 200으로. 소비측(live.js)은 `!data.channel`이면 throw라 동작 동일 확인. 완료 2026-08-06 — verify 초록, 브라우저에서 없는 채널 검색 확인 완료
 - [ ] `server-version/route.js`의 HTTP 메서드 외 `export const REQUIRED_SERVER_VERSION` 제거 (route 파일은 허용된 export만 — 컨벤션 검토에서 발견한 경미 항목, 현재 빌드는 통과)
 
 ## 세션 로그
@@ -48,8 +47,8 @@
 ### 2026-08-06 — Next.js 컨벤션 전수 검토 + 위반 4건 수정
 
 - 완료: CONVENTIONS.md 기준 전수 검토(디렉터리 역할·네이밍·별칭·"use client"·API 경로·fail-soft·이미지 도메인·환경변수·스타일/atom — 이미지·atom·환경변수 등은 위반 없음 확인). 위반 4건 수정: ① "use client" 누락 11개 파일 명시 ② 상대경로 import 9건 @/ 전환 ③ 숲 이모티콘 조회를 api/live.js `getSoopEmoticons`(soop_live_client 경유)로 이전 — 불변식 1 위반 해소 ④ 유튜브 채널 route 404/500 → 빈 데이터 200 fail-soft. 커밋 4건(530b1b7 · fa08ddf · d01a0f2 · 2c48a91), 각 커밋 verify 초록
-- 미해결: **브라우저 런타임 확인 미실시** — ⑴ 숲 채널 채팅 시그니처 이모티콘 렌더(요청 경로가 실제로 바뀐 유일한 부분) ⑵ 유튜브 없는 채널 검색 시 실패 처리 ⑶ 화면 전체 로드 훑어보기. server-version route 여분 export는 큐 등록만
-- 다음 작업: 위 브라우저 확인 3건 → 작업 큐 최상단(훅 조기 반환 리팩터링, 브랜치 파서 진행)
+- 미해결: 없음 — 브라우저 확인 3건(숲 이모티콘 렌더 · 유튜브 없는 채널 검색 · 화면 전체 로드) 사용자 확인 완료(2026-08-06, 이상 없음). server-version route 여분 export는 큐 등록만
+- 다음 작업: 작업 큐 최상단(훅 조기 반환 리팩터링, 브랜치 파서 진행)
 
 ### 2026-08-02 — 하네스 도입 (pms_mcp_v2에서 이식)
 
