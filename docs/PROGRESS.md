@@ -2,13 +2,13 @@
 
 > **모든 세션은 이 파일을 읽는 것으로 시작하고, 이 파일을 갱신하는 것으로 끝난다.**
 
-## 현재 상태 (2026-08-06)
+## 현재 상태 (2026-08-07)
 
 - **버전:** v1.6.0 — 멀티뷰 핵심 기능(4개 플랫폼·레이아웃·녹화·프리셋) 안정화 단계
-- **진행:** 녹화·볼륨 개선 3건 구현 완료(2026-08-06) — 프리셋 경고는 main 커밋, 나머지 2건은 브랜치에서 브라우저 확인 대기
-- **검증 상태:** 3건 모두 verify.sh 초록 + reviewer 검토 통과(지적 1건 수정 반영). 런타임(브라우저) 확인은 미완
-- **다음 작업:** 브라우저 확인 → `feat/chzzk-hls-volume` · `feat/record-split-on-change` 병합
-- **차단 요소:** 브랜치 2건의 브라우저 확인은 사용자만 가능 (녹화 분할은 방제 변경 권한이 있는 실방송 필요)
+- **진행:** 프리셋 경고·HLS 볼륨 통합은 브라우저 확인 완료 후 main 반영. 녹화 분할은 1차 브라우저 테스트 실패(분할 시 녹화 전체 종료) → 준비-후-교체 방식으로 재설계 완료, 재테스트 대기
+- **검증 상태:** verify.sh 초록. 녹화 분할 재설계분은 브라우저 재확인 필요
+- **다음 작업:** `feat/record-split-on-change` 브라우저 재확인(실방송에서 방제 변경) → 병합
+- **차단 요소:** 녹화 분할 재테스트는 방제 변경 권한이 있는 실방송 필요 (사용자만 가능)
 
 ## 결정 기록 (Decision Log)
 
@@ -25,9 +25,9 @@
 > 계획이 합의된, 커밋 단위로 잘게 쪼갠 작업만 넣는다. 작업 중 발견한 후속 일감은
 > `- [ ]`로 추가만 한다 — 몰래 실행 금지(scope creep 차단).
 
-- [x] 녹화 중 프리셋 변경 확인 다이얼로그: `PresetSelector`에서 `isRecordingAtom`이 켜져 있으면 확인 다이얼로그를 띄우고, 확인 시 `setIsRecording(false)`를 명시적으로 호출 후 전환 (종료 기준 "manual"에서도 동작이 일관되도록). 완료 2026-08-06 — main 커밋 7af7660, verify 초록, reviewer APPROVE. 브라우저 확인 필요(녹화 중 프리셋 변경 → 다이얼로그 취소/확인)
-- [x] 치지직 HLS 볼륨 통합: 마지막 사용자 설정 `{volume, muted}`를 `atomWithStorage`로 보존, 새 플레이어 배치 시 초기값으로 상속(배치 후엔 독립). 저장은 사용자 조작 핸들러(뮤트 버튼·슬라이더)에서만. 저장 상태가 뮤트면 `needsUnmute` 건너뜀. 완료 2026-08-06 — 브랜치 `feat/chzzk-hls-volume` 커밋 6ac970b, verify 초록, reviewer APPROVE. **브라우저 확인 후 병합 대기**
-- [x] 1번 채널 방제/카테고리 변경 시 녹화 분할(설정 토글, 기본 꺼짐): MediaStream은 유지하고 MediaRecorder만 교체하는 회전 방식(권한 프롬프트 없음). 오탐 가드 + 분할 시 알림음 없음. 리뷰 지적 반영: 디스크 기반 녹화의 회전 파일 생성 실패 시 메모리 폴백 대신 전체 종료(무인 OOM 방지). 완료 2026-08-06 — 브랜치 `feat/record-split-on-change` 커밋 03a6972 + 083e0b7, verify 초록. **브라우저 확인 후 병합 대기**
+- [x] 녹화 중 프리셋 변경 확인 다이얼로그: `PresetSelector`에서 `isRecordingAtom`이 켜져 있으면 확인 다이얼로그를 띄우고, 확인 시 `setIsRecording(false)`를 명시적으로 호출 후 전환 (종료 기준 "manual"에서도 동작이 일관되도록). 완료 2026-08-06 — main 커밋 7af7660, verify 초록, reviewer APPROVE, 브라우저 확인 완료(2026-08-07, 정상)
+- [x] 치지직 HLS 볼륨 통합: 마지막 사용자 설정 `{volume, muted}`를 `atomWithStorage`로 보존, 새 플레이어 배치 시 초기값으로 상속(배치 후엔 독립). 저장은 사용자 조작 핸들러(뮤트 버튼·슬라이더)에서만. 저장 상태가 뮤트면 `needsUnmute` 건너뜀. 완료 2026-08-06 — 커밋 6ac970b, verify 초록, reviewer APPROVE, 브라우저 확인 완료(2026-08-07, 정상) → main 병합(67fd624)
+- [x] 1번 채널 방제/카테고리 변경 시 녹화 분할(설정 토글, 기본 꺼짐): 1차 구현(recorder 정지 → 새 파일 열기, 03a6972+083e0b7)은 브라우저 테스트에서 분할 시 녹화 전체 종료 — 저장 대화상자로 시작한 녹화(폴더 미지정)는 회전 파일을 열 수 없어 설계상 전체 종료로 빠지는 구조였음. 준비-후-교체 방식으로 재설계(4b1b90f): 새 파일·새 recorder를 먼저 준비해 교체 후 이전 것 정지 — 실패 시 분할만 건너뛰고 기존 녹화 유지(스낵바 알림), 프레임 공백 없음. 세그먼트별 writable/chunks 클로저 바인딩. 파일명에 라이브 카테고리 추가 포함. verify 초록. **브랜치 `feat/record-split-on-change` 브라우저 재확인 후 병합 대기**
 - [ ] `ChzzkHlsPlayer.jsx`의 렌더 중 ref 미러 패턴 3곳(latestUrlRef·targetLatencyRef·storedVolumeRef)을 `useEffect` 미러로 정리 (reviewer 지적 — react-compiler 환경에서 Rules of React 위반. 기존 관행이라 볼륨 커밋에서는 미수정, 파일 단위로 일괄 정리)
 - [ ] `SettingsArea.jsx`의 setState updater 내부 `localStorage.setItem` 패턴 정리 (reviewer 지적 — 비순수 updater, StrictMode 이중 실행·react-compiler 가정 위반. 기존 핸들러 전반의 관행이라 파일 단위로 일괄 정리)
 - [x] 훅 조기 반환 리팩터링: `if (!x) return null`이 훅 호출보다 앞에 있는 패턴 제거 (대상 5개 파일: `ChannelListChannelInfo.jsx` · `LiveCategory.jsx` · `LiveTags.jsx` · `DraggableChat.jsx` · `DraggableView.jsx`). eslint `react-hooks/rules-of-hooks` error 복원 포함. 완료 2026-08-06 — verify 초록, 5개 컴포넌트 브라우저 확인 완료(이상 없음)
@@ -48,6 +48,12 @@
 - 미해결: <다음 세션으로 넘기는 것>
 - 다음 작업: <구체적으로>
 ```
+
+### 2026-08-07 — 브라우저 확인 반영: 볼륨 병합, 녹화 분할 재설계 + 파일명 카테고리
+
+- 완료: ① 프리셋 다이얼로그·HLS 볼륨 통합 브라우저 확인 완료(정상) — `feat/chzzk-hls-volume` main 병합(67fd624). ② 녹화 분할 1차 테스트 실패(분할 시점에 녹화 전체 종료, 재시작 안 됨) 원인 분석: 기존 설계가 "recorder 정지 → 새 파일 열기" 순서라 새 파일 열기 실패(특히 저장 대화상자로 시작한 녹화는 폴더 핸들이 없어 무조건 실패)가 곧 전체 종료였음. 준비-후-교체 방식으로 재설계(4b1b90f): 새 파일·새 recorder를 먼저 준비해 교체 후 이전 recorder 정지(onstop이 ref 비교로 회전/전체 종료 구분), 실패 시 분할만 건너뛰고 기존 녹화 유지 + 스낵바 알림, 세그먼트별 writable/chunks 클로저 바인딩으로 겹침 구간 혼선 방지. ③ 녹화 파일명에 라이브 카테고리 추가(`시간 채널명-방제-카테고리`, 있는 것만) — 같은 커밋. ④ 사용자 CONVENTIONS.md 버전 규칙 수정 커밋(e305fab). verify 초록
+- 미해결: 녹화 분할 브라우저 재확인(실방송 방제 변경 → 분할·이어짐, 폴더 미지정 시 스낵바+녹화 유지) 후 `feat/record-split-on-change` 병합. reviewer 지적 패턴 정리 2건은 큐 대기
+- 다음 작업: 분할 재테스트 결과 확인 → 병합 → 큐의 패턴 정리 2건
 
 ### 2026-08-06 — 녹화·볼륨 개선 3건 구현 (프리셋 경고·HLS 볼륨 통합·녹화 분할)
 
