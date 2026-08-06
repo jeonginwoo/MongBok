@@ -7,10 +7,9 @@ import ChannelList from "@/components/Controller/ChannelList";
 import ControlButtonGroup from "@/components/Controller/ControlButtonGroup";
 
 import { useAtomValue } from "jotai";
-import { viewCountAtom, controllerExpandedAtom } from "@/atoms/setting";
+import { controllerExpandedAtom } from "@/atoms/setting";
 
 export default function ControllerArea({ fullscreen }) {
-  const viewCount = useAtomValue(viewCountAtom);
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
 
   return (

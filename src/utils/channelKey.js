@@ -30,7 +30,8 @@ export const normalizeChannelsShape = (channelsObj) => {
   for (const [key, data] of Object.entries(channelsObj || {})) {
     if (parseChannelKey(key)) {
       if (data && typeof data === "object" && "platform" in data) {
-        const { platform, ...rest } = data;
+        // platform은 rest에서 제외하기 위한 자리 — 값 자체는 쓰지 않는다
+        const { platform: _platform, ...rest } = data;
         normalized[key] = rest;
         changed = true;
       } else {

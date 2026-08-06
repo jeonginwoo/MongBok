@@ -8,7 +8,7 @@ export const getVisibleLayoutKeys = (layouts) =>
 // view ratio
 const r20_9 = (20 / 9) / (16 / 9);
 const r9_20 = (9 / 20) / (16 / 9);
-const r16_9 = (16 / 9) / (16 / 9);
+const _r16_9 = (16 / 9) / (16 / 9);
 const r9_16 = (9 / 16) / (16 / 9);
 const r16_10 = (16 / 10) / (16 / 9);
 const r10_16 = (10 / 16) / (16 / 9);
@@ -21,13 +21,13 @@ const r20_9a11 = 100;
 
 // val of canvas[ratio2].layouts[2][layout1]
 const r20_9a21 = 100;
-const r20_9b21 = 28.8;
+const _r20_9b21 = 28.8;
 
 // val of canvas[ratio2].layouts[3][layout1]
-const r20_9a31 = 60;
+const _r20_9a31 = 60;
 
 // val of canvas[ratio2].layouts[4][layout1]
-const r20_9a41 = 71.2;
+const _r20_9a41 = 71.2;
 
 // ##################
 // #     16 : 9     #
@@ -58,7 +58,7 @@ const r16_10a21 = 28.8;
 const r16_10a31 = 69;
 
 // val of canvas[ratio3].layouts[4][layout1]
-const r16_10a41 = 84;
+const _r16_10a41 = 84;
 
 // val of canvas[ratio3].layouts[5][layout1]
 const r16_10a51 = 84;

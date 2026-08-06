@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
-import { getTheme } from "@/theme";
 import { canvas } from "@/data/canvas";
 import {
   DndContext,
@@ -103,8 +102,6 @@ export default function ViewArea({ canvasRef, fullscreen }) {
       setFitStyle({ width: "100%", height: "100%" });
       return;
     }
-
-    const [ratioW, ratioH] = currentRatio.split("/").map(Number);
 
     const observer = new ResizeObserver((entries) => {
       for (let entry of entries) {
@@ -264,7 +261,7 @@ export default function ViewArea({ canvasRef, fullscreen }) {
           setIsDraggingAny(false);
           setDraggingType(null);
           if (!over) return;
-          const [zoneType, zoneId] = over.id.split("-");
+          const [, zoneId] = over.id.split("-");
           const lastDash = active.id.lastIndexOf("-");
           const baseId = active.id.slice(0, lastDash);
           handleDrop(baseId, Number(zoneId));

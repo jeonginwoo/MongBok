@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAtomValue } from "jotai";
 import { CHAT_MAX_COUNT, CHAT_RENDER_INTERVAL, channelsAtom } from "@/atoms/setting";
 import { makeChannelKey } from "@/utils/channelKey";
@@ -35,7 +35,6 @@ export default function useTwitchChat(channelId) {
   const isUnloadingRef = useRef(false);
   const isRefreshingRef = useRef(false);
   const [webSocketBuster, setWebSocketBuster] = useState(0);
-  const [retryBuster, setRetryBuster] = useState(0);
   const messageCounterRef = useRef(0);
 
   const [status, setStatus] = useState("idle"); // idle, loading, connected, disconnected, error
@@ -45,7 +44,7 @@ export default function useTwitchChat(channelId) {
 
   const channels = useAtomValue(channelsAtom);
   const channelData = channels[makeChannelKey("twitch", channelId)];
-  const { isLive, lastRefreshed, twitchUserId } = channelData || {};
+  const { lastRefreshed, twitchUserId } = channelData || {};
 
   const updateStatus = useCallback((newStatus) => {
     statusRef.current = newStatus;
@@ -53,7 +52,6 @@ export default function useTwitchChat(channelId) {
   }, []);
 
   const retry = useCallback(() => {
-    setRetryBuster((prev) => prev + 1);
     setWebSocketBuster(Date.now());
   }, []);
 
@@ -297,7 +295,7 @@ export default function useTwitchChat(channelId) {
       }
     };
 
-    ws.onerror = (e) => {
+    ws.onerror = () => {
       if (!isCurrent) return;
       updateStatus("error");
       setError("WebSocket error");

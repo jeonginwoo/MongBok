@@ -11,7 +11,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import ChannelInfo from "@/components/Info/ChannelInfo/ViewAreaChannelInfo";
 import ChatView from "@/components/View/Chat/ChatView";
 
-import { useAtomValue, useAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { controllerExpandedAtom, chatFontSizeAdjustmentAtom, CHAT_FONT_SIZE_BASE, CHAT_FONT_SIZE_STEP, pointerEventsEnabledAtom, channelsAtom } from "@/atoms/setting";
 import { fitStyleAtom } from "@/atoms/ui";
 import { ENABLE_CHZZK, ENABLE_SOOP, ENABLE_YOUTUBE, ENABLE_TWITCH } from "@/data/config";
@@ -63,7 +63,7 @@ export default function DraggableChat({ channel, zone }) {
     return { chatList: [], status: "idle", error: null, retry: () => {} };
   }, [channel?.platform, chzzkChat, soopChat, youtubeChat, twitchChat]);
 
-  const [channels, setChannels] = useAtom(channelsAtom);
+  const setChannels = useSetAtom(channelsAtom);
 
   if (!channel) return null;
 
@@ -185,7 +185,7 @@ export default function DraggableChat({ channel, zone }) {
                 left: 0,
                 width: "100%",
                 height: "100%",
-                background: (theme) => `rgba(0, 0, 0, 0.6)`,
+                background: "rgba(0, 0, 0, 0.6)",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",

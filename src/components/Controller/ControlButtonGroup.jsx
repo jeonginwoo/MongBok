@@ -39,7 +39,7 @@ import {
   viewCountAtom,
   currentTimePositionAtom,
 } from "@/atoms/setting";
-import { snackbarAtom, isDraggingAtom, isRecordingAtom, settingsOpenAtom, controllerPopupOpenAtom } from "@/atoms/ui";
+import { isDraggingAtom, isRecordingAtom, settingsOpenAtom, controllerPopupOpenAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
 import { canvas, getVisibleLayoutKeys } from "@/data/canvas";
 import { useLayoutManager } from "@/hooks/useLayoutManager";
@@ -75,13 +75,11 @@ export default function ControlButtonGroup({ fullscreen }) {
     controllerExpandedAtom
   );
   const [refreshing, setRefreshing] = useState(false);
-  const [pointerEventsEnabled, setPointerEventsEnabled] = useAtom(
-    pointerEventsEnabledAtom
-  );
-  const [showCurrentTime, setShowCurrentTime] = useAtom(showCurrentTimeAtom);
+  const setPointerEventsEnabled = useSetAtom(pointerEventsEnabledAtom);
+  const setShowCurrentTime = useSetAtom(showCurrentTimeAtom);
   const [channels, setChannels] = useAtom(channelsAtom);
   const [themeMode, setThemeMode] = useAtom(themeModeAtom);
-  const [pointColor, setPointColor] = useAtom(pointColorAtom);
+  const pointColor = useAtomValue(pointColorAtom);
   const [chatFontSizeAdjustment, setChatFontSizeAdjustment] = useAtom(
     chatFontSizeAdjustmentAtom
   );
@@ -91,10 +89,9 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [timeToNextListRefresh, setTimeToNextListRefresh] = useState(600);
   // 수동 갱신 시 증가 → 60초 자동 갱신 타이머 재시작
   const [refreshEpoch, setRefreshEpoch] = useState(0);
-  const setSnackbar = useSetAtom(snackbarAtom);
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
   const [controllerPopupOpen, setControllerPopupOpen] = useAtom(controllerPopupOpenAtom);
-  const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
+  const autoRecordEnabled = useAtomValue(autoRecordEnabledAtom);
   const autoHideOffline = useAtomValue(autoHideOfflineAtom);
   const autoHideOfflineRef = useRef(autoHideOffline);
   useEffect(() => { autoHideOfflineRef.current = autoHideOffline; }, [autoHideOffline]);
@@ -120,14 +117,12 @@ export default function ControlButtonGroup({ fullscreen }) {
     [channels]
   );
 
-  const [ratio, setRatio] = useAtom(ratioAtom);
+  const ratio = useAtomValue(ratioAtom);
   const { selectRatio } = useLayoutManager();
   const layoutType = useAtomValue(layoutTypeAtom);
   const [, setViewPresets] = useAtom(viewPresetsAtom);
   const viewCount = useAtomValue(viewCountAtom);
-  const [currentTimePosition, setCurrentTimePosition] = useAtom(
-    currentTimePositionAtom
-  );
+  const setCurrentTimePosition = useSetAtom(currentTimePositionAtom);
 
   const activePointColor =
     POINT_COLORS[pointColor]?.[themeMode] || POINT_COLORS["default"][themeMode];
@@ -182,16 +177,6 @@ export default function ControlButtonGroup({ fullscreen }) {
     handleChangeTheme(nextState);
   }, [themeMode, handleChangeTheme]);
 
-  const handleChangePointerEvents = (event, newMode) => {
-    if (newMode !== null) {
-      setPointerEventsEnabled(newMode);
-      window.localStorage.setItem(
-        "pointerEventsEnabled",
-        JSON.stringify(newMode)
-      );
-    }
-  };
-
   const handleTogglePointerEvents = useCallback(() => {
     setPointerEventsEnabled((prev) => {
       const nextState = !prev;
@@ -224,11 +209,6 @@ export default function ControlButtonGroup({ fullscreen }) {
   const handleToggleCurrentTimePosition = useCallback(() => {
     setCurrentTimePosition((prev) => prev === "left" ? "right" : "left");
   }, [setCurrentTimePosition]);
-
-  const handleChangePointColor = (color) => {
-    setPointColor(color);
-    window.localStorage.setItem("pointColor", JSON.stringify(color));
-  };
 
   const handleChangeChatFontSize = useCallback((event, newValue) => {
     setChatFontSizeAdjustment(newValue);

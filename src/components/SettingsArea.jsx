@@ -75,7 +75,6 @@ import { getRecordDirectory, setRecordDirectory, clearRecordDirectory } from "@/
 import { snackbarAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
 import { playNotificationSound } from "@/utils/audio";
-import { canvas } from "@/data/canvas";
 import RatioSelector from "@/components/Settings/RatioSelector";
 import LayoutToggleGroup from "@/components/Settings/LayoutToggleGroup";
 import PresetSelector from "@/components/Settings/PresetSelector";
@@ -229,7 +228,7 @@ export default function SettingsArea({ onClose }) {
   const [recordSoundEnabled, setRecordSoundEnabled] = useAtom(recordSoundEnabledAtom);
   const [recordSoundType, setRecordSoundType] = useAtom(recordSoundTypeAtom);
   const [recordSoundVolume, setRecordSoundVolume] = useAtom(recordSoundVolumeAtom);
-  const [recordSaveDirHandle, setRecordSaveDirHandle] = useAtom(recordSaveDirHandleAtom);
+  const setRecordSaveDirHandle = useSetAtom(recordSaveDirHandleAtom);
   const [recordSaveDirName, setRecordSaveDirName] = useAtom(recordSaveDirNameAtom);
   const layoutType = useAtomValue(layoutTypeAtom);
   const ratioKey = useAtomValue(ratioAtom);
@@ -238,10 +237,6 @@ export default function SettingsArea({ onClose }) {
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
   const selectedSearchPlatform = useAtomValue(selectedSearchPlatformAtom);
   const platformEnabled = useAtomValue(platformEnabledAtom);
-
-  const [group, orientation] = ratioKey.split("-");
-  const availableLayouts = canvas[group]?.[orientation]?.layouts?.[viewCount];
-  const layoutKeys = availableLayouts ? Object.keys(availableLayouts) : [];
 
   const setSnackbar = useSetAtom(snackbarAtom);
   const applySettingsSnapshot = useSetAtom(applySettingsSnapshotAtom);
