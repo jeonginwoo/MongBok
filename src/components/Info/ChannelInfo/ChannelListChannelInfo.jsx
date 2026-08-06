@@ -17,12 +17,13 @@ import { controllerExpandedAtom } from "@/atoms/setting";
 import { controllerPopupOpenAtom, settingsOpenAtom } from "@/atoms/ui";
 
 export default function ChannelInfo({ channel, isDragging = false }) {
-  if (!channel) return null;
-
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
   const controllerPopupOpen = useAtomValue(controllerPopupOpenAtom);
   const settingsOpen = useAtomValue(settingsOpenAtom);
   const anchorRef = useRef(null);
+
+  // 조기 반환은 반드시 모든 훅 호출 뒤에 — 렌더 간 훅 순서 보장 (rules-of-hooks)
+  if (!channel) return null;
 
   // 리모컨 분리 + 설정창 닫힘: 상/하단 배치를 유지하되 오른쪽으로 쏠리게(top-end, 공간 부족 시 bottom-end로 flip)
   // 설정창 열림: 우측(설정창 쪽 여백) / 그 외(도킹): 좌측
