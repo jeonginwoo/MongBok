@@ -11,6 +11,7 @@ export const SETTINGS_ORDER = [
   "chzzkHlsLatency",
   "autoRecordEnabled",
   "recordStopCondition",
+  "recordSplitOnZone1Change",
   "recordFrameRate",
   "recordQuality",
   "recordCodec",

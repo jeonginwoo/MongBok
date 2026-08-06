@@ -53,6 +53,7 @@ import {
   CHZZK_HLS_LATENCY_DEFAULT,
   autoRecordEnabledAtom,
   recordStopConditionAtom,
+  recordSplitOnZone1ChangeAtom,
   recordQualityAtom,
   recordFrameRateAtom,
   recordCodecAtom,
@@ -222,6 +223,7 @@ export default function SettingsArea({ onClose }) {
   const [chzzkHlsLatency, setChzzkHlsLatency] = useAtom(chzzkHlsLatencyAtom);
   const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
   const [recordStopCondition, setRecordStopCondition] = useAtom(recordStopConditionAtom);
+  const [recordSplitOnZone1Change, setRecordSplitOnZone1Change] = useAtom(recordSplitOnZone1ChangeAtom);
   const [recordQuality, setRecordQuality] = useAtom(recordQualityAtom);
   const [recordFrameRate, setRecordFrameRate] = useAtom(recordFrameRateAtom);
   const [recordCodec, setRecordCodec] = useAtom(recordCodecAtom);
@@ -309,6 +311,7 @@ export default function SettingsArea({ onClose }) {
     chzzkHlsLatency,
     autoRecordEnabled,
     recordStopCondition,
+    recordSplitOnZone1Change,
     recordFrameRate,
     recordQuality,
     recordCodec,
@@ -371,6 +374,17 @@ export default function SettingsArea({ onClose }) {
       const validation = validateBoolean(nextState, "autoRecordEnabled");
       if (validation === true) {
         window.localStorage.setItem("autoRecordEnabled", JSON.stringify(nextState));
+      }
+      return nextState;
+    });
+  };
+
+  const handleToggleRecordSplitOnZone1Change = () => {
+    setRecordSplitOnZone1Change((prev) => {
+      const nextState = !prev;
+      const validation = validateBoolean(nextState, "recordSplitOnZone1Change");
+      if (validation === true) {
+        window.localStorage.setItem("recordSplitOnZone1Change", JSON.stringify(nextState));
       }
       return nextState;
     });
@@ -940,6 +954,27 @@ export default function SettingsArea({ onClose }) {
               </Tooltip>
             </ToggleButton>
           </SettingToggleGroup>
+        </SettingRow>
+
+        {/* 방제/카테고리 변경 시 녹화 분할 설정 */}
+        <SettingRow>
+          <SettingLabel sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            녹화 분할
+            <Tooltip
+              slotProps={tooltipSlotProps}
+              placement="top"
+              title={
+                <Box component="ul" sx={{ pl: 2, m: 0 }}>
+                  <li>녹화 중 1번 위치 채널의 방송 제목이나 라이브 카테고리가 바뀌면, 현재 파일을 저장하고 새 파일로 바로 이어서 녹화합니다</li>
+                  <li>화면 공유 권한을 다시 묻지 않으며, 분할 사이 1초 미만의 짧은 공백이 생길 수 있습니다</li>
+                  <li>방송 정보는 1분 주기로 갱신되므로 변경 감지에 최대 1분이 걸립니다</li>
+                </Box>
+              }
+            >
+              <InfoOutlinedIcon sx={{ fontSize: "1.4rem", color: "text.secondary", cursor: "default" }} />
+            </Tooltip>
+          </SettingLabel>
+          <SettingSwitch checked={recordSplitOnZone1Change} onChange={handleToggleRecordSplitOnZone1Change} />
         </SettingRow>
 
         {/* 녹화 프레임 설정 */}

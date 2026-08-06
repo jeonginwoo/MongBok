@@ -151,6 +151,15 @@ export const recordStopConditionAtom = atomWithStorage(
   storage
 );
 
+// 1번 채널의 방제/라이브 카테고리 변경 시 녹화 분할 on/off
+// 켜져 있으면 화면 공유 스트림은 유지한 채(권한 재요청 없음) 현재 파일을 닫고
+// 새 파일명(변경된 방제 반영)으로 바로 이어서 녹화한다
+export const recordSplitOnZone1ChangeAtom = atomWithStorage(
+  "recordSplitOnZone1Change",
+  false,
+  storage
+);
+
 // 오프라인 전환 시 자동 목록 복귀 on/off
 export const autoHideOfflineAtom = atomWithStorage(
   "autoHideOffline",
@@ -376,6 +385,7 @@ const SETTING_ATOM_MAP = {
   chzzkHlsLatency: chzzkHlsLatencyAtom,
   autoRecordEnabled: autoRecordEnabledAtom,
   recordStopCondition: recordStopConditionAtom,
+  recordSplitOnZone1Change: recordSplitOnZone1ChangeAtom,
   recordFrameRate: recordFrameRateAtom,
   recordQuality: recordQualityAtom,
   recordCodec: recordCodecAtom,
