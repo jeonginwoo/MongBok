@@ -5,9 +5,9 @@
 ## 현재 상태 (2026-08-06)
 
 - **버전:** v1.6.0 — 멀티뷰 핵심 기능(4개 플랫폼·레이아웃·녹화·프리셋) 안정화 단계
-- **진행:** 컨벤션 검토에서 나온 정리 작업 전부 완료 — 작업 큐 비어 있음
+- **진행:** 녹화·볼륨 개선 3건 합의(2026-08-06) — 작업 큐에 등록, 1번부터 진행
 - **검증 상태:** verify.sh 초록 + dev 서버에서 `/api/youtube/server-version` 응답 동일 확인 (2026-08-06)
-- **다음 작업:** 없음 — 다음 세션에서 새 작업 선정 (참고: main이 origin/main보다 17커밋 앞 — push 필요)
+- **다음 작업:** 작업 큐 순서대로 (프리셋 경고 → HLS 볼륨 통합 → 녹화 분할)
 - **차단 요소:** 없음
 
 ## 결정 기록 (Decision Log)
@@ -25,6 +25,9 @@
 > 계획이 합의된, 커밋 단위로 잘게 쪼갠 작업만 넣는다. 작업 중 발견한 후속 일감은
 > `- [ ]`로 추가만 한다 — 몰래 실행 금지(scope creep 차단).
 
+- [ ] 녹화 중 프리셋 변경 확인 다이얼로그: `PresetSelector`에서 `isRecordingAtom`이 켜져 있으면 확인 다이얼로그를 띄우고, 확인 시 `setIsRecording(false)`를 명시적으로 호출 후 전환 (종료 기준 "manual"에서도 동작이 일관되도록). main 직접
+- [ ] 치지직 HLS 볼륨 통합: 마지막 사용자 설정 `{volume, muted}`를 `atomWithStorage`로 보존, 새 플레이어 배치 시 초기값으로 상속(배치 후엔 독립). 저장은 사용자 조작 핸들러(뮤트 버튼·슬라이더)에서만 — 자동재생 정책의 강제 뮤트가 설정을 덮어쓰지 않도록. 저장 상태가 뮤트면 `needsUnmute`(첫 클릭 시 소리 켬) 건너뜀. 플레이어 수정이므로 브랜치 + 브라우저 확인 후 병합
+- [ ] 1번 채널 방제/카테고리 변경 시 녹화 분할(설정 토글, 기본 꺼짐): MediaStream은 유지하고 MediaRecorder만 교체하는 회전 방식(권한 프롬프트 없음). 오탐 가드 — 같은 채널 키 + 양쪽 `_loading` 완료 + 라이브 중일 때만 비교. 분할 시 알림음 없음(무인 녹화 배려, 합의됨). 토글 atom은 `SETTING_ATOM_MAP`·`SettingChangeIndicator`·설정 UI에 등록. 녹화 훅 수정이므로 브랜치 + 브라우저 확인 후 병합
 - [x] 훅 조기 반환 리팩터링: `if (!x) return null`이 훅 호출보다 앞에 있는 패턴 제거 (대상 5개 파일: `ChannelListChannelInfo.jsx` · `LiveCategory.jsx` · `LiveTags.jsx` · `DraggableChat.jsx` · `DraggableView.jsx`). eslint `react-hooks/rules-of-hooks` error 복원 포함. 완료 2026-08-06 — verify 초록, 5개 컴포넌트 브라우저 확인 완료(이상 없음)
 - [x] 미사용 변수 정리 (34건): 데드코드는 삭제, 의도적 보존(레이아웃 정의 등)은 `_` 프리픽스. eslint `no-unused-vars` error 복원 포함. 완료 2026-08-06 — verify 초록, reviewer APPROVE, 브라우저 확인 완료(채팅 재연결·컨트롤러 버튼·화면 로드 이상 없음)
 - [x] `"use client"` 누락 11개 파일 명시 (컨벤션 전수 검토 2026-08-06에서 발견): 컴포넌트 8(ControllerArea · ManualArea · ChannelListChannelInfo · LiveCategory · LiveTags · UserCount · ChatRow · RatioSelector) + 훅 3(useLayoutManager · usePopupWindow · useScreenRecorder). 완료 2026-08-06 — verify 초록, 브라우저 화면 로드 확인 완료
