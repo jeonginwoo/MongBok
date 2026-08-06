@@ -7,7 +7,7 @@ import { useTheme } from "@mui/material/styles";
 import Image from "next/image";
 
 export default function ChatRow({ chat }) {
-  const { time, nickname, badges, color, emojis, message, messageColor, isOwner, isModerator } = chat;
+  const { nickname, badges, color, emojis, message, messageColor, isOwner, isModerator } = chat;
   const theme = useTheme();
 
   return (

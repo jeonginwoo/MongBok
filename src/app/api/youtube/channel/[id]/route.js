@@ -131,7 +131,6 @@ export async function GET(request, context) {
 
       for (const item of contents) {
         let video = null;
-        let isLiveBadge = false;
 
         // RichItem(LockupView) 또는 Video 객체 추출
         if (item.type === 'RichItem' && item.content) {

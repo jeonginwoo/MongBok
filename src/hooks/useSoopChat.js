@@ -45,7 +45,6 @@ export default function useSoopChat(channelId) {
   const isUnloadingRef = useRef(false);
   const isRefreshingRef = useRef(false);
   const [webSocketBuster, setWebSocketBuster] = useState(0);
-  const [retryBuster, setRetryBuster] = useState(0);
   const messageCounterRef = useRef(0); // 메시지 카운터로 고유 ID 생성
 
   const [status, setStatus] = useState("idle"); // idle, loading, connected, disconnected, error
@@ -66,7 +65,6 @@ export default function useSoopChat(channelId) {
   const { emoticons: customEmoticons } = useSoopEmoticons(channelId);
 
   const retry = useCallback(() => {
-    setRetryBuster((prev) => prev + 1);
     setWebSocketBuster(Date.now());
   }, []);
 
@@ -386,7 +384,7 @@ export default function useSoopChat(channelId) {
       }
     };
 
-    ws.onerror = (e) => {
+    ws.onerror = () => {
       if (!isCurrent) return;
       updateStatus("error");
       setError("WebSocket error");

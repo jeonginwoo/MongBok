@@ -22,9 +22,9 @@ export default defineConfig([
       },
     },
     rules: {
-      // 임시 강등: 기존 미사용 변수(데드코드 후보 ~35건) 정리 전까지 warn — docs/PROGRESS.md 작업 큐 참조.
-      // 정리 완료 후 반드시 error로 복원할 것
-      'no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]', caughtErrors: 'none' }],
+      // 미사용 변수 부채 상환 완료(2026-08-06)로 error 복원.
+      // 의도적 보존(레이아웃 정의 등)은 _ 프리픽스로 표시하는 관례
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', caughtErrors: 'none' }],
       // 빈 catch로 의도적으로 무시하는 관례(localStorage 접근 등)가 코드베이스 전반에 있음
       'no-empty': ['error', { allowEmptyCatch: true }],
       // "훅보다 앞선 조기 반환" 부채 상환 완료(2026-08-06)로 error 복원
