@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useTheme } from "@mui/material";
 import {
   chzzkHlsLatencyAtom,
+  chzzkHlsVolumeAtom,
   CHZZK_HLS_LATENCY_MIN,
   CHZZK_HLS_LATENCY_MAX,
   CHZZK_HLS_LATENCY_DEFAULT,
@@ -106,6 +107,23 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
   // 재생성해도 사용자의 음소거/볼륨 상태를 건드리지 않는다)
   const soundStartedRef = useRef(false);
 
+  // 마지막 사용자 볼륨/뮤트 설정 — 새 플레이어 배치 시 초기값으로만 상속하고,
+  // 이후 다른 플레이어의 변경에는 따라가지 않는다 (최초 재생 시점에 1회 사용).
+  // ref 미러를 두는 이유: atomWithStorage는 마운트 직후 저장값으로 동기화되므로,
+  // 최초 렌더 값을 고정하면 저장값이 아니라 기본값을 상속할 수 있다
+  const storedVolume = useAtomValue(chzzkHlsVolumeAtom);
+  const storedVolumeRef = useRef(storedVolume);
+  storedVolumeRef.current = storedVolume;
+  const setStoredVolume = useSetAtom(chzzkHlsVolumeAtom);
+
+  // 사용자 조작(뮤트 버튼·슬라이더)에서만 저장한다. volumechange 이벤트에서
+  // 저장하면 자동재생 정책의 강제 뮤트까지 사용자 설정으로 덮어써 버린다
+  const persistVolume = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    setStoredVolume({ volume: video.volume, muted: video.muted });
+  }, [setStoredVolume]);
+
   // 라이브 엣지로 이동 (딜레이 리셋)
   const seekToLive = useCallback(() => {
     const video = videoRef.current;
@@ -143,14 +161,16 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
     const video = videoRef.current;
     if (!video) return;
     video.muted = !video.muted;
-  }, []);
+    persistVolume();
+  }, [persistVolume]);
 
   const handleVolumeChange = useCallback((_e, value) => {
     const video = videoRef.current;
     if (!video) return;
     video.volume = value;
     video.muted = value === 0;
-  }, []);
+    persistVolume();
+  }, [persistVolume]);
 
   const selectQuality = useCallback((index) => {
     qualityRef.current = index;
@@ -244,7 +264,8 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
     const video = videoRef.current;
     if (!video || !latestUrlRef.current) return;
 
-    // 첫 재생은 소리 켜진 상태로 자동재생 시도, 정책에 막히면 음소거로 시작.
+    // 첫 재생은 마지막 사용자 볼륨/뮤트 설정을 상속해서 시작한다.
+    // 소리 켜진 상태를 상속하면 자동재생을 시도하고, 정책에 막히면 음소거로 시작.
     // 에러 복구·워치독으로 재생성될 때는 사용자의 음소거 상태를 건드리지 않는다.
     const startPlayback = () => {
       if (soundStartedRef.current) {
@@ -252,6 +273,22 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
         return;
       }
       soundStartedRef.current = true;
+
+      // 저장값이 손상됐을 수 있으므로 방어적으로 정규화
+      const rawVolume = Number(storedVolumeRef.current?.volume);
+      const inheritedVolume = Number.isFinite(rawVolume)
+        ? Math.min(1, Math.max(0, rawVolume))
+        : 1;
+      video.volume = inheritedVolume;
+
+      if (storedVolumeRef.current?.muted || inheritedVolume === 0) {
+        // 뮤트 상태 상속: 사용자가 원한 상태이므로 소리 켜기 시도도,
+        // 첫 클릭 시 소리 켬(needsUnmute)도 하지 않는다
+        video.muted = true;
+        video.play().catch(() => {});
+        return;
+      }
+
       video.muted = false;
       video.play().catch(() => {
         video.muted = true;
