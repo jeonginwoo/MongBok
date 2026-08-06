@@ -5,9 +5,9 @@
 ## 현재 상태 (2026-08-06)
 
 - **버전:** v1.6.0 — 멀티뷰 핵심 기능(4개 플랫폼·레이아웃·녹화·프리셋) 안정화 단계
-- **진행:** 훅 조기 반환 부채 23건(5개 파일) 상환 완료 — eslint `react-hooks/rules-of-hooks` error 복원됨
-- **검증 상태:** verify.sh 초록(rules-of-hooks=error 상태) + 5개 컴포넌트 브라우저 확인 완료 (2026-08-06, 이상 없음)
-- **다음 작업:** 작업 큐 최상단 — 미사용 변수 정리 (~35건)
+- **진행:** 미사용 변수 부채 34건 상환 완료 — eslint `no-unused-vars` error 복원. 임시 강등 룰 전부 해소(부채 상환 종료)
+- **검증 상태:** verify.sh 초록(두 룰 모두 error 상태) + 브라우저 확인 완료 (2026-08-06, 채팅 재연결·컨트롤러 버튼·화면 로드 이상 없음)
+- **다음 작업:** 작업 큐 최상단 — `server-version/route.js` 여분 export 제거
 - **차단 요소:** 없음
 
 ## 결정 기록 (Decision Log)
@@ -26,7 +26,7 @@
 > `- [ ]`로 추가만 한다 — 몰래 실행 금지(scope creep 차단).
 
 - [x] 훅 조기 반환 리팩터링: `if (!x) return null`이 훅 호출보다 앞에 있는 패턴 제거 (대상 5개 파일: `ChannelListChannelInfo.jsx` · `LiveCategory.jsx` · `LiveTags.jsx` · `DraggableChat.jsx` · `DraggableView.jsx`). eslint `react-hooks/rules-of-hooks` error 복원 포함. 완료 2026-08-06 — verify 초록, 5개 컴포넌트 브라우저 확인 완료(이상 없음)
-- [ ] 미사용 변수 정리 (~35건): 데드코드는 삭제, 의도적 보존(레이아웃 정의 등)은 `_` 프리픽스. 완료 후 eslint `no-unused-vars`를 error로 복원
+- [x] 미사용 변수 정리 (34건): 데드코드는 삭제, 의도적 보존(레이아웃 정의 등)은 `_` 프리픽스. eslint `no-unused-vars` error 복원 포함. 완료 2026-08-06 — verify 초록, reviewer APPROVE, 브라우저 확인 완료(채팅 재연결·컨트롤러 버튼·화면 로드 이상 없음)
 - [x] `"use client"` 누락 11개 파일 명시 (컨벤션 전수 검토 2026-08-06에서 발견): 컴포넌트 8(ControllerArea · ManualArea · ChannelListChannelInfo · LiveCategory · LiveTags · UserCount · ChatRow · RatioSelector) + 훅 3(useLayoutManager · usePopupWindow · useScreenRecorder). 완료 2026-08-06 — verify 초록, 브라우저 화면 로드 확인 완료
 - [x] 상대경로 import 9건 `@/` 별칭 전환: useSoopChat(2) · SettingsArea(1) · ChatView(5) · PresetSelector(1). 완료 2026-08-06 — verify 초록
 - [x] 숲 이모티콘 조회를 `api/live.js` + `soop_live_client` 경유로 이전 (useSoopEmoticons.js의 플랫폼 REST 직접 fetch — 불변식 1 위반). 완료 2026-08-06 — verify 초록, 브라우저에서 이모티콘 렌더 확인 완료
@@ -43,6 +43,12 @@
 - 미해결: <다음 세션으로 넘기는 것>
 - 다음 작업: <구체적으로>
 ```
+
+### 2026-08-06 — 미사용 변수 정리 + no-unused-vars error 복원
+
+- 완료: `no-unused-vars` 경고 34건 상환 — 데드코드 삭제(미사용 import 6건 · ControlButtonGroup 미사용 핸들러 2건 · 치지직/숲/트위치 훅의 잔재 `retryBuster` 상태 3건 등. 실제 재연결 트리거는 `webSocketBuster`로 유지 확인, 유튜브 훅의 retryBuster는 진짜 트리거라 보존), canvas.js 레이아웃 정의 5건은 `_` 프리픽스 보존, jotai 훅을 값 전용 `useAtomValue`·세터 전용 `useSetAtom`으로 정리. eslint `no-unused-vars` error 복원 — 임시 강등 룰 전부 해소. 브랜치 chore/unused-vars 커밋 3건(e659f35 · acff7ad · aa1be71) 각 verify 초록, reviewer APPROVE(지적된 ViewArea의 죽은 ThemeProvider import도 제거). 브라우저 확인 완료(2026-08-06, 이상 없음): 채팅 재연결(치지직·숲·트위치) · 컨트롤러 버튼/단축키(V·T·P) · 화면 전체 로드
+- 미해결: 없음
+- 다음 작업: 작업 큐 최상단 — `server-version/route.js`의 `REQUIRED_SERVER_VERSION` 여분 export 제거
 
 ### 2026-08-06 — 훅 조기 반환 리팩터링 + rules-of-hooks error 복원
 
