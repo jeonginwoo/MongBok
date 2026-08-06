@@ -5,10 +5,10 @@
 ## 현재 상태 (2026-08-06)
 
 - **버전:** v1.6.0 — 멀티뷰 핵심 기능(4개 플랫폼·레이아웃·녹화·프리셋) 안정화 단계
-- **진행:** 녹화·볼륨 개선 3건 합의(2026-08-06) — 작업 큐에 등록, 1번부터 진행
-- **검증 상태:** verify.sh 초록 + dev 서버에서 `/api/youtube/server-version` 응답 동일 확인 (2026-08-06)
-- **다음 작업:** 작업 큐 순서대로 (프리셋 경고 → HLS 볼륨 통합 → 녹화 분할)
-- **차단 요소:** 없음
+- **진행:** 녹화·볼륨 개선 3건 구현 완료(2026-08-06) — 프리셋 경고는 main 커밋, 나머지 2건은 브랜치에서 브라우저 확인 대기
+- **검증 상태:** 3건 모두 verify.sh 초록 + reviewer 검토 통과(지적 1건 수정 반영). 런타임(브라우저) 확인은 미완
+- **다음 작업:** 브라우저 확인 → `feat/chzzk-hls-volume` · `feat/record-split-on-change` 병합
+- **차단 요소:** 브랜치 2건의 브라우저 확인은 사용자만 가능 (녹화 분할은 방제 변경 권한이 있는 실방송 필요)
 
 ## 결정 기록 (Decision Log)
 
@@ -25,9 +25,11 @@
 > 계획이 합의된, 커밋 단위로 잘게 쪼갠 작업만 넣는다. 작업 중 발견한 후속 일감은
 > `- [ ]`로 추가만 한다 — 몰래 실행 금지(scope creep 차단).
 
-- [ ] 녹화 중 프리셋 변경 확인 다이얼로그: `PresetSelector`에서 `isRecordingAtom`이 켜져 있으면 확인 다이얼로그를 띄우고, 확인 시 `setIsRecording(false)`를 명시적으로 호출 후 전환 (종료 기준 "manual"에서도 동작이 일관되도록). main 직접
-- [ ] 치지직 HLS 볼륨 통합: 마지막 사용자 설정 `{volume, muted}`를 `atomWithStorage`로 보존, 새 플레이어 배치 시 초기값으로 상속(배치 후엔 독립). 저장은 사용자 조작 핸들러(뮤트 버튼·슬라이더)에서만 — 자동재생 정책의 강제 뮤트가 설정을 덮어쓰지 않도록. 저장 상태가 뮤트면 `needsUnmute`(첫 클릭 시 소리 켬) 건너뜀. 플레이어 수정이므로 브랜치 + 브라우저 확인 후 병합
-- [ ] 1번 채널 방제/카테고리 변경 시 녹화 분할(설정 토글, 기본 꺼짐): MediaStream은 유지하고 MediaRecorder만 교체하는 회전 방식(권한 프롬프트 없음). 오탐 가드 — 같은 채널 키 + 양쪽 `_loading` 완료 + 라이브 중일 때만 비교. 분할 시 알림음 없음(무인 녹화 배려, 합의됨). 토글 atom은 `SETTING_ATOM_MAP`·`SettingChangeIndicator`·설정 UI에 등록. 녹화 훅 수정이므로 브랜치 + 브라우저 확인 후 병합
+- [x] 녹화 중 프리셋 변경 확인 다이얼로그: `PresetSelector`에서 `isRecordingAtom`이 켜져 있으면 확인 다이얼로그를 띄우고, 확인 시 `setIsRecording(false)`를 명시적으로 호출 후 전환 (종료 기준 "manual"에서도 동작이 일관되도록). 완료 2026-08-06 — main 커밋 7af7660, verify 초록, reviewer APPROVE. 브라우저 확인 필요(녹화 중 프리셋 변경 → 다이얼로그 취소/확인)
+- [x] 치지직 HLS 볼륨 통합: 마지막 사용자 설정 `{volume, muted}`를 `atomWithStorage`로 보존, 새 플레이어 배치 시 초기값으로 상속(배치 후엔 독립). 저장은 사용자 조작 핸들러(뮤트 버튼·슬라이더)에서만. 저장 상태가 뮤트면 `needsUnmute` 건너뜀. 완료 2026-08-06 — 브랜치 `feat/chzzk-hls-volume` 커밋 6ac970b, verify 초록, reviewer APPROVE. **브라우저 확인 후 병합 대기**
+- [x] 1번 채널 방제/카테고리 변경 시 녹화 분할(설정 토글, 기본 꺼짐): MediaStream은 유지하고 MediaRecorder만 교체하는 회전 방식(권한 프롬프트 없음). 오탐 가드 + 분할 시 알림음 없음. 리뷰 지적 반영: 디스크 기반 녹화의 회전 파일 생성 실패 시 메모리 폴백 대신 전체 종료(무인 OOM 방지). 완료 2026-08-06 — 브랜치 `feat/record-split-on-change` 커밋 03a6972 + 083e0b7, verify 초록. **브라우저 확인 후 병합 대기**
+- [ ] `ChzzkHlsPlayer.jsx`의 렌더 중 ref 미러 패턴 3곳(latestUrlRef·targetLatencyRef·storedVolumeRef)을 `useEffect` 미러로 정리 (reviewer 지적 — react-compiler 환경에서 Rules of React 위반. 기존 관행이라 볼륨 커밋에서는 미수정, 파일 단위로 일괄 정리)
+- [ ] `SettingsArea.jsx`의 setState updater 내부 `localStorage.setItem` 패턴 정리 (reviewer 지적 — 비순수 updater, StrictMode 이중 실행·react-compiler 가정 위반. 기존 핸들러 전반의 관행이라 파일 단위로 일괄 정리)
 - [x] 훅 조기 반환 리팩터링: `if (!x) return null`이 훅 호출보다 앞에 있는 패턴 제거 (대상 5개 파일: `ChannelListChannelInfo.jsx` · `LiveCategory.jsx` · `LiveTags.jsx` · `DraggableChat.jsx` · `DraggableView.jsx`). eslint `react-hooks/rules-of-hooks` error 복원 포함. 완료 2026-08-06 — verify 초록, 5개 컴포넌트 브라우저 확인 완료(이상 없음)
 - [x] 미사용 변수 정리 (34건): 데드코드는 삭제, 의도적 보존(레이아웃 정의 등)은 `_` 프리픽스. eslint `no-unused-vars` error 복원 포함. 완료 2026-08-06 — verify 초록, reviewer APPROVE, 브라우저 확인 완료(채팅 재연결·컨트롤러 버튼·화면 로드 이상 없음)
 - [x] `"use client"` 누락 11개 파일 명시 (컨벤션 전수 검토 2026-08-06에서 발견): 컴포넌트 8(ControllerArea · ManualArea · ChannelListChannelInfo · LiveCategory · LiveTags · UserCount · ChatRow · RatioSelector) + 훅 3(useLayoutManager · usePopupWindow · useScreenRecorder). 완료 2026-08-06 — verify 초록, 브라우저 화면 로드 확인 완료
@@ -46,6 +48,12 @@
 - 미해결: <다음 세션으로 넘기는 것>
 - 다음 작업: <구체적으로>
 ```
+
+### 2026-08-06 — 녹화·볼륨 개선 3건 구현 (프리셋 경고·HLS 볼륨 통합·녹화 분할)
+
+- 완료: ① 녹화 중 프리셋 변경 확인 다이얼로그 — main 커밋 7af7660 (확인 시 종료 기준과 무관하게 명시적 녹화 종료). ② 치지직 HLS 볼륨 통합 — 브랜치 `feat/chzzk-hls-volume` 커밋 6ac970b (`chzzkHlsVolumeAtom` 신설, 배치 시점 상속·조작 핸들러에서만 저장·뮤트 상속 시 needsUnmute 생략, 설정 동기화/프리셋 대상 포함). ③ 방제/카테고리 변경 시 녹화 분할 — 브랜치 `feat/record-split-on-change` 커밋 03a6972+083e0b7 (스트림 유지·recorder 회전, `recordSplitOnZone1ChangeAtom` 토글 기본 꺼짐, 설정 UI·인디케이터 등록, 리뷰 지적으로 회전 파일 실패 시 전체 종료로 수정). 3건 모두 verify 초록, reviewer 검토 통과
+- 미해결: 브랜치 2건 브라우저 확인 후 병합 — 볼륨: 치지직 플레이어 뮤트/볼륨 조절 → 새 치지직 채널 배치 시 상속·자동재생 폴백 정상 여부. 분할: 토글 켜고 녹화 중 1번 채널 방제 변경 → 파일 분할·이어짐 확인(실방송 필요). 프리셋 다이얼로그도 브라우저 확인 필요. reviewer가 지적한 기존 패턴 정리 2건 큐 등록만
+- 다음 작업: 사용자 브라우저 확인 → 브랜치 병합 → 큐의 패턴 정리 2건
 
 ### 2026-08-06 — server-version route 여분 export 제거 (작업 큐 소진)
 
