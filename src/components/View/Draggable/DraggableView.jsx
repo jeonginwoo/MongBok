@@ -12,9 +12,9 @@ import OfflineScreen from "@/components/View/OfflineScreen";
 const HLS_RETRY_DELAY = 60 * 1000;
 
 export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
-  if (!channel) return null;
-
-  const draggableId = `${channel.key}-view`;
+  // 조기 반환이 훅보다 앞에 올 수 없으므로(rules-of-hooks) channel이 null인
+  // 동안은 옵셔널 체이닝으로 훅을 통과시킨 뒤 아래에서 반환
+  const draggableId = `${channel?.key}-view`;
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: draggableId,
@@ -22,13 +22,13 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
 
   const baseZIndex = zone?.style.zIndex || 0;
   const [hlsFailed, setHlsFailed] = useState(false);
-  const channelId = channel.id;
+  const channelId = channel?.id;
 
   // 방송 세션이 바뀌면(재시작 등) 폴백 상태 초기화
   // liveHlsUrl은 폴링마다 토큰이 갱신되어 바뀔 수 있으므로 기준으로 쓰지 않는다
   useEffect(() => {
     setHlsFailed(false);
-  }, [channel.isLive, channel.openDate]);
+  }, [channel?.isLive, channel?.openDate]);
 
   // iframe 폴백은 임시 상태로만 사용: 일정 시간 뒤 최신 URL로 HLS를 재시도한다.
   // 폴백 상태를 방치하면 iframe(치지직 전체 페이지)이 깨져도 감시하는 로직이
@@ -38,6 +38,8 @@ export default function DraggableView({ channel, zone, pointerEventsEnabled }) {
     const timerId = setTimeout(() => setHlsFailed(false), HLS_RETRY_DELAY);
     return () => clearTimeout(timerId);
   }, [hlsFailed]);
+
+  if (!channel) return null;
 
   const style = (theme) => ({
     position: "absolute",

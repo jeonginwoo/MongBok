@@ -24,14 +24,14 @@ import useYoutubeChat from "@/hooks/useYoutubeChat";
 import useTwitchChat from "@/hooks/useTwitchChat";
 
 export default function DraggableChat({ channel, zone }) {
-  if (!channel) return null;
-
+  // 조기 반환이 훅보다 앞에 올 수 없으므로(rules-of-hooks) channel이 null인
+  // 동안은 옵셔널 체이닝으로 훅을 비활성 인자(null)로 통과시킨 뒤 아래에서 반환
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
   const fitStyle = useAtomValue(fitStyleAtom);
   const chatFontSizeAdjustment = useAtomValue(chatFontSizeAdjustmentAtom);
   const pointerEventsEnabled = useAtomValue(pointerEventsEnabledAtom);
 
-  const draggableId = `${channel.key}-chat`;
+  const draggableId = `${channel?.key}-chat`;
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: draggableId,
@@ -40,30 +40,32 @@ export default function DraggableChat({ channel, zone }) {
   const containerRef = useRef(null);
   // 캔버스 크기에 비례하는 배율 (현재시간 등 다른 오버레이와 공용 훅으로 통일)
   const zoom = useCanvasZoom(containerRef);
-  const channelId = channel.id;
+  const channelId = channel?.id;
 
   const chzzkChat = useChzzkChat(
-    (ENABLE_CHZZK && channel.platform === "chzzk") ? channelId : null
+    (ENABLE_CHZZK && channel?.platform === "chzzk") ? channelId : null
   );
   const soopChat = useSoopChat(
-    (ENABLE_SOOP && channel.platform === "soop") ? channelId : null
+    (ENABLE_SOOP && channel?.platform === "soop") ? channelId : null
   );
   const youtubeChat = useYoutubeChat(
-    (ENABLE_YOUTUBE && channel.platform === "youtube") ? channelId : null
+    (ENABLE_YOUTUBE && channel?.platform === "youtube") ? channelId : null
   );
   const twitchChat = useTwitchChat(
-    (ENABLE_TWITCH && channel.platform === "twitch") ? channelId : null
+    (ENABLE_TWITCH && channel?.platform === "twitch") ? channelId : null
   );
 
   const { chatList, status, error, retry } = useMemo(() => {
-    if (channel.platform === "chzzk") return chzzkChat;
-    if (channel.platform === "soop") return soopChat;
-    if (channel.platform === "youtube") return youtubeChat;
-    if (channel.platform === "twitch") return twitchChat;
+    if (channel?.platform === "chzzk") return chzzkChat;
+    if (channel?.platform === "soop") return soopChat;
+    if (channel?.platform === "youtube") return youtubeChat;
+    if (channel?.platform === "twitch") return twitchChat;
     return { chatList: [], status: "idle", error: null, retry: () => {} };
-  }, [channel.platform, chzzkChat, soopChat, youtubeChat, twitchChat]);
+  }, [channel?.platform, chzzkChat, soopChat, youtubeChat, twitchChat]);
 
   const [channels, setChannels] = useAtom(channelsAtom);
+
+  if (!channel) return null;
 
   const handleManualRefresh = async () => {
     if (status === "offline") {
