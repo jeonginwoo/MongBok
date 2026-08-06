@@ -9,6 +9,7 @@ export const SETTINGS_ORDER = [
   "chatFontSizeAdjustment",
   "autoHideOffline",
   "chzzkHlsLatency",
+  "chzzkHlsVolume",
   "autoRecordEnabled",
   "recordStopCondition",
   "recordFrameRate",

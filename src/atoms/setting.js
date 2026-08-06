@@ -170,6 +170,15 @@ export const chzzkHlsLatencyAtom = atomWithStorage(
   storage
 );
 
+// 치지직 HLS 플레이어 볼륨/뮤트 — 마지막 사용자 조작 값을 보존해 새 플레이어를
+// 배치할 때 초기값으로 상속한다. 배치 이후에는 플레이어마다 독립적으로 조절
+// (멀티뷰에서 "1번만 소리, 나머지 뮤트" 같은 사용이 가능해야 하므로 실시간 동기화 안 함)
+export const chzzkHlsVolumeAtom = atomWithStorage(
+  "chzzkHlsVolume",
+  { volume: 1, muted: false },
+  storage
+);
+
 // 컨트롤러 확장/축소
 export const controllerExpandedAtom = atomWithStorage(
   "controllerExpanded",
@@ -374,6 +383,7 @@ const SETTING_ATOM_MAP = {
   chatFontSizeAdjustment: chatFontSizeAdjustmentAtom,
   autoHideOffline: autoHideOfflineAtom,
   chzzkHlsLatency: chzzkHlsLatencyAtom,
+  chzzkHlsVolume: chzzkHlsVolumeAtom,
   autoRecordEnabled: autoRecordEnabledAtom,
   recordStopCondition: recordStopConditionAtom,
   recordFrameRate: recordFrameRateAtom,
