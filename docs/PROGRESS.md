@@ -5,9 +5,9 @@
 ## 현재 상태 (2026-08-06)
 
 - **버전:** v1.6.0 — 멀티뷰 핵심 기능(4개 플랫폼·레이아웃·녹화·프리셋) 안정화 단계
-- **진행:** 미사용 변수 부채 34건 상환 완료 — eslint `no-unused-vars` error 복원. 임시 강등 룰 전부 해소(부채 상환 종료)
-- **검증 상태:** verify.sh 초록(두 룰 모두 error 상태) + 브라우저 확인 완료 (2026-08-06, 채팅 재연결·컨트롤러 버튼·화면 로드 이상 없음)
-- **다음 작업:** 작업 큐 최상단 — `server-version/route.js` 여분 export 제거
+- **진행:** 컨벤션 검토에서 나온 정리 작업 전부 완료 — 작업 큐 비어 있음
+- **검증 상태:** verify.sh 초록 + dev 서버에서 `/api/youtube/server-version` 응답 동일 확인 (2026-08-06)
+- **다음 작업:** 없음 — 다음 세션에서 새 작업 선정 (참고: main이 origin/main보다 17커밋 앞 — push 필요)
 - **차단 요소:** 없음
 
 ## 결정 기록 (Decision Log)
@@ -31,7 +31,7 @@
 - [x] 상대경로 import 9건 `@/` 별칭 전환: useSoopChat(2) · SettingsArea(1) · ChatView(5) · PresetSelector(1). 완료 2026-08-06 — verify 초록
 - [x] 숲 이모티콘 조회를 `api/live.js` + `soop_live_client` 경유로 이전 (useSoopEmoticons.js의 플랫폼 REST 직접 fetch — 불변식 1 위반). 완료 2026-08-06 — verify 초록, 브라우저에서 이모티콘 렌더 확인 완료
 - [x] 유튜브 채널 route fail-soft 적용: `channel/[id]/route.js`의 404/500을 빈 데이터 200으로. 소비측(live.js)은 `!data.channel`이면 throw라 동작 동일 확인. 완료 2026-08-06 — verify 초록, 브라우저에서 없는 채널 검색 확인 완료
-- [ ] `server-version/route.js`의 HTTP 메서드 외 `export const REQUIRED_SERVER_VERSION` 제거 (route 파일은 허용된 export만 — 컨벤션 검토에서 발견한 경미 항목, 현재 빌드는 통과)
+- [x] `server-version/route.js`의 HTTP 메서드 외 `export const REQUIRED_SERVER_VERSION` 제거 (route 파일은 허용된 export만 — 컨벤션 검토에서 발견한 경미 항목). 완료 2026-08-06 — verify 초록, dev 서버 엔드포인트 응답 동일 확인
 
 ## 세션 로그
 
@@ -43,6 +43,12 @@
 - 미해결: <다음 세션으로 넘기는 것>
 - 다음 작업: <구체적으로>
 ```
+
+### 2026-08-06 — server-version route 여분 export 제거 (작업 큐 소진)
+
+- 완료: `server-version/route.js`의 `REQUIRED_SERVER_VERSION`에서 `export` 키워드만 제거 — GET 핸들러는 그대로 사용, import하는 곳은 원래 없음(useYoutubeChat·ManualArea는 환경변수 직접 참조). main 직접 커밋(6a2c25c) — 런타임 위험 없는 한 줄 변경이라 컨벤션대로 브랜치 없이 진행. verify 초록. 런타임 확인은 브라우저 대신 dev 서버 `/api/youtube/server-version` 호출로 — 응답 `{"requiredVersion":"1.0.9"}` 동일(이 route의 유일한 소비 경로가 이 응답이므로 충분)
+- 미해결: 없음 — 작업 큐 비어 있음. main이 origin/main보다 17커밋 앞서 있어 push 필요
+- 다음 작업: 새 작업 선정 (기능 개선·버그 등 사용자와 합의)
 
 ### 2026-08-06 — 미사용 변수 정리 + no-unused-vars error 복원
 
