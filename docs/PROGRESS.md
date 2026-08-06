@@ -55,6 +55,7 @@
 - 추가(같은 날): 녹화 분할 토글에 저장 폴더 전제 조건 적용(7cf1a3d) — ① 폴더 미지정 상태에서 켜려 하면 스낵바 경고 + false 유지 ② 폴더 해제 시 분할 자동 꺼짐(스낵바 안내) ③ 설정 동기화 유효성 검사에 `validateRecordSplitOnZone1Change` 추가(폴더 없으면 true 거부 — 기존엔 switch에 케이스가 없어 무검사 통과였음). verify 초록
 - 추가(같은 날): 1번 채널 교체(위치 스와프 포함)도 분할 트리거에 포함(cca40a5, 사용자 합의) — 파일명이 1번 채널 기준이므로 채널이 바뀌면 파일도 나뉘는 것이 자연스럽고, 방제 변경 없이도 분할 테스트 가능. 사용자 테스트에서 "스와프로는 분할 안 됨"이 확인됐는데 이는 당시 설계(교체는 기준만 갱신)대로였음
 - 마무리(같은 날): 녹화 분할 브라우저 확인 완료(채널 스와프로 분할·이어짐 정상, 사용자 확인) → `feat/record-split-on-change` main 병합(83073d8), 병합 후 verify 초록, origin/main push. 병합 완료 브랜치 2개(feat/chzzk-hls-volume · feat/record-split-on-change) 삭제
+- 버전(같은 날): 첫 push에서 버전 업 누락(사용자 지적 — main push = Vercel 즉시 배포) → v1.7.0으로 후속 커밋(6e90e2d, feat 3건 = 마이너)·push. CONVENTIONS.md 버전 섹션에 "main push = 즉시 배포" 명시(787c07d). 참고: GitHub 저장소가 StreamFusion → MongBok으로 이전됨 — origin URL 갱신 필요(리다이렉트로는 동작)
 - 미해결: 없음 — reviewer 지적 패턴 정리 2건은 큐 대기
 - 다음 작업: 큐의 패턴 정리 2건
 
