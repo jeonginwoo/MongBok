@@ -119,14 +119,16 @@ export const useScreenRecorder = () => {
       liveCategory: zone1.liveCategory,
     };
 
-    // 기준 미설정(녹화 시작 직후) 또는 1번 채널 자체가 교체된 경우 —
-    // 교체는 분할 대상이 아니므로 기준만 갱신한다
-    if (!baseline || baseline.key !== key) {
+    // 기준 미설정(녹화 시작 직후)이면 기준만 잡고 분할하지 않는다
+    if (!baseline) {
       zone1BaselineRef.current = next;
       return;
     }
 
+    // 1번 채널 교체(위치 스와프 포함)도 방제/카테고리 변경과 같이 분할 대상 —
+    // 파일명이 1번 채널 기준이므로 채널이 바뀌면 파일도 나뉘는 것이 맞다
     if (
+      baseline.key !== key ||
       baseline.liveTitle !== next.liveTitle ||
       baseline.liveCategory !== next.liveCategory
     ) {
