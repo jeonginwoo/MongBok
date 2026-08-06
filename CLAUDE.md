@@ -34,9 +34,9 @@ npm run dev                   # dev server — runtime behavior can only be chec
   explicitly — never imply a feature was verified when it wasn't.
 - Never claim a task done unless `bash scripts/verify.sh` passes. On FAIL, read
   only the failing part of `build/last-verify.log` (grep/tail) — never the whole log.
-- eslint has two rules temporarily downgraded to warn (`no-unused-vars`,
-  `react-hooks/rules-of-hooks`) while existing debt is paid off — see the
-  PROGRESS work queue. Never add NEW warnings of these kinds.
+- eslint has one rule temporarily downgraded to warn (`no-unused-vars`) while
+  existing debt is paid off — see the PROGRESS work queue. Never add NEW
+  warnings of this kind.
 - Code comments in Korean, explaining *why*, not *what*.
 - Git and Next.js conventions live in `docs/CONVENTIONS.md` — read it before
   committing or adding routes / platform APIs / external image domains.

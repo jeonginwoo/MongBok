@@ -5,9 +5,9 @@
 ## 현재 상태 (2026-08-06)
 
 - **버전:** v1.6.0 — 멀티뷰 핵심 기능(4개 플랫폼·레이아웃·녹화·프리셋) 안정화 단계
-- **진행:** Next.js 컨벤션 전수 검토 완료 — 발견된 위반 4건 모두 수정·커밋됨
-- **검증 상태:** verify.sh 초록 + 컨벤션 검토 변경분 브라우저 확인 완료 (2026-08-06, 이상 없음)
-- **다음 작업:** 작업 큐 최상단 — 훅 조기 반환 리팩터링 (브랜치 파서 진행)
+- **진행:** 훅 조기 반환 부채 23건(5개 파일) 상환 완료 — eslint `react-hooks/rules-of-hooks` error 복원됨
+- **검증 상태:** verify.sh 초록(rules-of-hooks=error 상태) + 5개 컴포넌트 브라우저 확인 완료 (2026-08-06, 이상 없음)
+- **다음 작업:** 작업 큐 최상단 — 미사용 변수 정리 (~35건)
 - **차단 요소:** 없음
 
 ## 결정 기록 (Decision Log)
@@ -25,7 +25,7 @@
 > 계획이 합의된, 커밋 단위로 잘게 쪼갠 작업만 넣는다. 작업 중 발견한 후속 일감은
 > `- [ ]`로 추가만 한다 — 몰래 실행 금지(scope creep 차단).
 
-- [ ] 훅 조기 반환 리팩터링: `if (!x) return null`이 훅 호출보다 앞에 있는 패턴 제거 (대상 5개 파일: `ChannelListChannelInfo.jsx` · `LiveCategory.jsx` · `LiveTags.jsx` · `DraggableChat.jsx` · `DraggableView.jsx`). 완료 후 eslint `react-hooks/rules-of-hooks`를 error로 복원. ※ 렌더 순서에 영향 주는 변경이므로 파일당 브라우저 동작 확인 필수 — react-compiler 활성화 상태라 특히 위험
+- [x] 훅 조기 반환 리팩터링: `if (!x) return null`이 훅 호출보다 앞에 있는 패턴 제거 (대상 5개 파일: `ChannelListChannelInfo.jsx` · `LiveCategory.jsx` · `LiveTags.jsx` · `DraggableChat.jsx` · `DraggableView.jsx`). eslint `react-hooks/rules-of-hooks` error 복원 포함. 완료 2026-08-06 — verify 초록, 5개 컴포넌트 브라우저 확인 완료(이상 없음)
 - [ ] 미사용 변수 정리 (~35건): 데드코드는 삭제, 의도적 보존(레이아웃 정의 등)은 `_` 프리픽스. 완료 후 eslint `no-unused-vars`를 error로 복원
 - [x] `"use client"` 누락 11개 파일 명시 (컨벤션 전수 검토 2026-08-06에서 발견): 컴포넌트 8(ControllerArea · ManualArea · ChannelListChannelInfo · LiveCategory · LiveTags · UserCount · ChatRow · RatioSelector) + 훅 3(useLayoutManager · usePopupWindow · useScreenRecorder). 완료 2026-08-06 — verify 초록, 브라우저 화면 로드 확인 완료
 - [x] 상대경로 import 9건 `@/` 별칭 전환: useSoopChat(2) · SettingsArea(1) · ChatView(5) · PresetSelector(1). 완료 2026-08-06 — verify 초록
@@ -43,6 +43,12 @@
 - 미해결: <다음 세션으로 넘기는 것>
 - 다음 작업: <구체적으로>
 ```
+
+### 2026-08-06 — 훅 조기 반환 리팩터링 + rules-of-hooks error 복원
+
+- 완료: 조기 반환(`if (!x) return null`)이 훅보다 앞에 있던 23건을 5개 파일에서 훅 뒤로 이동 — Info 계열 3개(LiveCategory · LiveTags · ChannelListChannelInfo)는 단순 이동, Draggable 2개(DraggableChat · DraggableView)는 훅 인자가 channel을 참조해 옵셔널 체이닝 동반. eslint `react-hooks/rules-of-hooks`를 error로 복원. 브랜치 refactor/hooks-early-return에서 커밋 3건(6ed0eb6 · aaa4c82 · c8ec50a), 각 커밋 verify 초록. reviewer 에이전트 검토 통과(코드 결함 없음). 브라우저 확인 완료(2026-08-06, 이상 없음): 채널 목록 스켈레톤·툴팁·오프라인 표시, 영상/채팅 뷰 렌더·드래그·HLS·연결 상태 오버레이 — react-compiler 최적화 대상 편입에 따른 이상 없음
+- 미해결: 없음
+- 다음 작업: 작업 큐 최상단 — 미사용 변수 정리(~35건), 완료 후 `no-unused-vars` error 복원
 
 ### 2026-08-06 — Next.js 컨벤션 전수 검토 + 위반 4건 수정
 
