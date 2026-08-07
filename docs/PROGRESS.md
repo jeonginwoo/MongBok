@@ -4,10 +4,10 @@
 
 ## 현재 상태 (2026-08-07)
 
-- **버전:** v1.7.0 — 멀티뷰 핵심 기능(4개 플랫폼·레이아웃·녹화·프리셋) 안정화 단계
-- **진행:** 패턴 정리 ①(ChzzkHlsPlayer 렌더 중 ref 미러 → useEffect 미러) 완료·브라우저 확인 후 main 병합. push는 보류 — 남은 패턴 정리 ②(SettingsArea)까지 마친 뒤 패치 버전 업과 함께 한 번에 배포(버전은 배포 단위 규칙)
-- **검증 상태:** 병합 후 main에서 verify.sh 초록 + 브라우저 확인 완료(2026-08-07). main이 origin/main보다 1커밋 앞섬(push 대기)
-- **다음 작업:** 작업 큐의 패턴 정리 ② (SettingsArea 비순수 updater) → 완료 후 v1.7.1 배포
+- **버전:** v1.7.1 — 멀티뷰 핵심 기능(4개 플랫폼·레이아웃·녹화·프리셋) 안정화 단계
+- **진행:** reviewer 지적 패턴 정리 ①(ChzzkHlsPlayer ref 미러)·②(SettingsArea 비순수 updater) 완료, v1.7.1로 함께 배포. 같은 패턴 잔존분(ControlButtonGroup) 큐 등록
+- **검증 상태:** 병합 후 main에서 verify.sh 초록 + 브라우저 확인 완료(2026-08-07)
+- **다음 작업:** 작업 큐 최상단 — `ControlButtonGroup.jsx` 같은 패턴 정리
 - **차단 요소:** 없음
 
 ## 결정 기록 (Decision Log)
@@ -29,7 +29,8 @@
 - [x] 치지직 HLS 볼륨 통합: 마지막 사용자 설정 `{volume, muted}`를 `atomWithStorage`로 보존, 새 플레이어 배치 시 초기값으로 상속(배치 후엔 독립). 저장은 사용자 조작 핸들러(뮤트 버튼·슬라이더)에서만. 저장 상태가 뮤트면 `needsUnmute` 건너뜀. 완료 2026-08-06 — 커밋 6ac970b, verify 초록, reviewer APPROVE, 브라우저 확인 완료(2026-08-07, 정상) → main 병합(67fd624)
 - [x] 1번 채널 방제/카테고리 변경 시 녹화 분할(설정 토글, 기본 꺼짐): 1차 구현(recorder 정지 → 새 파일 열기, 03a6972+083e0b7)은 브라우저 테스트에서 분할 시 녹화 전체 종료 — 저장 대화상자로 시작한 녹화(폴더 미지정)는 회전 파일을 열 수 없어 설계상 전체 종료로 빠지는 구조였음. 준비-후-교체 방식으로 재설계(4b1b90f): 새 파일·새 recorder를 먼저 준비해 교체 후 이전 것 정지 — 실패 시 분할만 건너뛰고 기존 녹화 유지(스낵바 알림), 프레임 공백 없음. 세그먼트별 writable/chunks 클로저 바인딩. 파일명에 라이브 카테고리 추가 포함. verify 초록. **브랜치 `feat/record-split-on-change` 브라우저 재확인 후 병합 대기**
 - [x] `ChzzkHlsPlayer.jsx`의 렌더 중 ref 미러 패턴 3곳(latestUrlRef·targetLatencyRef·storedVolumeRef)을 `useEffect` 미러로 정리 (reviewer 지적 — react-compiler 환경에서 Rules of React 위반. 기존 관행이라 볼륨 커밋에서는 미수정, 파일 단위로 일괄 정리). 완료 2026-08-07 — 같은 패턴 1곳(onErrorRef) 추가 발견해 4곳 일괄 정리, 커밋 b836600, verify 초록, reviewer APPROVE(stale 읽기 경로 전수 추적 — 없음), 브라우저 확인 완료(재생·볼륨 상속·딜레이 설정 정상) → main 병합
-- [ ] `SettingsArea.jsx`의 setState updater 내부 `localStorage.setItem` 패턴 정리 (reviewer 지적 — 비순수 updater, StrictMode 이중 실행·react-compiler 가정 위반. 기존 핸들러 전반의 관행이라 파일 단위로 일괄 정리)
+- [x] `SettingsArea.jsx`의 setState updater 내부 `localStorage.setItem` 패턴 정리 (reviewer 지적 — 비순수 updater, StrictMode 이중 실행·react-compiler 가정 위반. 기존 핸들러 전반의 관행이라 파일 단위로 일괄 정리). 완료 2026-08-07 — 해당 키 전부 atomWithStorage라 수동 setItem 15곳은 중복으로 판명, 이동 아닌 삭제(updater 5곳 순수화·죽은 validateBoolean 게이트 제거·폴더 해제는 RESET). 커밋 41bbb17, verify 초록, reviewer APPROVE, 브라우저 확인 완료(토글·알림음·폴더·셀렉트·JSON 패널 정상) → main 병합
+- [ ] `ControlButtonGroup.jsx`의 같은 패턴 정리 (SettingsArea 정리 시 reviewer 지적 — updater 내부 `validateBoolean`+수동 `setItem` 4곳: controllerExpanded·pointerEventsEnabled·showCurrentTime·themeMode. 전부 atomWithStorage라 수동 setItem은 중복, 삭제로 정리. showCurrentTime·pointerEventsEnabled는 SettingsArea와 양쪽 토글 키라 현재 비대칭 상태)
 - [x] 훅 조기 반환 리팩터링: `if (!x) return null`이 훅 호출보다 앞에 있는 패턴 제거 (대상 5개 파일: `ChannelListChannelInfo.jsx` · `LiveCategory.jsx` · `LiveTags.jsx` · `DraggableChat.jsx` · `DraggableView.jsx`). eslint `react-hooks/rules-of-hooks` error 복원 포함. 완료 2026-08-06 — verify 초록, 5개 컴포넌트 브라우저 확인 완료(이상 없음)
 - [x] 미사용 변수 정리 (34건): 데드코드는 삭제, 의도적 보존(레이아웃 정의 등)은 `_` 프리픽스. eslint `no-unused-vars` error 복원 포함. 완료 2026-08-06 — verify 초록, reviewer APPROVE, 브라우저 확인 완료(채팅 재연결·컨트롤러 버튼·화면 로드 이상 없음)
 - [x] `"use client"` 누락 11개 파일 명시 (컨벤션 전수 검토 2026-08-06에서 발견): 컴포넌트 8(ControllerArea · ManualArea · ChannelListChannelInfo · LiveCategory · LiveTags · UserCount · ChatRow · RatioSelector) + 훅 3(useLayoutManager · usePopupWindow · useScreenRecorder). 완료 2026-08-06 — verify 초록, 브라우저 화면 로드 확인 완료
@@ -48,6 +49,12 @@
 - 미해결: <다음 세션으로 넘기는 것>
 - 다음 작업: <구체적으로>
 ```
+
+### 2026-08-07 — 패턴 정리 ②: SettingsArea 비순수 updater 정리 + v1.7.1 배포
+
+- 완료: `SettingsArea.jsx`의 setState updater 내부 부수효과 5곳(자동 숨김·자동 녹화·녹화 분할·알림음·현재 시간 토글)을 렌더 값 기반 직접 set으로 순수화 — StrictMode 이중 실행 시 알림음 2회 재생 가능성도 함께 해소. 분석 결과 해당 키 전부가 `atomWithStorage`(set 시 동기 저장)라 수동 `localStorage.setItem` 15곳은 위치 문제가 아닌 중복 — 이동 아닌 삭제로 정리. 폴더 해제는 `setRecordSaveDirName(RESET)`으로(키 제거+기본값, 기존과 최종 상태 동일), 알림음 핸들러의 `setData` 3곳은 기존 useEffect가 커버해 삭제, 수동 setItem만 게이트하던 `validateBoolean` 4곳도 죽은 로직이라 제거. 브랜치 `refactor/settings-area-pure-updaters` 커밋 41bbb17, verify 초록, reviewer APPROVE(키별 atomWithStorage 여부·쓰기 타이밍 의존·RESET 동치성 전수 확인). 브라우저 확인 완료(토글 5종 저장·새로고침 유지, 알림음 1회 재생, 폴더 지정/해제+분할 자동 꺼짐, 셀렉트류, JSON 패널 — 사용자 확인) → main 병합(fast-forward), 병합 후 verify 초록. 보류 중이던 패턴 정리 ①과 함께 v1.7.1(패치)로 push·배포
+- 미해결: 없음
+- 다음 작업: 큐 최상단 — `ControlButtonGroup.jsx` 같은 패턴 정리(reviewer 지적: updater 내부 validateBoolean+setItem 4곳, showCurrentTime·pointerEventsEnabled는 SettingsArea와 비대칭 상태)
 
 ### 2026-08-07 — 패턴 정리 ①: ChzzkHlsPlayer 렌더 중 ref 미러 → useEffect 미러
 
