@@ -33,11 +33,11 @@ import {
   TouchApp as TouchAppIcon,
 } from "@mui/icons-material";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { RESET } from "jotai/utils";
 import {
   validatePreferences,
   applyPreferences,
   validateThemeMode,
-  validateBoolean,
 } from "@/utils/preferences";
 import {
   pointerEventsEnabledAtom,
@@ -344,7 +344,6 @@ export default function SettingsArea({ onClose }) {
       await setRecordDirectory(handle);
       setRecordSaveDirHandle(handle);
       setRecordSaveDirName(handle.name);
-      window.localStorage.setItem("recordSaveDirName", JSON.stringify(handle.name));
     } catch (e) {
       if (e.name !== "AbortError") console.error("폴더 선택 실패:", e);
     }
@@ -353,14 +352,13 @@ export default function SettingsArea({ onClose }) {
   const handleClearRecordDirectory = async () => {
     await clearRecordDirectory();
     setRecordSaveDirHandle(null);
-    setRecordSaveDirName("");
-    window.localStorage.removeItem("recordSaveDirName");
+    // RESET은 localStorage 키 제거 + 기본값("") 복귀 — 기존 "빈 문자열 저장 후 키 삭제"와 최종 상태 동일
+    setRecordSaveDirName(RESET);
 
     // 녹화 분할은 저장 폴더가 전제이므로 폴더 해제 시 함께 끈다
     // ("폴더 미지정 + 분할 켜짐" 상태가 남지 않도록)
     if (recordSplitOnZone1Change) {
       setRecordSplitOnZone1Change(false);
-      window.localStorage.setItem("recordSplitOnZone1Change", JSON.stringify(false));
       setSnackbar({
         open: true,
         message: "녹화 저장 폴더가 해제되어 녹화 분할도 함께 꺼졌습니다.",
@@ -370,25 +368,11 @@ export default function SettingsArea({ onClose }) {
   };
 
   const handleToggleAutoHideOffline = () => {
-    setAutoHideOffline((prev) => {
-      const nextState = !prev;
-      const validation = validateBoolean(nextState, "autoHideOffline");
-      if (validation === true) {
-        window.localStorage.setItem("autoHideOffline", JSON.stringify(nextState));
-      }
-      return nextState;
-    });
+    setAutoHideOffline(!autoHideOffline);
   };
 
   const handleToggleAutoRecord = () => {
-    setAutoRecordEnabled((prev) => {
-      const nextState = !prev;
-      const validation = validateBoolean(nextState, "autoRecordEnabled");
-      if (validation === true) {
-        window.localStorage.setItem("autoRecordEnabled", JSON.stringify(nextState));
-      }
-      return nextState;
-    });
+    setAutoRecordEnabled(!autoRecordEnabled);
   };
 
   const handleToggleRecordSplitOnZone1Change = () => {
@@ -401,66 +385,39 @@ export default function SettingsArea({ onClose }) {
       });
       return;
     }
-    setRecordSplitOnZone1Change((prev) => {
-      const nextState = !prev;
-      const validation = validateBoolean(nextState, "recordSplitOnZone1Change");
-      if (validation === true) {
-        window.localStorage.setItem("recordSplitOnZone1Change", JSON.stringify(nextState));
-      }
-      return nextState;
-    });
+    setRecordSplitOnZone1Change(!recordSplitOnZone1Change);
   };
 
   const handleChangeRecordStopCondition = (event, newCondition) => {
-    if (newCondition !== null) {
-      setRecordStopCondition(newCondition);
-      window.localStorage.setItem("recordStopCondition", JSON.stringify(newCondition));
-    }
+    if (newCondition !== null) setRecordStopCondition(newCondition);
   };
 
   const handleChangeRecordQuality = (event, newQuality) => {
-    if (newQuality !== null) {
-      setRecordQuality(newQuality);
-      window.localStorage.setItem("recordQuality", JSON.stringify(newQuality));
-    }
+    if (newQuality !== null) setRecordQuality(newQuality);
   };
 
   const handleChangeRecordFrameRate = (event, newFrameRate) => {
-    if (newFrameRate !== null) {
-      setRecordFrameRate(newFrameRate);
-      window.localStorage.setItem("recordFrameRate", JSON.stringify(newFrameRate));
-    }
+    if (newFrameRate !== null) setRecordFrameRate(newFrameRate);
   };
 
   const handleChangeRecordCodec = (event, newCodec) => {
-    if (newCodec !== null) {
-      setRecordCodec(newCodec);
-      window.localStorage.setItem("recordCodec", JSON.stringify(newCodec));
-    }
+    if (newCodec !== null) setRecordCodec(newCodec);
   };
 
   const handleToggleRecordSound = () => {
-    setRecordSoundEnabled((prev) => {
-      const nextState = !prev;
-      window.localStorage.setItem("recordSoundEnabled", JSON.stringify(nextState));
-      setData(getLocalStorageDataString());
-      if (nextState) playNotificationSound(recordSoundType, recordSoundVolume);
-      return nextState;
-    });
+    const nextState = !recordSoundEnabled;
+    setRecordSoundEnabled(nextState);
+    if (nextState) playNotificationSound(recordSoundType, recordSoundVolume);
   };
 
   const handleChangeRecordSoundType = (event) => {
     const newType = event.target.value;
     setRecordSoundType(newType);
-    window.localStorage.setItem("recordSoundType", JSON.stringify(newType));
-    setData(getLocalStorageDataString());
     playNotificationSound(newType, recordSoundVolume);
   };
 
   const handleChangeRecordSoundVolume = (event, newVolume) => {
     setRecordSoundVolume(newVolume);
-    window.localStorage.setItem("recordSoundVolume", JSON.stringify(newVolume));
-    setData(getLocalStorageDataString());
   };
 
   const handleCopy = () => {
@@ -511,20 +468,11 @@ export default function SettingsArea({ onClose }) {
   };
 
   const handleChangePointerEvents = (event, newMode) => {
-    if (newMode !== null) {
-      setPointerEventsEnabled(newMode);
-      window.localStorage.setItem("pointerEventsEnabled", JSON.stringify(newMode));
-    }
+    if (newMode !== null) setPointerEventsEnabled(newMode);
   };
 
   const handleToggleCurrentTime = () => {
-    setShowCurrentTime((prev) => {
-      const nextState = !prev;
-      if (validateBoolean(nextState, "showCurrentTime") === true) {
-        window.localStorage.setItem("showCurrentTime", JSON.stringify(nextState));
-      }
-      return nextState;
-    });
+    setShowCurrentTime(!showCurrentTime);
   };
 
   const handleChangeCurrentTimePosition = (event, newPosition) => {
@@ -535,12 +483,10 @@ export default function SettingsArea({ onClose }) {
 
   const handleChangePointColor = (color) => {
     setPointColor(color);
-    window.localStorage.setItem("pointColor", JSON.stringify(color));
   };
 
   const handleChangeChatFontSize = (event, newValue) => {
     setChatFontSizeAdjustment(newValue);
-    window.localStorage.setItem("chatFontSizeAdjustment", JSON.stringify(newValue));
   };
 
   // 값이 바뀌면 치지직 플레이어가 재생성되므로, 드래그 중에는 draft로만 표시하고
@@ -548,7 +494,6 @@ export default function SettingsArea({ onClose }) {
   const handleCommitChzzkHlsLatency = (event, newValue) => {
     setChzzkHlsLatencyDraft(null);
     setChzzkHlsLatency(newValue);
-    window.localStorage.setItem("chzzkHlsLatency", JSON.stringify(newValue));
   };
 
   const successAnimation = { "100%": { color: "success.main" } };
