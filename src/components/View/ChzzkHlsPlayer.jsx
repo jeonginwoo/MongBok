@@ -70,7 +70,9 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
   const hlsRef = useRef(null);
   const hideTimerRef = useRef(null);
   const onErrorRef = useRef(onError);
-  onErrorRef.current = onError;
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
 
   const [playing, setPlaying] = useState(true);
   const [muted, setMuted] = useState(false);
@@ -93,7 +95,9 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
   // 60초 폴링마다 URL의 서명 토큰이 갱신되어 문자열이 바뀔 수 있으므로,
   // 재생 중에는 새 URL을 무시하고 에러 복구 시에만 최신 URL로 재로딩한다.
   const latestUrlRef = useRef(hlsUrl);
-  latestUrlRef.current = hlsUrl;
+  useEffect(() => {
+    latestUrlRef.current = hlsUrl;
+  }, [hlsUrl]);
 
   // 목표 딜레이 설정 (설정 패널에서 0.1초 단위 조절, 잘못된 저장값은 기본값으로)
   const rawLatency = Number(useAtomValue(chzzkHlsLatencyAtom));
@@ -101,7 +105,9 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
     ? Math.min(CHZZK_HLS_LATENCY_MAX, Math.max(CHZZK_HLS_LATENCY_MIN, rawLatency))
     : CHZZK_HLS_LATENCY_DEFAULT;
   const targetLatencyRef = useRef(targetLatency);
-  targetLatencyRef.current = targetLatency;
+  useEffect(() => {
+    targetLatencyRef.current = targetLatency;
+  }, [targetLatency]);
 
   // 자동재생 소리 켜기 시도는 최초 1회만 (설정 변경·에러 복구로 플레이어를
   // 재생성해도 사용자의 음소거/볼륨 상태를 건드리지 않는다)
@@ -113,7 +119,9 @@ export default function ChzzkHlsPlayer({ hlsUrl, channel, pointerEventsEnabled, 
   // 최초 렌더 값을 고정하면 저장값이 아니라 기본값을 상속할 수 있다
   const storedVolume = useAtomValue(chzzkHlsVolumeAtom);
   const storedVolumeRef = useRef(storedVolume);
-  storedVolumeRef.current = storedVolume;
+  useEffect(() => {
+    storedVolumeRef.current = storedVolume;
+  }, [storedVolume]);
   const setStoredVolume = useSetAtom(chzzkHlsVolumeAtom);
 
   // 사용자 조작(뮤트 버튼·슬라이더)에서만 저장한다. volumechange 이벤트에서
