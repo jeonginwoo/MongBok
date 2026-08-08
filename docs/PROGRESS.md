@@ -4,10 +4,10 @@
 
 ## 현재 상태 (2026-08-09)
 
-- **버전:** v1.7.2 — 멀티뷰 핵심 기능(4개 플랫폼·레이아웃·녹화·프리셋) 안정화 단계
-- **진행:** 사용자 리포트 버그 2건 수정·배포 — ① 녹화 종료 후 저장 중에도 녹화중으로 오판, ② 프리셋 변경 경고 다이얼로그가 녹화 영역과 겹치고 리모컨 분리 시 UI 깨짐
-- **검증 상태:** main에서 verify.sh 초록 + 브라우저 확인 완료(2026-08-09, 사용자 — 도킹·리모컨 분리 양쪽)
-- **다음 작업:** 작업 큐 최상단 — `ControlButtonGroup.jsx` 같은 패턴 정리
+- **버전:** v1.7.3 — 멀티뷰 핵심 기능(4개 플랫폼·레이아웃·녹화·프리셋) 안정화 단계
+- **진행:** 패턴 정리 ③ 완료 — `ControlButtonGroup.jsx` updater 순수화·중복 localStorage 저장 삭제
+- **검증 상태:** main에서 verify.sh 초록 + 브라우저 확인 완료(2026-08-09, 사용자 — 단축키 토글·새로고침 유지 정상)
+- **다음 작업:** 작업 큐 소진에 가까움 — 남은 항목 2건은 모두 "이 영역 다시 만질 때" 성격, 새 작업 선정 필요
 - **차단 요소:** 없음
 
 ## 결정 기록 (Decision Log)
@@ -31,7 +31,8 @@
 - [x] `ChzzkHlsPlayer.jsx`의 렌더 중 ref 미러 패턴 3곳(latestUrlRef·targetLatencyRef·storedVolumeRef)을 `useEffect` 미러로 정리 (reviewer 지적 — react-compiler 환경에서 Rules of React 위반. 기존 관행이라 볼륨 커밋에서는 미수정, 파일 단위로 일괄 정리). 완료 2026-08-07 — 같은 패턴 1곳(onErrorRef) 추가 발견해 4곳 일괄 정리, 커밋 b836600, verify 초록, reviewer APPROVE(stale 읽기 경로 전수 추적 — 없음), 브라우저 확인 완료(재생·볼륨 상속·딜레이 설정 정상) → main 병합
 - [x] `SettingsArea.jsx`의 setState updater 내부 `localStorage.setItem` 패턴 정리 (reviewer 지적 — 비순수 updater, StrictMode 이중 실행·react-compiler 가정 위반. 기존 핸들러 전반의 관행이라 파일 단위로 일괄 정리). 완료 2026-08-07 — 해당 키 전부 atomWithStorage라 수동 setItem 15곳은 중복으로 판명, 이동 아닌 삭제(updater 5곳 순수화·죽은 validateBoolean 게이트 제거·폴더 해제는 RESET). 커밋 41bbb17, verify 초록, reviewer APPROVE, 브라우저 확인 완료(토글·알림음·폴더·셀렉트·JSON 패널 정상) → main 병합
 - [ ] 녹화 파일명 초 단위 충돌 가드 (reviewer 지적 MINOR — teardown 선행으로 저장 완료 전 재녹화가 가능해져, 같은 초에 같은 1번 채널 조합이면 파일명이 겹쳐 완성본을 덮어쓸 수 있음. `getDisplayMedia` 픽커 시간 때문에 실사용상 희박 — 이 영역 다시 만질 때 유니크 가드 추가)
-- [ ] `ControlButtonGroup.jsx`의 같은 패턴 정리 (SettingsArea 정리 시 reviewer 지적 — updater 내부 `validateBoolean`+수동 `setItem` 4곳: controllerExpanded·pointerEventsEnabled·showCurrentTime·themeMode. 전부 atomWithStorage라 수동 setItem은 중복, 삭제로 정리. showCurrentTime·pointerEventsEnabled는 SettingsArea와 양쪽 토글 키라 현재 비대칭 상태)
+- [x] `ControlButtonGroup.jsx`의 같은 패턴 정리 (SettingsArea 정리 시 reviewer 지적 — updater 내부 `validateBoolean`+수동 `setItem` 4곳: controllerExpanded·pointerEventsEnabled·showCurrentTime·themeMode. 전부 atomWithStorage라 수동 setItem은 중복, 삭제로 정리. showCurrentTime·pointerEventsEnabled는 SettingsArea와 양쪽 토글 키라 현재 비대칭 상태). 완료 2026-08-09 — 같은 패턴 1곳(chatFontSizeAdjustment 수동 setItem) 추가 발견해 5곳 일괄 정리, 죽은 validate 게이트 제거(handleChangeTheme 통째 제거 포함). 커밋 700f964+8cd89d7, verify 초록, reviewer APPROVE(5개 키 동기 atomWithStorage·stale 읽기 경로 없음 확인), 브라우저 확인 완료(단축키 토글 5종·새로고침 유지 정상) → main 병합, v1.7.3
+- [ ] `ControlButtonGroup.jsx` `applyLiveStatusUpdate`의 `setChannels` updater 내부 `"channels"` setItem 정리 (패턴 정리 ③에서 발견 — `channelsAtom`은 plain atom이고 저장 형태가 `{zoneId}` 프로젝션이라 중복 아님·삭제 불가, updater 밖으로 이동 필요. 같은 값 재기록이라 실해 없음, 이 영역 다시 만질 때 처리)
 - [x] 훅 조기 반환 리팩터링: `if (!x) return null`이 훅 호출보다 앞에 있는 패턴 제거 (대상 5개 파일: `ChannelListChannelInfo.jsx` · `LiveCategory.jsx` · `LiveTags.jsx` · `DraggableChat.jsx` · `DraggableView.jsx`). eslint `react-hooks/rules-of-hooks` error 복원 포함. 완료 2026-08-06 — verify 초록, 5개 컴포넌트 브라우저 확인 완료(이상 없음)
 - [x] 미사용 변수 정리 (34건): 데드코드는 삭제, 의도적 보존(레이아웃 정의 등)은 `_` 프리픽스. eslint `no-unused-vars` error 복원 포함. 완료 2026-08-06 — verify 초록, reviewer APPROVE, 브라우저 확인 완료(채팅 재연결·컨트롤러 버튼·화면 로드 이상 없음)
 - [x] `"use client"` 누락 11개 파일 명시 (컨벤션 전수 검토 2026-08-06에서 발견): 컴포넌트 8(ControllerArea · ManualArea · ChannelListChannelInfo · LiveCategory · LiveTags · UserCount · ChatRow · RatioSelector) + 훅 3(useLayoutManager · usePopupWindow · useScreenRecorder). 완료 2026-08-06 — verify 초록, 브라우저 화면 로드 확인 완료
@@ -50,6 +51,12 @@
 - 미해결: <다음 세션으로 넘기는 것>
 - 다음 작업: <구체적으로>
 ```
+
+### 2026-08-09 — 패턴 정리 ③: ControlButtonGroup updater 순수화 + v1.7.3 배포
+
+- 완료: `ControlButtonGroup.jsx`의 토글 updater 내부 `validateBoolean`+수동 `setItem` 3곳(controllerExpanded·pointerEventsEnabled·showCurrentTime)을 순수 토글로 축소, 같은 패턴 2곳 추가 정리 — handleChangeTheme 통째 제거(유일 호출자 handleToggleTheme가 light/dark만 생성해 validate가 죽은 로직, 직접 setThemeMode), handleChangeChatFontSize의 수동 setItem 삭제. 5개 키 전부 동기 저장 atomWithStorage라 수동 setItem은 중복 — 이동 아닌 삭제(SettingsArea 정리와 동일 판단). SettingsArea와 양쪽 토글 키(showCurrentTime·pointerEventsEnabled) 비대칭 해소. reviewer 지적 코스메틱(한 줄에 붙은 break/case) 후속 커밋으로 분리 수정. 브랜치 `refactor/control-button-group-pure-updaters` 커밋 700f964+8cd89d7, verify 초록, reviewer APPROVE(localStorage 직접 읽는 소비처는 전부 set 이후 이벤트 핸들러라 stale 읽기 없음 확인). 브라우저 확인 완료(사용자 — C/V/T/M/←→ 단축키 토글·새로고침 유지 정상) → main 병합(fast-forward), 병합 후 verify 초록, v1.7.3(패치) push·배포
+- 미해결: 없음
+- 다음 작업: 큐 잔여 2건은 모두 "이 영역 다시 만질 때" 성격(녹화 파일명 충돌 가드 · applyLiveStatusUpdate updater 내 channels setItem 이동) — 새 작업 선정 필요
 
 ### 2026-08-09 — 녹화 상태 오판·프리셋 경고 다이얼로그 버그 수정 + v1.7.2 배포
 
