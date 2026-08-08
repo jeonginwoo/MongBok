@@ -2,11 +2,11 @@
 
 > **모든 세션은 이 파일을 읽는 것으로 시작하고, 이 파일을 갱신하는 것으로 끝난다.**
 
-## 현재 상태 (2026-08-07)
+## 현재 상태 (2026-08-09)
 
-- **버전:** v1.7.1 — 멀티뷰 핵심 기능(4개 플랫폼·레이아웃·녹화·프리셋) 안정화 단계
-- **진행:** reviewer 지적 패턴 정리 ①(ChzzkHlsPlayer ref 미러)·②(SettingsArea 비순수 updater) 완료, v1.7.1로 함께 배포. 같은 패턴 잔존분(ControlButtonGroup) 큐 등록
-- **검증 상태:** 병합 후 main에서 verify.sh 초록 + 브라우저 확인 완료(2026-08-07)
+- **버전:** v1.7.2 — 멀티뷰 핵심 기능(4개 플랫폼·레이아웃·녹화·프리셋) 안정화 단계
+- **진행:** 사용자 리포트 버그 2건 수정·배포 — ① 녹화 종료 후 저장 중에도 녹화중으로 오판, ② 프리셋 변경 경고 다이얼로그가 녹화 영역과 겹치고 리모컨 분리 시 UI 깨짐
+- **검증 상태:** main에서 verify.sh 초록 + 브라우저 확인 완료(2026-08-09, 사용자 — 도킹·리모컨 분리 양쪽)
 - **다음 작업:** 작업 큐 최상단 — `ControlButtonGroup.jsx` 같은 패턴 정리
 - **차단 요소:** 없음
 
@@ -30,6 +30,7 @@
 - [x] 1번 채널 방제/카테고리 변경 시 녹화 분할(설정 토글, 기본 꺼짐): 1차 구현(recorder 정지 → 새 파일 열기, 03a6972+083e0b7)은 브라우저 테스트에서 분할 시 녹화 전체 종료 — 저장 대화상자로 시작한 녹화(폴더 미지정)는 회전 파일을 열 수 없어 설계상 전체 종료로 빠지는 구조였음. 준비-후-교체 방식으로 재설계(4b1b90f): 새 파일·새 recorder를 먼저 준비해 교체 후 이전 것 정지 — 실패 시 분할만 건너뛰고 기존 녹화 유지(스낵바 알림), 프레임 공백 없음. 세그먼트별 writable/chunks 클로저 바인딩. 파일명에 라이브 카테고리 추가 포함. verify 초록. **브랜치 `feat/record-split-on-change` 브라우저 재확인 후 병합 대기**
 - [x] `ChzzkHlsPlayer.jsx`의 렌더 중 ref 미러 패턴 3곳(latestUrlRef·targetLatencyRef·storedVolumeRef)을 `useEffect` 미러로 정리 (reviewer 지적 — react-compiler 환경에서 Rules of React 위반. 기존 관행이라 볼륨 커밋에서는 미수정, 파일 단위로 일괄 정리). 완료 2026-08-07 — 같은 패턴 1곳(onErrorRef) 추가 발견해 4곳 일괄 정리, 커밋 b836600, verify 초록, reviewer APPROVE(stale 읽기 경로 전수 추적 — 없음), 브라우저 확인 완료(재생·볼륨 상속·딜레이 설정 정상) → main 병합
 - [x] `SettingsArea.jsx`의 setState updater 내부 `localStorage.setItem` 패턴 정리 (reviewer 지적 — 비순수 updater, StrictMode 이중 실행·react-compiler 가정 위반. 기존 핸들러 전반의 관행이라 파일 단위로 일괄 정리). 완료 2026-08-07 — 해당 키 전부 atomWithStorage라 수동 setItem 15곳은 중복으로 판명, 이동 아닌 삭제(updater 5곳 순수화·죽은 validateBoolean 게이트 제거·폴더 해제는 RESET). 커밋 41bbb17, verify 초록, reviewer APPROVE, 브라우저 확인 완료(토글·알림음·폴더·셀렉트·JSON 패널 정상) → main 병합
+- [ ] 녹화 파일명 초 단위 충돌 가드 (reviewer 지적 MINOR — teardown 선행으로 저장 완료 전 재녹화가 가능해져, 같은 초에 같은 1번 채널 조합이면 파일명이 겹쳐 완성본을 덮어쓸 수 있음. `getDisplayMedia` 픽커 시간 때문에 실사용상 희박 — 이 영역 다시 만질 때 유니크 가드 추가)
 - [ ] `ControlButtonGroup.jsx`의 같은 패턴 정리 (SettingsArea 정리 시 reviewer 지적 — updater 내부 `validateBoolean`+수동 `setItem` 4곳: controllerExpanded·pointerEventsEnabled·showCurrentTime·themeMode. 전부 atomWithStorage라 수동 setItem은 중복, 삭제로 정리. showCurrentTime·pointerEventsEnabled는 SettingsArea와 양쪽 토글 키라 현재 비대칭 상태)
 - [x] 훅 조기 반환 리팩터링: `if (!x) return null`이 훅 호출보다 앞에 있는 패턴 제거 (대상 5개 파일: `ChannelListChannelInfo.jsx` · `LiveCategory.jsx` · `LiveTags.jsx` · `DraggableChat.jsx` · `DraggableView.jsx`). eslint `react-hooks/rules-of-hooks` error 복원 포함. 완료 2026-08-06 — verify 초록, 5개 컴포넌트 브라우저 확인 완료(이상 없음)
 - [x] 미사용 변수 정리 (34건): 데드코드는 삭제, 의도적 보존(레이아웃 정의 등)은 `_` 프리픽스. eslint `no-unused-vars` error 복원 포함. 완료 2026-08-06 — verify 초록, reviewer APPROVE, 브라우저 확인 완료(채팅 재연결·컨트롤러 버튼·화면 로드 이상 없음)
@@ -49,6 +50,12 @@
 - 미해결: <다음 세션으로 넘기는 것>
 - 다음 작업: <구체적으로>
 ```
+
+### 2026-08-09 — 녹화 상태 오판·프리셋 경고 다이얼로그 버그 수정 + v1.7.2 배포
+
+- 완료: ① 녹화 종료 후 파일 저장 중에도 `isRecordingAtom`이 켜져 있어 프리셋 변경 경고가 뜨던 문제(특히 브라우저 '공유 중지' 종료 경로) — `recorder.onstop`에서 teardown을 finalizeSegment보다 먼저 실행해 종료 즉시 상태 해제, 저장 표시는 `isSavingRecordingAtom` 유지 (커밋 1267e6e). ② 프리셋 변경 확인 다이얼로그가 화면 중앙에 떠 녹화본에 찍히고, 리모컨 분리 시 메인 문서 body portal + 팝업 head에만 있는 emotion 스타일 때문에 깨져 보이던 문제 — SettingsArea Paper(`position:relative`)로 portal 하고 Modal/backdrop을 절대배치로 전환해 도킹/분리 모두 설정 패널 안에만 표시 (커밋 0c8a5e7). verify 초록, reviewer APPROVE, 브라우저 확인 완료(사용자 — 도킹·리모컨 양쪽 정상) → v1.7.2(패치) push·배포
+- 미해결: reviewer MINOR — 저장 완료 전 재녹화 시 같은 초 파일명 충돌 가능성 (큐 등록, 실사용상 희박)
+- 다음 작업: 큐 최상단 — `ControlButtonGroup.jsx` 패턴 정리
 
 ### 2026-08-07 — 패턴 정리 ②: SettingsArea 비순수 updater 정리 + v1.7.1 배포
 
