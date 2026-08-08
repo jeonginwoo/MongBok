@@ -19,10 +19,6 @@ import { getLiveStatus } from "@/api/live";
 import { useAtom, useSetAtom, useAtomValue } from "jotai";
 import { styled } from "@mui/material/styles";
 import {
-  validateThemeMode,
-  validateBoolean
-} from "@/utils/preferences";
-import {
   pointerEventsEnabledAtom,
   showCurrentTimeAtom,
   channelsAtom,
@@ -147,63 +143,19 @@ export default function ControlButtonGroup({ fullscreen }) {
   };
 
   const handleToggleController = useCallback(() => {
-    setControllerExpanded((prev) => {
-      const nextState = !prev;
-      const validation = validateBoolean(nextState, "controllerExpanded");
-      if (validation === true) {
-        window.localStorage.setItem(
-          "controllerExpanded",
-          JSON.stringify(nextState)
-        );
-      } else {
-        console.error("controllerExpanded 유효성 검사 실패:", validation);
-      }
-      return nextState;
-    });
+    setControllerExpanded((prev) => !prev);
   }, [setControllerExpanded]);
 
-  const handleChangeTheme = useCallback((newMode) => {
-    const validation = validateThemeMode(newMode);
-    if (validation === true) {
-      setThemeMode(newMode);
-      window.localStorage.setItem("themeMode", JSON.stringify(newMode));
-    } else {
-      console.error("테마 모드 유효성 검사 실패:", validation);
-    }
-  }, [setThemeMode]);
-
   const handleToggleTheme = useCallback(() => {
-    const nextState = themeMode === "light" ? "dark" : "light";
-    handleChangeTheme(nextState);
-  }, [themeMode, handleChangeTheme]);
+    setThemeMode(themeMode === "light" ? "dark" : "light");
+  }, [themeMode, setThemeMode]);
 
   const handleTogglePointerEvents = useCallback(() => {
-    setPointerEventsEnabled((prev) => {
-      const nextState = !prev;
-      const validation = validateBoolean(nextState, "pointerEventsEnabled");
-      if (validation === true) {
-        window.localStorage.setItem(
-          "pointerEventsEnabled",
-          JSON.stringify(nextState)
-        );
-      } else {
-        console.error("pointerEventsEnabled 유효성 검사 실패:", validation);
-      }
-      return nextState;
-    });
+    setPointerEventsEnabled((prev) => !prev);
   }, [setPointerEventsEnabled]);
 
   const handleToggleCurrentTime = useCallback(() => {
-    setShowCurrentTime((prev) => {
-      const nextState = !prev;
-      const validation = validateBoolean(nextState, "showCurrentTime");
-      if (validation === true) {
-        window.localStorage.setItem("showCurrentTime", JSON.stringify(nextState));
-      } else {
-        console.error("showCurrentTime 유효성 검사 실패:", validation);
-      }
-      return nextState;
-    });
+    setShowCurrentTime((prev) => !prev);
   }, [setShowCurrentTime]);
 
   const handleToggleCurrentTimePosition = useCallback(() => {
@@ -212,10 +164,6 @@ export default function ControlButtonGroup({ fullscreen }) {
 
   const handleChangeChatFontSize = useCallback((event, newValue) => {
     setChatFontSizeAdjustment(newValue);
-    window.localStorage.setItem(
-      "chatFontSizeAdjustment",
-      JSON.stringify(newValue)
-    );
   }, [setChatFontSizeAdjustment]);
 
   const applyLiveStatusUpdate = useCallback((channelKey, liveStatus) => {
