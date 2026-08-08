@@ -357,7 +357,8 @@ export default function ControlButtonGroup({ fullscreen }) {
         case "P":
           event.preventDefault();
           if (viewCount > 0) handleToggleCurrentTimePosition();
-          break;        case "V":
+          break;
+        case "V":
           event.preventDefault();
           handleTogglePointerEvents();
           break;
