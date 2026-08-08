@@ -518,6 +518,8 @@ export default function SettingsArea({ onClose }) {
         borderColor: "divider",
         flexShrink: 0,
         overflow: "hidden",
+        // 패널 안에 가두는 다이얼로그(PresetSelector)의 절대배치 기준
+        position: "relative",
       }}
     >
       {/* 헤더 */}
@@ -573,7 +575,7 @@ export default function SettingsArea({ onClose }) {
               <InfoOutlinedIcon sx={{ fontSize: "1.4rem", color: "text.secondary", cursor: "default" }} />
             </Tooltip>
           </SettingLabel>
-          <PresetSelector />
+          <PresetSelector dialogContainerRef={paperRef} />
         </SettingRow>
 
         <Divider />

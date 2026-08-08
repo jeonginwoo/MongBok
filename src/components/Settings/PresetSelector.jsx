@@ -27,7 +27,7 @@ import {
   writePresets,
 } from "@/utils/settingPresets";
 
-export default function PresetSelector() {
+export default function PresetSelector({ dialogContainerRef }) {
   const [activePreset, setActivePreset] = useAtom(activeSettingPresetAtom);
   const channels = useAtomValue(channelsAtom);
   const pointColor = useAtomValue(pointColorAtom);
@@ -90,7 +90,19 @@ export default function PresetSelector() {
         ))}
       </StyledToggleButtonGroup>
 
-      <Dialog open={pendingPreset !== null} onClose={() => setPendingPreset(null)}>
+      <Dialog
+        open={pendingPreset !== null}
+        onClose={() => setPendingPreset(null)}
+        // 설정 패널(Paper) 안에 가둬서 띄운다 — 화면 중앙에 띄우면 녹화 영역과
+        // 겹쳐 녹화본에 다이얼로그가 찍히고, 리모컨(팝업 창) 분리 시에는 기본
+        // portal 대상(메인 문서 body)에 팝업용 emotion 스타일이 없어 UI가 깨진다
+        container={() => dialogContainerRef?.current ?? null}
+        // Modal 기본 fixed(창 전체) 배치를 패널 기준 절대배치로 전환
+        sx={{ position: "absolute" }}
+        slotProps={{ backdrop: { sx: { position: "absolute" } } }}
+        // 스크롤 잠금이 패널 스타일을 건드리지 않게 (패널은 이미 overflow: hidden)
+        disableScrollLock
+      >
         <DialogTitle sx={{ fontSize: "1.6rem" }}>
           녹화 중 프리셋 변경
         </DialogTitle>
