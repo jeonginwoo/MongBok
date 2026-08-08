@@ -435,8 +435,11 @@ export const useScreenRecorder = () => {
             // 회전으로 교체된 경우 ref는 이미 새 recorder를 가리킨다 —
             // 그때는 이 세그먼트의 파일만 닫고, 전체 종료는 하지 않는다
             const isFullStop = mediaRecorderRef.current === recorder;
-            await finalizeSegment(writable, chunks, fileName);
+            // 파일 저장이 끝나기 전에 녹화 상태부터 내린다 — 저장 중을 "녹화 중"으로
+            // 오판해 경고(프리셋 변경 확인 등)가 뜨지 않게. 저장 진행 표시는
+            // isSavingRecordingAtom이 따로 담당한다
             if (isFullStop) teardown();
+            await finalizeSegment(writable, chunks, fileName);
           };
 
           recorder.start(1000);
