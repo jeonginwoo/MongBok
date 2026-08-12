@@ -13,6 +13,7 @@ import ControllerArea from "@/components/ControllerArea";
 import SettingsArea from "@/components/SettingsArea";
 import GlobalSnackbar from "@/components/Info/GlobalSnackbar";
 import SettingChangeIndicator from "@/components/Info/SettingChangeIndicator";
+import RecordingSavingBanner from "@/components/Info/RecordingSavingBanner";
 
 import { useAtom, useAtomValue } from "jotai";
 import { viewCountAtom } from "@/atoms/setting";
@@ -25,6 +26,8 @@ export default function App() {
   const [controllerPopupOpen, setControllerPopupOpen] = useAtom(controllerPopupOpenAtom);
   const theme = useTheme();
   const canvasRef = useRef(null);
+  // 리모컨(컨트롤러+설정) 블록 래퍼 — 저장 중 배너와 프리셋 다이얼로그의 배치 기준
+  const remoteAreaRef = useRef(null);
 
   // 컨트롤러(+설정)를 리모컨처럼 별도 창으로 분리.
   // 너비는 내부 콘텐츠에 맞춰 자동 보정, 높이는 사용자가 자유롭게 조절.
@@ -110,10 +113,28 @@ export default function App() {
           : <ManualArea />}
           {(() => {
             const controllerBlock = (
-              <>
-                <ControllerArea fullscreen={fullscreen} />
-                {settingsOpen && <SettingsArea onClose={() => setSettingsOpen(false)} />}
-              </>
+              // 세로 래퍼: 저장 중 배너가 컨트롤러+설정 전체 폭 상단에 걸치고,
+              // 프리셋 다이얼로그(절대배치)가 두 패널을 포함한 가운데에 뜨는 기준이 된다
+              <Box
+                ref={remoteAreaRef}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  flexShrink: 0,
+                  position: "relative",
+                }}
+              >
+                <RecordingSavingBanner />
+                <Box sx={{ display: "flex", flex: 1, minHeight: 0 }}>
+                  <ControllerArea fullscreen={fullscreen} />
+                  {settingsOpen && (
+                    <SettingsArea
+                      onClose={() => setSettingsOpen(false)}
+                      dialogContainerRef={remoteAreaRef}
+                    />
+                  )}
+                </Box>
+              </Box>
             );
             // 팝업 창이 열려 있으면 컨트롤러+설정을 그 창으로 portal (jotai 상태는 공유되어 메인 창을 제어).
             // 팝업 전용 emotion 캐시로 감싸 스타일이 팝업 head에 직접 삽입되게 한다(프로덕션 누락 방지).

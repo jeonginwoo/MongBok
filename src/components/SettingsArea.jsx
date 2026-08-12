@@ -212,7 +212,8 @@ const formatSettingsJson = (settings) => {
 
 // ── Main component ────────────────────────────────────────────────
 
-export default function SettingsArea({ onClose }) {
+// dialogContainerRef: 프리셋 다이얼로그를 가둘 리모컨(컨트롤러+설정) 블록 래퍼 (page.jsx 소유)
+export default function SettingsArea({ onClose, dialogContainerRef }) {
   const [pointerEventsEnabled, setPointerEventsEnabled] = useAtom(pointerEventsEnabledAtom);
   const [showCurrentTime, setShowCurrentTime] = useAtom(showCurrentTimeAtom);
   const [currentTimePosition, setCurrentTimePosition] = useAtom(currentTimePositionAtom);
@@ -518,8 +519,6 @@ export default function SettingsArea({ onClose }) {
         borderColor: "divider",
         flexShrink: 0,
         overflow: "hidden",
-        // 패널 안에 가두는 다이얼로그(PresetSelector)의 절대배치 기준
-        position: "relative",
       }}
     >
       {/* 헤더 */}
@@ -575,7 +574,7 @@ export default function SettingsArea({ onClose }) {
               <InfoOutlinedIcon sx={{ fontSize: "1.4rem", color: "text.secondary", cursor: "default" }} />
             </Tooltip>
           </SettingLabel>
-          <PresetSelector dialogContainerRef={paperRef} />
+          <PresetSelector dialogContainerRef={dialogContainerRef} />
         </SettingRow>
 
         <Divider />
