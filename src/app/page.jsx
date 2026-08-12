@@ -4,9 +4,8 @@ import React, { useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { WarningAmber as WarningAmberIcon } from "@mui/icons-material";
 
 import ManualArea from "@/components/ManualArea";
 import ViewArea from "@/components/ViewArea";
@@ -17,13 +16,12 @@ import SettingChangeIndicator from "@/components/Info/SettingChangeIndicator";
 
 import { useAtom, useAtomValue } from "jotai";
 import { viewCountAtom } from "@/atoms/setting";
-import { settingsOpenAtom, isSavingRecordingAtom, controllerPopupOpenAtom } from "@/atoms/ui";
+import { settingsOpenAtom, controllerPopupOpenAtom } from "@/atoms/ui";
 import { usePopupWindow } from "@/hooks/usePopupWindow";
 
 export default function App() {
   const viewCount = useAtomValue(viewCountAtom);
   const [settingsOpen, setSettingsOpen] = useAtom(settingsOpenAtom);
-  const isSavingRecording = useAtomValue(isSavingRecordingAtom);
   const [controllerPopupOpen, setControllerPopupOpen] = useAtom(controllerPopupOpenAtom);
   const theme = useTheme();
   const canvasRef = useRef(null);
@@ -99,26 +97,6 @@ export default function App() {
           bgcolor: "background.default",
         }}
       >
-        {isSavingRecording && (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 1,
-              px: 2,
-              py: 0.8,
-              bgcolor: "warning.main",
-              color: "warning.contrastText",
-              flexShrink: 0,
-            }}
-          >
-            <WarningAmberIcon sx={{ fontSize: "1.6rem" }} />
-            <Typography sx={{ fontSize: "1.3rem", fontWeight: "bold" }}>
-              녹화 파일 저장 중... 브라우저를 닫으면 녹화본이 훼손될 수 있습니다.
-            </Typography>
-          </Box>
-        )}
         <Box
           sx={{
             display: "flex",
