@@ -2,12 +2,12 @@
 
 > **모든 세션은 이 파일을 읽는 것으로 시작하고, 이 파일을 갱신하는 것으로 끝난다.**
 
-## 현재 상태 (2026-08-12)
+## 현재 상태 (2026-08-17)
 
 - **버전:** v1.7.4 — 멀티뷰 핵심 기능(4개 플랫폼·레이아웃·녹화·프리셋) 안정화 단계
-- **진행:** 저장 중 배너·프리셋 다이얼로그 위치 개선 완료 — main 커밋 2건(85cd6c1·f6d4498), v1.7.4(패치)로 push·배포
-- **검증 상태:** verify.sh 초록 + reviewer APPROVE(2회) + 브라우저 확인 완료(2026-08-13, 사용자)
-- **다음 작업:** 새 작업 선정 (큐 잔여 2건은 "이 영역 다시 만질 때" 성격)
+- **진행:** 녹화 기능 기본 숨김 전환(설정 동기화 `recordFeatureEnabled` 직접 지정 시에만 노출) — 브랜치 `update/record-feature-hidden` 커밋 13e4942
+- **검증 상태:** verify.sh 초록 + reviewer APPROVE — **브라우저 확인 대기**
+- **다음 작업:** 브라우저 확인 → main 병합·배포 (update뿐이므로 패치 버전)
 - **차단 요소:** 없음
 
 ## 결정 기록 (Decision Log)
@@ -51,6 +51,13 @@
 - 미해결: <다음 세션으로 넘기는 것>
 - 다음 작업: <구체적으로>
 ```
+
+### 2026-08-17 — 녹화 기능 기본 숨김 전환 (설정 동기화로만 노출)
+
+- 완료: 새 설정 키 `recordFeatureEnabled`(atomWithStorage, 기본 false, UI 토글 없음) 도입 — 설정 동기화 JSON에 `"recordFeatureEnabled": true`를 직접 입력·저장해야만 녹화 관련 UI가 보인다. 숨김 대상: ① SettingsArea 녹화 설정 블록 전체(저장 위치~알림음 크기, 앞 Divider 포함) ② 컨트롤러 녹화 버튼 — 단 녹화 진행 중이면 종료 수단으로 계속 노출(`recordFeatureEnabled || isRecording`) ③ 매뉴얼 "방송 화면 녹화" 항목 + 설정 항목 설명에서 "녹화" 문구 제거 ④ SettingChangeIndicator의 녹화 관련 변경 알림. 자동 녹화 트리거도 플래그로 게이트(과거 설정으로 autoRecordEnabled가 남아 있어도 보이지 않는 녹화가 시작되지 않도록). 동기화 파이프라인 전체 연결: SETTINGS_ORDER·validatePreferences(validateBoolean)·SETTING_ATOM_MAP(프리셋 전환 시 적용/RESET)·설정 JSON 갱신 deps. 브랜치 `update/record-feature-hidden` 커밋 13e4942, verify 초록, reviewer APPROVE(라운드트립·훅 순서·JSX 균형·숨김 누출 경로 전수 확인)
+- 참고(reviewer MINOR, 설계 의도와 일치): 기본값 false는 localStorage에 안 쓰이므로 동기화 JSON에 키가 안 보이는 게 정상. 켠 뒤 키 없는 JSON을 저장하면 전체 교체 규칙에 따라 다시 꺼진다(기존 동기화 의미론 그대로)
+- 미해결: 브라우저 확인 대기 — ① 기본 상태에서 설정창·컨트롤러·매뉴얼에 녹화 흔적 없음 ② 동기화에 `"recordFeatureEnabled": true` 저장 시 새로고침 없이 즉시 노출 ③ 키 제거/false 저장 시 다시 숨김 ④ 녹화 중 버튼 유지 여부(가능하면)
+- 다음 작업: 브라우저 확인 → main 병합, 패치 버전 업·push
 
 ### 2026-08-12 — 저장 중 배너·프리셋 다이얼로그를 리모컨 블록 기준으로 이동
 
