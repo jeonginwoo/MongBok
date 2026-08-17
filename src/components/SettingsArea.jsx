@@ -51,7 +51,7 @@ import {
   CHZZK_HLS_LATENCY_MIN,
   CHZZK_HLS_LATENCY_MAX,
   CHZZK_HLS_LATENCY_DEFAULT,
-  recordFeatureEnabledAtom,
+  recordAtom,
   autoRecordEnabledAtom,
   recordStopConditionAtom,
   recordSplitOnZone1ChangeAtom,
@@ -223,7 +223,7 @@ export default function SettingsArea({ onClose, dialogContainerRef }) {
   const [chatFontSizeAdjustment, setChatFontSizeAdjustment] = useAtom(chatFontSizeAdjustmentAtom);
   const [autoHideOffline, setAutoHideOffline] = useAtom(autoHideOfflineAtom);
   const [chzzkHlsLatency, setChzzkHlsLatency] = useAtom(chzzkHlsLatencyAtom);
-  const recordFeatureEnabled = useAtomValue(recordFeatureEnabledAtom);
+  const record = useAtomValue(recordAtom);
   const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
   const [recordStopCondition, setRecordStopCondition] = useAtom(recordStopConditionAtom);
   const [recordSplitOnZone1Change, setRecordSplitOnZone1Change] = useAtom(recordSplitOnZone1ChangeAtom);
@@ -312,7 +312,7 @@ export default function SettingsArea({ onClose, dialogContainerRef }) {
     chatFontSizeAdjustment,
     autoHideOffline,
     chzzkHlsLatency,
-    recordFeatureEnabled,
+    record,
     autoRecordEnabled,
     recordStopCondition,
     recordSplitOnZone1Change,
@@ -823,8 +823,8 @@ export default function SettingsArea({ onClose, dialogContainerRef }) {
           </Box>
         </SettingRow>
 
-        {/* 녹화 설정 전체 — 기본 숨김. 설정 동기화에서 recordFeatureEnabled를 직접 지정해야 노출 */}
-        {recordFeatureEnabled && (<>
+        {/* 녹화 설정 전체 — 기본 숨김. 설정 동기화에서 record를 직접 지정해야 노출 */}
+        {record && (<>
 
         <Divider />
 

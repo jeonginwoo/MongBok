@@ -448,7 +448,7 @@ export const validatePreferences = async (dataToValidate) => {
         case "chzzkHlsLatency":
           validationResult = validateChzzkHlsLatency(value);
           break;
-        case "recordFeatureEnabled":
+        case "record":
           validationResult = validateBoolean(value, key);
           break;
         case "autoRecordEnabled":

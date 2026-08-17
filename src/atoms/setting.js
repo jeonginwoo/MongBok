@@ -135,10 +135,10 @@ export const showCurrentTimeAtom = atomWithStorage(
 );
 
 // 녹화 기능 노출 여부 — 기본 숨김. 설정 UI에 토글이 없으며,
-// 설정 동기화 JSON에 "recordFeatureEnabled": true 를 직접 지정해야만
+// 설정 동기화 JSON에 "record": true 를 직접 지정해야만
 // 녹화 관련 UI(컨트롤러 녹화 버튼·설정 항목·매뉴얼 안내)가 보인다
-export const recordFeatureEnabledAtom = atomWithStorage(
-  "recordFeatureEnabled",
+export const recordAtom = atomWithStorage(
+  "record",
   false,
   storage
 );
@@ -402,7 +402,7 @@ const SETTING_ATOM_MAP = {
   autoHideOffline: autoHideOfflineAtom,
   chzzkHlsLatency: chzzkHlsLatencyAtom,
   chzzkHlsVolume: chzzkHlsVolumeAtom,
-  recordFeatureEnabled: recordFeatureEnabledAtom,
+  record: recordAtom,
   autoRecordEnabled: autoRecordEnabledAtom,
   recordStopCondition: recordStopConditionAtom,
   recordSplitOnZone1Change: recordSplitOnZone1ChangeAtom,

@@ -10,7 +10,7 @@ export const SETTINGS_ORDER = [
   "autoHideOffline",
   "chzzkHlsLatency",
   "chzzkHlsVolume",
-  "recordFeatureEnabled",
+  "record",
   "autoRecordEnabled",
   "recordStopCondition",
   "recordSplitOnZone1Change",

@@ -26,7 +26,7 @@ import {
   themeModeAtom,
   pointColorAtom,
   chatFontSizeAdjustmentAtom,
-  recordFeatureEnabledAtom,
+  recordAtom,
   autoRecordEnabledAtom,
   autoHideOfflineAtom,
   recordStopConditionAtom,
@@ -88,7 +88,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [refreshEpoch, setRefreshEpoch] = useState(0);
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
   const [controllerPopupOpen, setControllerPopupOpen] = useAtom(controllerPopupOpenAtom);
-  const recordFeatureEnabled = useAtomValue(recordFeatureEnabledAtom);
+  const record = useAtomValue(recordAtom);
   const autoRecordEnabled = useAtomValue(autoRecordEnabledAtom);
   const autoHideOffline = useAtomValue(autoHideOfflineAtom);
   const autoHideOfflineRef = useRef(autoHideOffline);
@@ -133,14 +133,14 @@ export default function ControlButtonGroup({ fullscreen }) {
     // (녹화 종료는 recordStopCondition 기준으로 useScreenRecorder / applyLiveStatusUpdate에서 처리)
     // 녹화 기능이 숨김 상태면 트리거하지 않는다 — 과거 설정으로 autoRecordEnabled가
     // 남아 있어도 보이지 않는 녹화가 시작되는 일이 없도록
-    if (recordFeatureEnabled && autoRecordEnabled) {
+    if (record && autoRecordEnabled) {
       if (prevZone1LiveRef.current === false && isLive) {
         setIsRecording(true);
       }
     }
 
     prevZone1LiveRef.current = isLive;
-  }, [channels, recordFeatureEnabled, autoRecordEnabled, setIsRecording, isRecording]);
+  }, [channels, record, autoRecordEnabled, setIsRecording, isRecording]);
 
   const handleRecordButtonClick = () => {
     setIsRecording((prev) => !prev);
@@ -548,7 +548,7 @@ export default function ControlButtonGroup({ fullscreen }) {
             </Tooltip>
 
             {/* 녹화 버튼 — 기능 숨김 상태여도 녹화가 진행 중이면 종료 수단으로 계속 노출 */}
-            {(recordFeatureEnabled || isRecording) && (
+            {(record || isRecording) && (
               <Tooltip
                 slotProps={tooltipSlotProps}
                 title={isRecording ? "녹화중" : "녹화"}

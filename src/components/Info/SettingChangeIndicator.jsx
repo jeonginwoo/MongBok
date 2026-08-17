@@ -13,7 +13,7 @@ import {
   chzzkHlsLatencyAtom,
   controllerExpandedAtom,
   currentTimePositionAtom,
-  recordFeatureEnabledAtom,
+  recordAtom,
   autoRecordEnabledAtom,
   recordStopConditionAtom,
   recordSplitOnZone1ChangeAtom,
@@ -49,7 +49,7 @@ export default function SettingChangeIndicator() {
   const controllerExpanded = useAtomValue(controllerExpandedAtom);
   const currentTimePosition = useAtomValue(currentTimePositionAtom);
   // 녹화 기능 숨김 상태에서는 녹화 관련 변경 알림도 함께 숨긴다
-  const recordFeatureEnabled = useAtomValue(recordFeatureEnabledAtom);
+  const record = useAtomValue(recordAtom);
   const autoRecordEnabled = useAtomValue(autoRecordEnabledAtom);
   const recordStopCondition = useAtomValue(recordStopConditionAtom);
   const recordSplitOnZone1Change = useAtomValue(recordSplitOnZone1ChangeAtom);
@@ -127,13 +127,13 @@ export default function SettingChangeIndicator() {
     ) {
       message = `컨트롤러: ${controllerExpanded ? "펼침" : "접힘"}`;
     } else if (
-      recordFeatureEnabled &&
+      record &&
       prevAutoRecordEnabled !== undefined &&
       autoRecordEnabled !== prevAutoRecordEnabled
     ) {
       message = `자동 녹화: ${autoRecordEnabled ? "켜짐" : "꺼짐"}`;
     } else if (
-      recordFeatureEnabled &&
+      record &&
       prevRecordStopCondition !== undefined &&
       recordStopCondition !== prevRecordStopCondition
     ) {
@@ -145,7 +145,7 @@ export default function SettingChangeIndicator() {
           : "전체 채널"
       }`;
     } else if (
-      recordFeatureEnabled &&
+      record &&
       prevRecordSplitOnZone1Change !== undefined &&
       recordSplitOnZone1Change !== prevRecordSplitOnZone1Change
     ) {
@@ -153,37 +153,37 @@ export default function SettingChangeIndicator() {
     } else if (prevPointColor !== undefined && pointColor !== prevPointColor) {
       message = `포인트 컬러: ${POINT_COLORS[pointColor]?.label}`;
     } else if (
-      recordFeatureEnabled &&
+      record &&
       prevRecordQuality !== undefined &&
       recordQuality !== prevRecordQuality
     ) {
       message = `녹화 화질: ${recordQuality}`;
     } else if (
-      recordFeatureEnabled &&
+      record &&
       prevRecordFrameRate !== undefined &&
       recordFrameRate !== prevRecordFrameRate
     ) {
       message = `녹화 프레임: ${recordFrameRate}`;
     } else if (
-      recordFeatureEnabled &&
+      record &&
       prevRecordCodec !== undefined &&
       recordCodec !== prevRecordCodec
     ) {
       message = `녹화 코덱: ${recordCodec}`;
     } else if (
-      recordFeatureEnabled &&
+      record &&
       prevRecordSoundEnabled !== undefined &&
       recordSoundEnabled !== prevRecordSoundEnabled
     ) {
       message = `녹화 알림음: ${recordSoundEnabled ? "켜짐" : "꺼짐"}`;
     } else if (
-      recordFeatureEnabled &&
+      record &&
       prevRecordSoundType !== undefined &&
       recordSoundType !== prevRecordSoundType
     ) {
       message = `알림음: ${recordSoundType}`;
     } else if (
-      recordFeatureEnabled &&
+      record &&
       prevRecordSoundVolume !== undefined &&
       recordSoundVolume !== prevRecordSoundVolume
     ) {
@@ -196,7 +196,7 @@ export default function SettingChangeIndicator() {
   }, [
     ratioKey, layoutType, themeMode, showCurrentTime, pointerEventsEnabled,
     chatFontSizeAdjustment, chzzkHlsLatency, controllerExpanded, currentTimePosition,
-    recordFeatureEnabled,
+    record,
     autoRecordEnabled, recordStopCondition, recordSplitOnZone1Change, pointColor,
     recordQuality, recordFrameRate,
     recordCodec, recordSoundEnabled, recordSoundType, recordSoundVolume,
