@@ -24,7 +24,7 @@ import {
   CropPortrait as CropPortraitIcon,
 } from "@mui/icons-material";
 import { PLATFORM_COLORS } from "@/data/color";
-import { pointColorAtom } from "@/atoms/setting";
+import { pointColorAtom, recordFeatureEnabledAtom } from "@/atoms/setting";
 
 const Section = ({ title, children }) => (
   <Box sx={{ mb: 5 }}>
@@ -91,6 +91,8 @@ const Item = ({ icon, primary, secondary }) => (
 
 export default function ManualArea() {
   const pointColor = useAtomValue(pointColorAtom);
+  // 녹화 기능은 기본 숨김 — 설정 동기화에서 recordFeatureEnabled 지정 시에만 매뉴얼에도 노출
+  const recordFeatureEnabled = useAtomValue(recordFeatureEnabledAtom);
   return (
     <Box
       sx={{
@@ -221,7 +223,11 @@ export default function ManualArea() {
           <Item
             icon={<SettingsIcon />}
             primary="설정 (S)"
-            secondary="테마, 화면, 녹화, 동기화 설정을 변경할 수 있습니다."
+            secondary={
+              recordFeatureEnabled
+                ? "테마, 화면, 녹화, 동기화 설정을 변경할 수 있습니다."
+                : "테마, 화면, 동기화 설정을 변경할 수 있습니다."
+            }
           />
           <Item
             icon={<RefreshIcon />}
@@ -231,6 +237,7 @@ export default function ManualArea() {
               "배치된 채널은 60초, 목록의 채널은 10분마다 자동 갱신됩니다.",
             ]}
           />
+          {recordFeatureEnabled && (
           <Item
             icon={<FiberManualRecordIcon />}
             primary="방송 화면 녹화"
@@ -257,6 +264,7 @@ export default function ManualArea() {
               </Box>,
             ]}
           />
+          )}
           <Item
             icon={<CropPortraitIcon />}
             primary="리모컨 (별도 창으로 분리)"

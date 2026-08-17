@@ -26,6 +26,7 @@ import {
   themeModeAtom,
   pointColorAtom,
   chatFontSizeAdjustmentAtom,
+  recordFeatureEnabledAtom,
   autoRecordEnabledAtom,
   autoHideOfflineAtom,
   recordStopConditionAtom,
@@ -87,6 +88,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   const [refreshEpoch, setRefreshEpoch] = useState(0);
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
   const [controllerPopupOpen, setControllerPopupOpen] = useAtom(controllerPopupOpenAtom);
+  const recordFeatureEnabled = useAtomValue(recordFeatureEnabledAtom);
   const autoRecordEnabled = useAtomValue(autoRecordEnabledAtom);
   const autoHideOffline = useAtomValue(autoHideOfflineAtom);
   const autoHideOfflineRef = useRef(autoHideOffline);
@@ -129,14 +131,16 @@ export default function ControlButtonGroup({ fullscreen }) {
 
     // 자동 녹화: 1번 채널이 라이브를 시작하면 녹화 시작
     // (녹화 종료는 recordStopCondition 기준으로 useScreenRecorder / applyLiveStatusUpdate에서 처리)
-    if (autoRecordEnabled) {
+    // 녹화 기능이 숨김 상태면 트리거하지 않는다 — 과거 설정으로 autoRecordEnabled가
+    // 남아 있어도 보이지 않는 녹화가 시작되는 일이 없도록
+    if (recordFeatureEnabled && autoRecordEnabled) {
       if (prevZone1LiveRef.current === false && isLive) {
         setIsRecording(true);
       }
     }
 
     prevZone1LiveRef.current = isLive;
-  }, [channels, autoRecordEnabled, setIsRecording, isRecording]);
+  }, [channels, recordFeatureEnabled, autoRecordEnabled, setIsRecording, isRecording]);
 
   const handleRecordButtonClick = () => {
     setIsRecording((prev) => !prev);
@@ -543,26 +547,29 @@ export default function ControlButtonGroup({ fullscreen }) {
               </span>
             </Tooltip>
 
-            <Tooltip
-              slotProps={tooltipSlotProps}
-              title={isRecording ? "녹화중" : "녹화"}
-            >
-              <span>
-                <IconButton
-                  onClick={handleRecordButtonClick}
-                  disabled={!Object.values(channels).some(c => c.isVisible) && !isRecording}
-                  sx={{
-                    "& .MuiSvgIcon-root": {
-                      color: isRecording
-                        ? (pointColor === 'default' ? "red" : "primary.main")
-                        : "inherit",
-                    },
-                  }}
-                >
-                  <FiberManualRecordIcon sx={iconStyle} />
-                </IconButton>
-              </span>
-            </Tooltip>
+            {/* 녹화 버튼 — 기능 숨김 상태여도 녹화가 진행 중이면 종료 수단으로 계속 노출 */}
+            {(recordFeatureEnabled || isRecording) && (
+              <Tooltip
+                slotProps={tooltipSlotProps}
+                title={isRecording ? "녹화중" : "녹화"}
+              >
+                <span>
+                  <IconButton
+                    onClick={handleRecordButtonClick}
+                    disabled={!Object.values(channels).some(c => c.isVisible) && !isRecording}
+                    sx={{
+                      "& .MuiSvgIcon-root": {
+                        color: isRecording
+                          ? (pointColor === 'default' ? "red" : "primary.main")
+                          : "inherit",
+                      },
+                    }}
+                  >
+                    <FiberManualRecordIcon sx={iconStyle} />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
 
             <Tooltip
               slotProps={tooltipSlotProps}
