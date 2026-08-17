@@ -99,6 +99,46 @@ export const validateChzzkHlsLatency = (value) => {
   return true;
 };
 
+// chzzkHlsVolume은 {volume: 0~1, muted: boolean} 객체 — 새로 배치되는 치지직
+// 플레이어가 상속하는 초기값이라, 손상된 값이 저장되면 시작 볼륨·뮤트가 어긋난다.
+// 플레이어는 muted를 truthy로만 읽으므로 문자열 "false" 같은 값은 여기서 걸러 정규화한다
+export const validateChzzkHlsVolume = (value) => {
+  let obj = value;
+  if (typeof value === "string") {
+    try {
+      obj = JSON.parse(value);
+    } catch (e) {
+      return "'chzzkHlsVolume' 값이 유효한 JSON 객체(또는 JSON 문자열)가 아닙니다.";
+    }
+  }
+
+  if (typeof obj !== "object" || obj === null || Array.isArray(obj)) {
+    return "'chzzkHlsVolume' 값이 유효한 객체가 아닙니다.";
+  }
+
+  const allowedKeys = ["volume", "muted"];
+  const invalidKeys = Object.keys(obj).filter((k) => !allowedKeys.includes(k));
+  if (invalidKeys.length > 0) {
+    return `'chzzkHlsVolume'에 허용되지 않는 키가 있습니다: ${invalidKeys.join(
+      ", "
+    )}. 허용되는 키는: ${allowedKeys.join(", ")} 입니다.`;
+  }
+
+  const volume = obj.volume === undefined ? 1 : Number(obj.volume);
+  if (!Number.isFinite(volume) || volume < 0 || volume > 1) {
+    return `유효하지 않은 치지직 볼륨 값 '${obj.volume}'. 0에서 1 사이의 숫자여야 합니다.`;
+  }
+
+  let muted = obj.muted === undefined ? false : obj.muted;
+  if (muted === "true") muted = true;
+  if (muted === "false") muted = false;
+  if (typeof muted !== "boolean") {
+    return `'chzzkHlsVolume.muted'에 대한 유효하지 않은 값 '${obj.muted}'. boolean 또는 'true', 'false' 여야 합니다.`;
+  }
+
+  return { success: true, chzzkHlsVolume: { volume, muted } };
+};
+
 export const validateChatFontSizeAdjustment = (value) => {
   const num = Number(value);
   if (isNaN(num)) {
@@ -447,6 +487,13 @@ export const validatePreferences = async (dataToValidate) => {
           break;
         case "chzzkHlsLatency":
           validationResult = validateChzzkHlsLatency(value);
+          break;
+        case "chzzkHlsVolume":
+          validationResult = validateChzzkHlsVolume(value);
+          if (validationResult && typeof validationResult === "object" && validationResult.success) {
+            normalizedData.chzzkHlsVolume = validationResult.chzzkHlsVolume;
+            validationResult = true;
+          }
           break;
         case "record":
           validationResult = validateBoolean(value, key);

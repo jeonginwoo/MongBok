@@ -31,6 +31,8 @@ import {
   Groups as GroupsIcon,
   Person as PersonIcon,
   TouchApp as TouchAppIcon,
+  VolumeUp as VolumeUpIcon,
+  VolumeOff as VolumeOffIcon,
 } from "@mui/icons-material";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { RESET } from "jotai/utils";
@@ -48,6 +50,7 @@ import {
   chatFontSizeAdjustmentAtom,
   autoHideOfflineAtom,
   chzzkHlsLatencyAtom,
+  chzzkHlsVolumeAtom,
   CHZZK_HLS_LATENCY_MIN,
   CHZZK_HLS_LATENCY_MAX,
   CHZZK_HLS_LATENCY_DEFAULT,
@@ -223,6 +226,7 @@ export default function SettingsArea({ onClose, dialogContainerRef }) {
   const [chatFontSizeAdjustment, setChatFontSizeAdjustment] = useAtom(chatFontSizeAdjustmentAtom);
   const [autoHideOffline, setAutoHideOffline] = useAtom(autoHideOfflineAtom);
   const [chzzkHlsLatency, setChzzkHlsLatency] = useAtom(chzzkHlsLatencyAtom);
+  const [chzzkHlsVolume, setChzzkHlsVolume] = useAtom(chzzkHlsVolumeAtom);
   const record = useAtomValue(recordAtom);
   const [autoRecordEnabled, setAutoRecordEnabled] = useAtom(autoRecordEnabledAtom);
   const [recordStopCondition, setRecordStopCondition] = useAtom(recordStopConditionAtom);
@@ -255,6 +259,7 @@ export default function SettingsArea({ onClose, dialogContainerRef }) {
   const [isSliderHovered, setIsSliderHovered] = useState(false);
   const [isVolumeSliderHovered, setIsVolumeSliderHovered] = useState(false);
   const [isLatencySliderHovered, setIsLatencySliderHovered] = useState(false);
+  const [isChzzkVolumeSliderHovered, setIsChzzkVolumeSliderHovered] = useState(false);
   // 치지직 딜레이 슬라이더 드래그 중 임시값 (null이면 드래그 중 아님)
   const [chzzkHlsLatencyDraft, setChzzkHlsLatencyDraft] = useState(null);
 
@@ -312,6 +317,7 @@ export default function SettingsArea({ onClose, dialogContainerRef }) {
     chatFontSizeAdjustment,
     autoHideOffline,
     chzzkHlsLatency,
+    chzzkHlsVolume,
     record,
     autoRecordEnabled,
     recordStopCondition,
@@ -498,6 +504,23 @@ export default function SettingsArea({ onClose, dialogContainerRef }) {
   const handleCommitChzzkHlsLatency = (event, newValue) => {
     setChzzkHlsLatencyDraft(null);
     setChzzkHlsLatency(newValue);
+  };
+
+  // 치지직 볼륨 저장값 정규화 — 플레이어 상속 로직(ChzzkHlsPlayer)과 동일 기준.
+  // 이 값은 새로 배치되는 플레이어의 초기값일 뿐, 이미 배치된 플레이어는 독립이다
+  const rawChzzkHlsVolume = Number(chzzkHlsVolume?.volume);
+  const chzzkVolumeValue = Number.isFinite(rawChzzkHlsVolume)
+    ? Math.min(1, Math.max(0, rawChzzkHlsVolume))
+    : 1;
+  const chzzkMuted = Boolean(chzzkHlsVolume?.muted);
+
+  const handleToggleChzzkMute = () => {
+    setChzzkHlsVolume({ volume: chzzkVolumeValue, muted: !chzzkMuted });
+  };
+
+  const handleChangeChzzkVolume = (event, newValue) => {
+    // 플레이어 슬라이더와 동일하게 0으로 내리면 뮤트로 저장한다
+    setChzzkHlsVolume({ volume: newValue, muted: newValue === 0 });
   };
 
   const successAnimation = { "100%": { color: "success.main" } };
@@ -819,6 +842,54 @@ export default function SettingsArea({ onClose, dialogContainerRef }) {
               onChange={(e, v) => setChzzkHlsLatencyDraft(v)}
               onChangeCommitted={handleCommitChzzkHlsLatency}
               sx={{ color: "primary.main", width: 130, "& .MuiSlider-mark": { backgroundColor: "transparent" } }}
+            />
+          </Box>
+        </SettingRow>
+
+        {/* 치지직 볼륨 (새로 배치될 플레이어의 초기값) */}
+        <SettingRow>
+          <SettingLabel sx={{ display: "flex", alignItems: "center", gap: 0.5, whiteSpace: "nowrap" }}>
+            치지직 볼륨
+            <Tooltip
+              slotProps={tooltipSlotProps}
+              placement="top"
+              title={
+                <Box component="ul" sx={{ pl: 2, m: 0 }}>
+                  <li>새로 배치되는 치지직 플레이어가 시작할 볼륨·뮤트 상태입니다</li>
+                  <li>이미 배치된 플레이어에는 적용되지 않습니다 — 예: 1번 채널 소리를 유지한 채 뮤트로 바꿔두면 이후 배치하는 채널은 뮤트로 시작합니다</li>
+                  <li>플레이어에서 볼륨·뮤트를 조작하면 이 값도 마지막 조작값으로 갱신됩니다</li>
+                </Box>
+              }
+            >
+              <InfoOutlinedIcon sx={{ fontSize: "1.4rem", color: "text.secondary", cursor: "default" }} />
+            </Tooltip>
+          </SettingLabel>
+          <Box
+            sx={{ px: 1, display: "flex", alignItems: "center", gap: 1 }}
+            onMouseEnter={() => setIsChzzkVolumeSliderHovered(true)}
+            onMouseLeave={() => setIsChzzkVolumeSliderHovered(false)}
+          >
+            <IconButton
+              size="small"
+              onClick={handleToggleChzzkMute}
+              sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1 }}
+            >
+              {chzzkMuted || chzzkVolumeValue === 0 ? (
+                <VolumeOffIcon fontSize="small" />
+              ) : (
+                <VolumeUpIcon fontSize="small" />
+              )}
+            </IconButton>
+            <Slider
+              size="small"
+              value={chzzkMuted ? 0 : chzzkVolumeValue}
+              min={0}
+              max={1}
+              step={0.05}
+              valueLabelDisplay={isChzzkVolumeSliderHovered ? "on" : "auto"}
+              valueLabelFormat={(v) => `${Math.round(v * 100)}%`}
+              onChange={handleChangeChzzkVolume}
+              sx={{ color: "primary.main", width: 130 }}
             />
           </Box>
         </SettingRow>
