@@ -49,6 +49,7 @@ import {
   pointColorAtom,
   chatFontSizeAdjustmentAtom,
   autoHideOfflineAtom,
+  channelRefreshIntervalAtom,
   chzzkHlsLatencyAtom,
   chzzkHlsVolumeAtom,
   CHZZK_HLS_LATENCY_MIN,
@@ -225,6 +226,8 @@ export default function SettingsArea({ onClose, dialogContainerRef }) {
   const [pointColor, setPointColor] = useAtom(pointColorAtom);
   const [chatFontSizeAdjustment, setChatFontSizeAdjustment] = useAtom(chatFontSizeAdjustmentAtom);
   const [autoHideOffline, setAutoHideOffline] = useAtom(autoHideOfflineAtom);
+  // 설정 UI 없이 동기화 JSON으로만 조절하는 키 — JSON 패널 갱신과 안내 문구에만 사용
+  const channelRefreshInterval = useAtomValue(channelRefreshIntervalAtom);
   const [chzzkHlsLatency, setChzzkHlsLatency] = useAtom(chzzkHlsLatencyAtom);
   const [chzzkHlsVolume, setChzzkHlsVolume] = useAtom(chzzkHlsVolumeAtom);
   const record = useAtomValue(recordAtom);
@@ -316,6 +319,7 @@ export default function SettingsArea({ onClose, dialogContainerRef }) {
     pointerEventsEnabled,
     chatFontSizeAdjustment,
     autoHideOffline,
+    channelRefreshInterval,
     chzzkHlsLatency,
     chzzkHlsVolume,
     record,
@@ -1011,7 +1015,7 @@ export default function SettingsArea({ onClose, dialogContainerRef }) {
                 <Box component="ul" sx={{ pl: 2, m: 0 }}>
                   <li>녹화 중 1번 위치의 채널이 바뀌거나 그 채널의 방송 제목·라이브 카테고리가 바뀌면, 현재 파일을 저장하고 새 파일로 끊김 없이 이어서 녹화합니다 (화면 공유 권한을 다시 묻지 않음)</li>
                   <li>켜려면 '녹화 저장 폴더' 지정이 필요합니다 — 폴더를 해제하면 분할도 함께 꺼집니다</li>
-                  <li>방송 정보는 1분 주기로 갱신되므로 변경 감지에 최대 1분이 걸립니다</li>
+                  <li>방송 정보는 {channelRefreshInterval}초 주기로 갱신되므로 변경 감지에 최대 {channelRefreshInterval}초가 걸립니다</li>
                 </Box>
               }
             >

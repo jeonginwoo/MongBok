@@ -97,7 +97,8 @@ export const useScreenRecorder = () => {
   const zone1BaselineRef = useRef(null);
 
   // 1번 채널의 방제/카테고리 변경 감지 → 녹화 분할 요청.
-  // 방송 정보는 60초 폴링으로 갱신되므로 실제 변경 후 최대 1분 지연될 수 있다
+  // 방송 정보는 갱신 주기(channelRefreshInterval, 기본 60초) 폴링으로 갱신되므로
+  // 실제 변경 후 그 주기만큼 감지가 지연될 수 있다
   useEffect(() => {
     if (!isRecording) {
       zone1BaselineRef.current = null;

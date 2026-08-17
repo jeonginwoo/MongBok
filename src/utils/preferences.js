@@ -5,6 +5,8 @@ import { ALL_SETTINGS } from "@/data/settingsOrder";
 import {
   CHZZK_HLS_LATENCY_MIN,
   CHZZK_HLS_LATENCY_MAX,
+  CHANNEL_REFRESH_INTERVAL_MIN,
+  CHANNEL_REFRESH_INTERVAL_MAX,
   RATIO_DEFAULT,
 } from "@/atoms/setting";
 import {
@@ -83,6 +85,20 @@ export const validateRecordStopCondition = (value) => {
     return `유효하지 않은 녹화 종료 기준 값 '${value}'. 허용되는 값은: ${allowed.join(
       ", "
     )} 입니다.`;
+  }
+  return true;
+};
+
+// 소수 초는 카운트다운 표시(정수 감산)와 안 맞으므로 정수만 허용한다
+export const validateChannelRefreshInterval = (value) => {
+  const num = Number(value);
+  if (
+    isNaN(num) ||
+    !Number.isInteger(num) ||
+    num < CHANNEL_REFRESH_INTERVAL_MIN ||
+    num > CHANNEL_REFRESH_INTERVAL_MAX
+  ) {
+    return `유효하지 않은 채널 정보 갱신 주기 값 '${value}'. ${CHANNEL_REFRESH_INTERVAL_MIN}에서 ${CHANNEL_REFRESH_INTERVAL_MAX} 사이의 정수(초)여야 합니다.`;
   }
   return true;
 };
@@ -484,6 +500,9 @@ export const validatePreferences = async (dataToValidate) => {
           break;
         case "autoHideOffline":
           validationResult = validateBoolean(value, key);
+          break;
+        case "channelRefreshInterval":
+          validationResult = validateChannelRefreshInterval(value);
           break;
         case "chzzkHlsLatency":
           validationResult = validateChzzkHlsLatency(value);

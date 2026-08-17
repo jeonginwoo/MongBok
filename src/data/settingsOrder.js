@@ -8,6 +8,7 @@ export const SETTINGS_ORDER = [
   "pointerEventsEnabled",
   "chatFontSizeAdjustment",
   "autoHideOffline",
+  "channelRefreshInterval",
   "chzzkHlsLatency",
   "chzzkHlsVolume",
   "record",

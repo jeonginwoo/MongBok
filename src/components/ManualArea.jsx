@@ -24,7 +24,7 @@ import {
   CropPortrait as CropPortraitIcon,
 } from "@mui/icons-material";
 import { PLATFORM_COLORS } from "@/data/color";
-import { pointColorAtom, recordAtom } from "@/atoms/setting";
+import { pointColorAtom, recordAtom, channelRefreshIntervalAtom } from "@/atoms/setting";
 
 const Section = ({ title, children }) => (
   <Box sx={{ mb: 5 }}>
@@ -93,6 +93,7 @@ export default function ManualArea() {
   const pointColor = useAtomValue(pointColorAtom);
   // 녹화 기능은 기본 숨김 — 설정 동기화에서 record 지정 시에만 매뉴얼에도 노출
   const record = useAtomValue(recordAtom);
+  const channelRefreshInterval = useAtomValue(channelRefreshIntervalAtom);
   return (
     <Box
       sx={{
@@ -234,7 +235,7 @@ export default function ManualArea() {
             primary="채널 정보 새로고침 (R)"
             secondary={[
               "모든 채널의 라이브 상태와 시청자 수를 즉시 갱신합니다.",
-              "배치된 채널은 60초, 목록의 채널은 10분마다 자동 갱신됩니다.",
+              `배치된 채널은 ${channelRefreshInterval}초, 목록의 채널은 10분마다 자동 갱신됩니다.`,
             ]}
           />
           {record && (

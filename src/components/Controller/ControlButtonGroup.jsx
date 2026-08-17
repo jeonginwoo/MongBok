@@ -29,6 +29,7 @@ import {
   recordAtom,
   autoRecordEnabledAtom,
   autoHideOfflineAtom,
+  channelRefreshIntervalAtom,
   recordStopConditionAtom,
   ratioAtom,
   layoutTypeAtom,
@@ -82,9 +83,11 @@ export default function ControlButtonGroup({ fullscreen }) {
   );
   const isDragging = useAtomValue(isDraggingAtom);
   const [settingsOpen, setSettingsOpen] = useAtom(settingsOpenAtom);
-  const [timeToNextRefresh, setTimeToNextRefresh] = useState(60);
+  // 배치된 채널 자동 갱신 주기(초) — 설정 동기화 channelRefreshInterval 키로만 조절
+  const channelRefreshInterval = useAtomValue(channelRefreshIntervalAtom);
+  const [timeToNextRefresh, setTimeToNextRefresh] = useState(channelRefreshInterval);
   const [timeToNextListRefresh, setTimeToNextListRefresh] = useState(600);
-  // 수동 갱신 시 증가 → 60초 자동 갱신 타이머 재시작
+  // 수동 갱신 시 증가 → 자동 갱신 타이머 재시작
   const [refreshEpoch, setRefreshEpoch] = useState(0);
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
   const [controllerPopupOpen, setControllerPopupOpen] = useAtom(controllerPopupOpenAtom);
@@ -214,7 +217,7 @@ export default function ControlButtonGroup({ fullscreen }) {
   const handleRefresh = useCallback(async () => {
     if (refreshing) return;
     setRefreshing(true);
-    setTimeToNextRefresh(60);
+    setTimeToNextRefresh(channelRefreshInterval);
     setRefreshEpoch((prev) => prev + 1);
 
     try {
@@ -234,13 +237,13 @@ export default function ControlButtonGroup({ fullscreen }) {
     } finally {
       setTimeout(() => setRefreshing(false), 750);
     }
-  }, [channels, refreshing, applyLiveStatusUpdate]);
+  }, [channels, refreshing, applyLiveStatusUpdate, channelRefreshInterval]);
 
-  // zoneId가 부여된 채널만 갱신 (자동 60초 주기)
+  // zoneId가 부여된 채널만 갱신 (자동, 주기는 channelRefreshInterval 설정값)
   const handleAutoRefreshZoned = useCallback(async () => {
     if (refreshingRef.current) return;
     setRefreshing(true);
-    setTimeToNextRefresh(60);
+    setTimeToNextRefresh(channelRefreshInterval);
 
     try {
       const entries = Object.entries(channelsRef.current).filter(([, item]) => item.zoneId !== null);
@@ -259,7 +262,7 @@ export default function ControlButtonGroup({ fullscreen }) {
     } finally {
       setTimeout(() => setRefreshing(false), 750);
     }
-  }, [applyLiveStatusUpdate]); // channels/refreshing은 ref로 참조하므로 deps 불필요
+  }, [applyLiveStatusUpdate, channelRefreshInterval]); // channels/refreshing은 ref로 참조하므로 deps 불필요
 
   // zoneId가 없는 채널만 갱신 (자동 10분 주기)
   const handleAutoRefreshUnzoned = useCallback(async () => {
@@ -290,19 +293,20 @@ export default function ControlButtonGroup({ fullscreen }) {
     }
   }, [setChannels]); // channels/refreshing은 ref로 참조하므로 deps 불필요
 
-  // zoneId 채널: 60초마다 자동 갱신 (수동 갱신 시 refreshEpoch 증가로 타이머 재시작)
+  // zoneId 채널: channelRefreshInterval초마다 자동 갱신
+  // (수동 갱신 시 refreshEpoch 증가, 주기 설정 변경 시에도 타이머 재시작)
   useEffect(() => {
     if (!hasZonedChannels) return;
 
     // 인터벌이 새로 시작되므로 카운트다운도 함께 리셋
-    setTimeToNextRefresh(60);
+    setTimeToNextRefresh(channelRefreshInterval);
 
     const interval = setInterval(() => {
       handleAutoRefreshZoned();
-    }, 60000);
+    }, channelRefreshInterval * 1000);
 
     return () => clearInterval(interval);
-  }, [handleAutoRefreshZoned, hasZonedChannels, refreshEpoch]);
+  }, [handleAutoRefreshZoned, hasZonedChannels, refreshEpoch, channelRefreshInterval]);
 
   // zoneId 없는 채널: 10분마다 자동 갱신
   useEffect(() => {

@@ -176,6 +176,18 @@ export const autoHideOfflineAtom = atomWithStorage(
   storage
 );
 
+// 배치된(zoneId 부여) 채널의 방송 정보 자동 갱신 주기 (초)
+// 설정 UI 없이 설정 동기화 JSON으로만 조절한다 (record 키와 같은 방식).
+// 낮출수록 방제·라이브 상태 변화를 빨리 감지하지만 플랫폼 API 호출이 잦아진다
+export const CHANNEL_REFRESH_INTERVAL_MIN = 10;
+export const CHANNEL_REFRESH_INTERVAL_MAX = 600;
+export const CHANNEL_REFRESH_INTERVAL_DEFAULT = 60;
+export const channelRefreshIntervalAtom = atomWithStorage(
+  "channelRefreshInterval",
+  CHANNEL_REFRESH_INTERVAL_DEFAULT,
+  storage
+);
+
 // 치지직 HLS 플레이어 목표 딜레이 (초, 라이브 엣지로부터 유지할 버퍼 거리)
 // 기본 3초는 치지직 플레이리스트의 PART-HOLD-BACK 권장값과 동일.
 // 낮출수록 실시간에 가깝지만 버퍼링(스톨) 위험이 커진다
@@ -400,6 +412,7 @@ const SETTING_ATOM_MAP = {
   pointerEventsEnabled: pointerEventsEnabledAtom,
   chatFontSizeAdjustment: chatFontSizeAdjustmentAtom,
   autoHideOffline: autoHideOfflineAtom,
+  channelRefreshInterval: channelRefreshIntervalAtom,
   chzzkHlsLatency: chzzkHlsLatencyAtom,
   chzzkHlsVolume: chzzkHlsVolumeAtom,
   record: recordAtom,
