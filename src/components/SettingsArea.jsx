@@ -1053,9 +1053,9 @@ export default function SettingsArea({ onClose, dialogContainerRef }) {
               placement="top"
               title={
                 <Box component="ul" sx={{ pl: 2, m: 0 }}>
-                  <li>H.264: 호환성 최고, 대부분의 기기에서 재생 가능 (기본 권장) · GPU 하드웨어 인코딩 지원</li>
-                  <li>VP9: 파일 크기 약 30~50% 작음, 최신 브라우저 지원 · CPU 인코딩 위주, 부하 높음</li>
-                  <li>VP8: 구형 코덱, VP9보다 압축 효율 낮음 · CPU 인코딩, 부하 낮음</li>
+                  <li>H.264: 호환성 최고, 대부분의 기기에서 재생 가능 (기본 권장) · MP4로 저장 · GPU 하드웨어 인코딩 지원</li>
+                  <li>VP9: 파일 크기 약 30~50% 작음, 최신 브라우저 지원 · WebM으로 저장 · CPU 인코딩 위주, 부하 높음</li>
+                  <li>VP8: 구형 코덱, VP9보다 압축 효율 낮음 · WebM으로 저장 · CPU 인코딩, 부하 낮음</li>
                 </Box>
               }
             >
