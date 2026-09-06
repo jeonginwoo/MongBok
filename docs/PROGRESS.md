@@ -2,12 +2,12 @@
 
 > **모든 세션은 이 파일을 읽는 것으로 시작하고, 이 파일을 갱신하는 것으로 끝난다.**
 
-## 현재 상태 (2026-08-18)
+## 현재 상태 (2026-09-06)
 
-- **버전:** v1.7.7 — 멀티뷰 핵심 기능(4개 플랫폼·레이아웃·녹화·프리셋) 안정화 단계
-- **진행:** 배치 채널 정보 갱신 주기 설정 동기화 키 `channelRefreshInterval`(10~600초, 기본 60) 추가 완료 — v1.7.7(패치) push·배포
-- **검증 상태:** verify.sh 초록 + reviewer APPROVE + 브라우저 확인 완료(2026-08-18, 사용자)
-- **다음 작업:** 새 작업 선정
+- **버전:** v1.8.0 — 녹화 엔진 WebCodecs 전환(탐색 인덱스 내장) 완료
+- **진행:** 녹화 파이프라인 MediaRecorder → WebCodecs+워커 전면 교체, 4시간 녹화 검증 통과 — main 병합·버전 업 완료, push(=배포) 대기
+- **검증 상태:** verify.sh 초록 + 브라우저 확인 완료(2026-09-06, 사용자 — 4시간 녹화 싱크 유지)
+- **다음 작업:** push·배포 후 새 작업 선정
 - **차단 요소:** 없음
 
 ## 결정 기록 (Decision Log)
@@ -30,7 +30,7 @@
 - [x] 1번 채널 방제/카테고리 변경 시 녹화 분할(설정 토글, 기본 꺼짐): 1차 구현(recorder 정지 → 새 파일 열기, 03a6972+083e0b7)은 브라우저 테스트에서 분할 시 녹화 전체 종료 — 저장 대화상자로 시작한 녹화(폴더 미지정)는 회전 파일을 열 수 없어 설계상 전체 종료로 빠지는 구조였음. 준비-후-교체 방식으로 재설계(4b1b90f): 새 파일·새 recorder를 먼저 준비해 교체 후 이전 것 정지 — 실패 시 분할만 건너뛰고 기존 녹화 유지(스낵바 알림), 프레임 공백 없음. 세그먼트별 writable/chunks 클로저 바인딩. 파일명에 라이브 카테고리 추가 포함. verify 초록. **브랜치 `feat/record-split-on-change` 브라우저 재확인 후 병합 대기**
 - [x] `ChzzkHlsPlayer.jsx`의 렌더 중 ref 미러 패턴 3곳(latestUrlRef·targetLatencyRef·storedVolumeRef)을 `useEffect` 미러로 정리 (reviewer 지적 — react-compiler 환경에서 Rules of React 위반. 기존 관행이라 볼륨 커밋에서는 미수정, 파일 단위로 일괄 정리). 완료 2026-08-07 — 같은 패턴 1곳(onErrorRef) 추가 발견해 4곳 일괄 정리, 커밋 b836600, verify 초록, reviewer APPROVE(stale 읽기 경로 전수 추적 — 없음), 브라우저 확인 완료(재생·볼륨 상속·딜레이 설정 정상) → main 병합
 - [x] `SettingsArea.jsx`의 setState updater 내부 `localStorage.setItem` 패턴 정리 (reviewer 지적 — 비순수 updater, StrictMode 이중 실행·react-compiler 가정 위반. 기존 핸들러 전반의 관행이라 파일 단위로 일괄 정리). 완료 2026-08-07 — 해당 키 전부 atomWithStorage라 수동 setItem 15곳은 중복으로 판명, 이동 아닌 삭제(updater 5곳 순수화·죽은 validateBoolean 게이트 제거·폴더 해제는 RESET). 커밋 41bbb17, verify 초록, reviewer APPROVE, 브라우저 확인 완료(토글·알림음·폴더·셀렉트·JSON 패널 정상) → main 병합
-- [ ] 녹화 파일명 초 단위 충돌 가드 (reviewer 지적 MINOR — teardown 선행으로 저장 완료 전 재녹화가 가능해져, 같은 초에 같은 1번 채널 조합이면 파일명이 겹쳐 완성본을 덮어쓸 수 있음. `getDisplayMedia` 픽커 시간 때문에 실사용상 희박 — 이 영역 다시 만질 때 유니크 가드 추가)
+- [ ] 녹화 파일명 초 단위 충돌 가드 (reviewer 지적 MINOR — teardown 선행으로 저장 완료 전 재녹화가 가능해져, 같은 초에 같은 1번 채널 조합이면 파일명이 겹쳐 완성본을 덮어쓸 수 있음. `getDisplayMedia` 픽커 시간 때문에 실사용상 희박 — 이 영역 다시 만질 때 유니크 가드 추가. 2026-09-06 WebCodecs 전환은 이 영역 전면 재작성이었으나 4시간 검증을 마친 빌드를 흔들지 않으려 의도적 보류)
 - [x] `ControlButtonGroup.jsx`의 같은 패턴 정리 (SettingsArea 정리 시 reviewer 지적 — updater 내부 `validateBoolean`+수동 `setItem` 4곳: controllerExpanded·pointerEventsEnabled·showCurrentTime·themeMode. 전부 atomWithStorage라 수동 setItem은 중복, 삭제로 정리. showCurrentTime·pointerEventsEnabled는 SettingsArea와 양쪽 토글 키라 현재 비대칭 상태). 완료 2026-08-09 — 같은 패턴 1곳(chatFontSizeAdjustment 수동 setItem) 추가 발견해 5곳 일괄 정리, 죽은 validate 게이트 제거(handleChangeTheme 통째 제거 포함). 커밋 700f964+8cd89d7, verify 초록, reviewer APPROVE(5개 키 동기 atomWithStorage·stale 읽기 경로 없음 확인), 브라우저 확인 완료(단축키 토글 5종·새로고침 유지 정상) → main 병합, v1.7.3
 - [ ] `ControlButtonGroup.jsx` `applyLiveStatusUpdate`의 `setChannels` updater 내부 `"channels"` setItem 정리 (패턴 정리 ③에서 발견 — `channelsAtom`은 plain atom이고 저장 형태가 `{zoneId}` 프로젝션이라 중복 아님·삭제 불가, updater 밖으로 이동 필요. 같은 값 재기록이라 실해 없음, 이 영역 다시 만질 때 처리)
 - [x] 훅 조기 반환 리팩터링: `if (!x) return null`이 훅 호출보다 앞에 있는 패턴 제거 (대상 5개 파일: `ChannelListChannelInfo.jsx` · `LiveCategory.jsx` · `LiveTags.jsx` · `DraggableChat.jsx` · `DraggableView.jsx`). eslint `react-hooks/rules-of-hooks` error 복원 포함. 완료 2026-08-06 — verify 초록, 5개 컴포넌트 브라우저 확인 완료(이상 없음)
@@ -51,6 +51,12 @@
 - 미해결: <다음 세션으로 넘기는 것>
 - 다음 작업: <구체적으로>
 ```
+
+### 2026-09-06 — 녹화 엔진 WebCodecs 전환: 탐색 인덱스 내장·워커 인코딩·A/V 싱크 실측 (v1.8.0)
+
+- 완료: MediaRecorder → WebCodecs 파이프라인 전면 교체, 여러 세션에 걸친 브라우저 실측 디버깅 끝에 `feat/webcodecs-recorder` 커밋 aee4ff2 → main ff 병합. 발단은 사용자 질문 "녹화본이 인덱싱이 안 돼 재인코딩을 거친다" — MediaRecorder는 스트리밍용 파일(Cues/duration 없음)을 뱉는 구조라 앱 안에서 못 고침. ① **탐색 인덱스**: 신규 `recordPipeline.js`(워커 전용)가 webm-muxer/mp4-muxer(신규 의존성 2개)로 직접 먹싱, 파일 닫을 때 FileSystemWritableFileStream seek으로 Cues(WebM)/moov(MP4)·duration 기록 — ffmpeg 후처리 불필요, 키프레임 2초 고정으로 탐색 정밀도 확보. 컨테이너는 코덱이 결정(H.264→MP4·VP9/VP8→WebM, `recordFormat.js` 공용 표) — 비표준 H.264-in-WebM 제거, 파일명 확장자·픽커 accept 연동. ② **워커 인코딩**(`recordWorker.js`): 1차 구현(메인 스레드)은 콘솔 계측으로 영상·오디오 동시 유실 확인(57→44fps, 오디오 216→175청크/5s — 오디오는 VFR이 없으므로 동반 하락 = 스레드 정체 증명) → 캡처 읽기·인코딩·먹싱·파일 쓰기 전부 워커로 이동. 트랙 대신 MediaStreamTrackProcessor.readable을 transfer(트랙을 옮기면 메인의 stop/onended/readyState 상실), 파일은 FileSystemFileHandle을 넘겨 워커가 연다(writable은 구조화 복제 불가). 저장 중 배너·종료 경고는 워커의 state 메시지 기반으로 전환. ③ **A/V 싱크**: 두 트랙 타임스탬프 원점이 상이(실측 14일+ 차이 — strict 먹서 기본값이 오디오 전량을 조용히 거부해 무음 녹화가 1차 증상) → permissive/cross-track-offset + 시작 시 첫 샘플 도착 시각으로 클럭 오프셋 실측. 도착 순서 앵커링이 만들던 상수 오프셋(영상 인코더 초기화 지연 = 실측 17청크 ≈ 360ms만큼 소리 선행)은 초기화 구간 오디오를 큐로 보존해 제거. ④ **분할(회전)** 재설계: 새 세그먼트 예약 → 다음 키프레임에서 교체 — recorder 겹침·이중 인코딩 없이 프레임 공백 0, 실패 시 기존 녹화 유지 불변. ⑤ 시작 이중 실행 가드(startingRef), 빈 세그먼트 abort 정리, 처리량 계측(📊 5초 간격) 존치 — 이번 디버깅의 핵심 도구였음. verify 초록, 브라우저 확인 완료(사용자 — 무음→해결, 끊김→해결, 소리 선행→해결 순차 검증, 최종 4시간 녹화 끝까지 싱크 유지)
+- 미해결: ① 파일명 초 단위 충돌 가드 — 검증 마친 빌드 유지를 위해 의도적 보류(큐 항목에 추기) ② MediaRecorder 폴백 제거로 파이어폭스 녹화 불가(미지원 스낵바 안내) — Region Capture 등이 이미 크로미움 전제라 수용, 필요 시 재논의 ③ 초장시간(수십 시간) 클럭 드리프트 미검증 — 문제 시 타임스탬프 재보정 검토
+- 다음 작업: push·배포(v1.8.0 마이너 — feat 1건), 이후 새 작업 선정
 
 ### 2026-08-18 — 배치 채널 갱신 주기 동기화 키 channelRefreshInterval 추가
 
