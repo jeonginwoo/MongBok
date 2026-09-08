@@ -43,6 +43,22 @@ const STATS_INTERVAL_MS = 5000;
 // 인코더가 첫 청크를 영영 못 뱉는 비정상 상황에서 무한히 쌓이는 것만 막는다
 const PENDING_AUDIO_MAX = 512;
 
+// 클럭 오프셋 표본 수집 시간(ms). 이 시간 동안 영상 프레임·오디오 데이터의
+// (타임스탬프, 도착시각) 표본을 모아 최소 지연 기준으로 오프셋을 확정한다.
+// 영상 인코더 초기화(실측 ~360ms)와 겹쳐 돌므로 체감 추가 지연은 거의 없다
+const OFFSET_SETTLE_MS = 500;
+
+// AAC 인코더가 스트림 앞에 붙이는 프라이밍(무음 워밍업) 샘플 수의 통용값.
+// MP4에 이 정보를 실을 방법이 없어(mp4-muxer는 edit list 미지원) 그대로 두면
+// 재생 시 소리 전체가 이 길이(48kHz 기준 44ms)만큼 늦어진다 — 타임스탬프를
+// 앞당겨 상쇄한다. 실제 값이 인코더 구현마다 다를 수 있어(1024~2112) 체감이
+// 남으면 이 값을 조정한다
+const AAC_PRIMING_SAMPLES = 2112;
+
+// 분할 후 이전 세그먼트를 꼬리 오디오 수신을 위해 열어두는 최대 시간(ms).
+// 오디오가 침묵 등으로 끊겨도 이 시간이 지나면 닫는다
+const CLOSING_SEGMENT_TIMEOUT_MS = 1000;
+
 // 첫 샘플 대기 한도(ms). 화면 캡처는 정지 화면에서도 주기적으로 프레임을 주지만,
 // 끝내 오지 않으면 무한 대기 대신 여기서 끊어 사용자에게 알린다
 const FIRST_FRAME_TIMEOUT_MS = 15000;
@@ -101,16 +117,102 @@ export const createRecordPipeline = ({
   let width = 0;
   let height = 0;
   let videoMuxerCodec = null;
-  let audioTrackConfig = null; // 먹서에 넘길 { numberOfChannels, sampleRate }
+  let audioTrackConfig = null; // 먹서에 넘길 { codec, numberOfChannels, sampleRate }
+  // AAC 프라이밍 상쇄량(µs). AAC가 아닌 코덱은 0
+  let audioPrimingUs = 0;
 
   // 오디오 클럭 → 영상 클럭 변환 오프셋(µs). 두 트랙의 타임스탬프 원점은 완전히
-  // 다르다(실측 14일 이상 차이) — 시작 시 첫 샘플의 도착 시각을 공통 기준으로 실측한다
+  // 다르다(실측 14일 이상 차이) — 도착 시각을 공통 기준으로 실측해서 잇는다.
+  //
+  // 처음에는 "첫 샘플 한 쌍"의 도착 시각으로 쟀는데, 이 방식은 두 첫 샘플의
+  // 캡처→도착 지연이 대칭이라는 가정에 서 있다. readable을 워커로 transfer하면
+  // 워커 기동 동안 중계 큐에 샘플이 쌓이는데, 그 묵은 정도가 트랙마다 달라
+  // 비대칭이 그대로 상수 싱크 오차가 된다 — dev(워커 기동 느림)에서는 우연히
+  // 대칭이라 4시간 검증을 통과했지만 프로덕션 번들에서는 소리가 수백 ms 앞섰다.
+  //
+  // 그래서 표본 여러 개의 "최소 지연"으로 추정한다: 지연(도착시각 − 타임스탬프)이
+  // 가장 작은 표본이 가장 신선한 표본이고, 기동 백로그의 묵은 표본은 지연이 커서
+  // min에서 자동 탈락한다. 잔여 오차는 두 경로의 최소 전달 지연 차이(±10ms대)
   let audioToVideoOffsetUs = 0;
-  // 영상 기준시각이 잡히기 전에 도착한 오디오 (버리면 그 길이만큼 소리가 앞선다)
+  let offsetCommitted = false;
+  let videoMinLagUs = Infinity;
+  let audioMinLagUs = Infinity;
+  // 진단용: 첫 샘플의 지연 — 확정 시 "첫 샘플 방식이었다면 얼마나 틀렸을지"를 로그로 남긴다
+  let firstVideoLagUs = null;
+  let firstAudioLagUs = null;
+  let pipelineStartMs = 0;
+  // 오프셋 확정 전에 도착한 오디오 (버리면 그 길이만큼 파일 앞이 무음이 된다)
   const pendingAudio = [];
+
+  const sampleVideoLag = (timestampUs) => {
+    const lag = performance.now() * 1000 - timestampUs;
+    if (firstVideoLagUs === null) firstVideoLagUs = lag;
+    if (lag < videoMinLagUs) videoMinLagUs = lag;
+  };
+
+  // 오디오 버킷의 마지막 샘플이 캡처된 뒤에야 도착할 수 있으므로 버킷 "끝" 시각
+  // 기준으로 지연을 잰다 — 시작 시각(timestamp) 기준이면 버킷 길이만큼 오디오
+  // 원점을 늦게 추정해 소리가 그만큼 늦게 배치된다
+  let audioBucketUs = 0;
+  const sampleAudioLag = (audioData) => {
+    const bucketUs = audioData.duration || 0;
+    if (audioBucketUs === 0) audioBucketUs = bucketUs;
+    const lag = performance.now() * 1000 - (audioData.timestamp + bucketUs);
+    if (firstAudioLagUs === null) firstAudioLagUs = lag;
+    if (lag < audioMinLagUs) audioMinLagUs = lag;
+  };
+
+  // 표본이 충분해지면 오프셋을 확정한다. force는 초단편 녹화(표본 수집 시간보다
+  // 짧게 끝난 경우)에서 모아둔 오디오를 버리지 않기 위한 종료 시 강제 확정
+  const tryCommitOffset = (force = false) => {
+    if (offsetCommitted) return;
+    if (!audioEncoder) {
+      offsetCommitted = true;
+      return;
+    }
+    if (!Number.isFinite(videoMinLagUs) || !Number.isFinite(audioMinLagUs)) return;
+    if (!force && performance.now() - pipelineStartMs < OFFSET_SETTLE_MS) return;
+
+    audioToVideoOffsetUs = Math.round(audioMinLagUs - videoMinLagUs);
+    offsetCommitted = true;
+
+    const videoStaleMs = (firstVideoLagUs - videoMinLagUs) / 1000;
+    const audioStaleMs = (firstAudioLagUs - audioMinLagUs) / 1000;
+    console.info(
+      `🔊 [Record] A/V 클럭 오프셋 확정 — 첫 샘플 묵은 정도 영상 ${videoStaleMs.toFixed(0)}ms · ` +
+        `음성 ${audioStaleMs.toFixed(0)}ms, 첫 샘플 방식 대비 보정 ${(videoStaleMs - audioStaleMs).toFixed(0)}ms · ` +
+        `버킷 ${(audioBucketUs / 1000).toFixed(1)}ms · 프라이밍 상쇄 ${(audioPrimingUs / 1000).toFixed(0)}ms`
+    );
+  };
+
+  // 인코더는 decoderConfig(H.264 avcC · AAC AudioSpecificConfig 등)를 "첫 청크에만"
+  // 실어 보낸다. 분할로 만든 새 먹서는 그걸 받은 적이 없어 그대로 두면 코덱 초기화
+  // 정보가 빠진 파일이 나온다 — 첫 세그먼트만 재생되고 이후 분할본은 전부 재생 불가.
+  // 캐시해뒀다가 세그먼트마다 첫 청크에 다시 실어준다
+  let videoDecoderConfig = null;
+  let audioDecoderConfig = null;
 
   let activeSegment = null;
   let pendingSegment = null;
+  // 분할 직후, 늦게 도착하는 꼬리 오디오를 받기 위해 잠시 열어두는 이전 세그먼트.
+  // 오디오는 인코더 버퍼링 탓에 영상보다 ~100ms 늦게 도착한다 — 교체 즉시 닫으면
+  // 이전 파일 끝의 그만큼이 조용히 잘린다 (실측: 분할마다 5청크 ≈ 116ms 유실)
+  let closingSegment = null;
+  let closingTimer = null;
+  let closingPromise = Promise.resolve();
+
+  const finalizeClosingSegment = () => {
+    if (!closingSegment) return;
+    const segment = closingSegment;
+    closingSegment = null;
+    if (closingTimer) {
+      clearTimeout(closingTimer);
+      closingTimer = null;
+    }
+    closingPromise = completeSegment(segment).catch((e) =>
+      console.error("❌ [Record] 분할 세그먼트 마무리 실패:", e)
+    );
+  };
   let forceKeyFrame = false;
   let lastKeyFrameUs = -Infinity;
   let stopped = false;
@@ -123,8 +225,12 @@ export const createRecordPipeline = ({
   let videoChunksOut = 0;
   let audioChunksIn = 0;
   let audioChunksOut = 0;
+  let audioChunksDropped = 0;
   let droppedFrames = 0;
   let statsTimer = null;
+  // 실행 전체 누계 — 유실이 "시작 직후 정상 버림"인지 진행 중 이상인지 구분용
+  let audioChunksOutTotal = 0;
+  let audioAnomalyWarns = 0;
 
   const logStats = () => {
     const seconds = STATS_INTERVAL_MS / 1000;
@@ -132,13 +238,14 @@ export const createRecordPipeline = ({
     console.info(
       `📊 [Record] 입력 ${rate(framesIn)}fps · 인코딩 ${rate(framesEncoded)}fps · ` +
         `먹싱 ${rate(videoChunksOut)}fps · 음성 ${audioChunksIn}→${audioChunksOut}청크 · ` +
-        `누적 버림 ${droppedFrames} · 큐 ${videoEncoder?.encodeQueueSize ?? 0}`
+        `음성버림 ${audioChunksDropped} · 누적 버림 ${droppedFrames} · 큐 ${videoEncoder?.encodeQueueSize ?? 0}`
     );
     framesIn = 0;
     framesEncoded = 0;
     videoChunksOut = 0;
     audioChunksIn = 0;
     audioChunksOut = 0;
+    audioChunksDropped = 0;
   };
 
   const fail = (error) => {
@@ -182,6 +289,11 @@ export const createRecordPipeline = ({
     // 이 세그먼트의 0초에 해당하는 캡처 시각(영상 클럭). 첫 영상 키프레임에서
     // 정해지고, 오디오도 클럭 오프셋을 거쳐 같은 기준을 쓴다
     startUs: null,
+    // decoderConfig가 이 세그먼트의 먹서에 전달됐는지 (트랙별 첫 청크에서 주입)
+    videoConfigWritten: false,
+    audioConfigWritten: false,
+    // 분할로 닫힐 때 채워지는 경계 시각(다음 세그먼트 첫 키프레임, 영상 클럭)
+    endUs: null,
   });
 
   // 세그먼트 마무리. finalize()가 이 시점에 Cues(WebM)/moov(MP4)를 써 넣는다 —
@@ -203,15 +315,26 @@ export const createRecordPipeline = ({
   };
 
   const handleVideoChunk = (chunk, meta) => {
+    if (meta?.decoderConfig) videoDecoderConfig = meta.decoderConfig;
+
     // 분할 대기 중이면 키프레임에서 세그먼트를 교체한다 — 새 파일이 항상
     // 키프레임으로 시작하므로 프레임 공백도, 앞부분 깨짐도 없다
     if (pendingSegment && chunk.type === "key") {
       const previous = activeSegment;
       activeSegment = pendingSegment;
       pendingSegment = null;
-      completeSegment(previous).catch((e) =>
-        console.error("❌ [Record] 분할 세그먼트 마무리 실패:", e)
-      );
+      // 직전 회전분이 아직 열려 있으면(1초 안에 연속 분할) 먼저 닫는다
+      finalizeClosingSegment();
+      previous.endUs = chunk.timestamp;
+      if (audioEncoder) {
+        // 꼬리 오디오가 경계를 넘어올 때까지 열어둔다 — handleAudioChunk가 닫는다
+        closingSegment = previous;
+        closingTimer = setTimeout(finalizeClosingSegment, CLOSING_SEGMENT_TIMEOUT_MS);
+      } else {
+        closingPromise = completeSegment(previous).catch((e) =>
+          console.error("❌ [Record] 분할 세그먼트 마무리 실패:", e)
+        );
+      }
     }
 
     const segment = activeSegment;
@@ -219,38 +342,60 @@ export const createRecordPipeline = ({
     if (segment.startUs === null) segment.startUs = chunk.timestamp;
     const timestamp = chunk.timestamp - segment.startUs;
     if (timestamp < 0) return;
+    let muxMeta = meta;
+    if (!segment.videoConfigWritten && !meta?.decoderConfig && videoDecoderConfig) {
+      muxMeta = { ...meta, decoderConfig: videoDecoderConfig };
+    }
     try {
-      segment.muxer.addVideoChunk(chunk, meta, timestamp);
+      segment.muxer.addVideoChunk(chunk, muxMeta, timestamp);
+      segment.videoConfigWritten = true;
       videoChunksOut += 1;
     } catch (e) {
       console.error("❌ [Record] 영상 청크 먹싱 실패:", e);
     }
 
-    // 기준시각이 방금 확정됐다면 모아둔 오디오를 제자리에 내보낸다 — 키프레임
-    // 블록이 먼저 들어간 뒤라 컨테이너 순서도 자연스럽다. 청크 수 × 21ms가 곧
-    // 영상 인코더의 초기화 지연이다
-    if (pendingAudio.length > 0) {
+    // 기준시각과 오프셋이 모두 확정되면 모아둔 오디오를 제자리에 내보낸다 —
+    // 키프레임 블록이 먼저 들어간 뒤라 컨테이너 순서도 자연스럽다
+    tryCommitOffset();
+    if (offsetCommitted && pendingAudio.length > 0) {
       const queued = pendingAudio.splice(0);
       for (const [pendingChunk, pendingMeta] of queued) {
         muxAudioChunk(segment, pendingChunk, pendingMeta);
       }
       console.info(
-        `🔊 [Record] 영상 인코더 준비 동안 모아둔 오디오 ${queued.length}청크 방출`
+        `🔊 [Record] 오프셋 확정까지 모아둔 오디오 ${queued.length}청크 방출`
       );
     }
   };
 
   const muxAudioChunk = (segment, chunk, meta) => {
-    // 클럭 오프셋으로 영상 클럭에 맞춘 뒤 영상과 "같은" 세그먼트 기준시각을 뺀다.
-    // 도착 순서로 앵커링했던 이전 방식은 영상 인코더 초기화 지연(수백 ms)만큼
-    // 소리가 앞서 들리는 상수 오프셋을 만들었다. 같은 축을 쓰므로 분할 경계에서도
-    // 싱크가 다시 어긋나지 않는다
-    const timestamp = chunk.timestamp + audioToVideoOffsetUs - segment.startUs;
-    // 세그먼트 시작(첫 키프레임)보다 앞서 캡처된 소리만 버려진다
-    if (timestamp < 0) return;
+    // 실측 클럭 오프셋으로 영상 클럭에 맞춘 뒤 영상과 "같은" 세그먼트 기준시각을
+    // 빼고, AAC면 프라이밍 지연을 앞당겨 상쇄한다. 같은 축을 쓰므로 분할
+    // 경계에서도 싱크가 다시 어긋나지 않는다
+    const timestamp =
+      chunk.timestamp + audioToVideoOffsetUs - segment.startUs - audioPrimingUs;
+    // 세그먼트 시작(첫 키프레임)보다 앞선 소리만 버려진다 — 녹화 시작에서는
+    // 그 내용물이 곧 프라이밍 무음이고, 분할 경계에서는 수십 ms 수준이다.
+    // 이미 먹싱이 진행된 뒤의 음수는 타임스탬프 역행 신호이므로 크기를 남긴다
+    if (timestamp < 0) {
+      audioChunksDropped += 1;
+      if (audioChunksOutTotal > 0 && audioAnomalyWarns < 5) {
+        audioAnomalyWarns += 1;
+        console.warn(
+          `⚠️ [Record] 진행 중 음성 청크 타임스탬프 역행 (${(timestamp / 1000).toFixed(1)}ms) — 버림`
+        );
+      }
+      return;
+    }
+    let muxMeta = meta;
+    if (!segment.audioConfigWritten && !meta?.decoderConfig && audioDecoderConfig) {
+      muxMeta = { ...meta, decoderConfig: audioDecoderConfig };
+    }
     try {
-      segment.muxer.addAudioChunk(chunk, meta, timestamp);
+      segment.muxer.addAudioChunk(chunk, muxMeta, timestamp);
+      segment.audioConfigWritten = true;
       audioChunksOut += 1;
+      audioChunksOutTotal += 1;
     } catch (e) {
       console.error("❌ [Record] 음성 청크 먹싱 실패:", e);
     }
@@ -258,13 +403,31 @@ export const createRecordPipeline = ({
 
   const handleAudioChunk = (chunk, meta) => {
     audioChunksIn += 1;
+    if (meta?.decoderConfig) audioDecoderConfig = meta.decoderConfig;
     const segment = activeSegment;
     if (!segment) return;
-    // 첫 영상 청크가 인코더에서 나오기 전의 오디오 — 기준시각이 잡힐 때까지
-    // 모아뒀다가 제자리에 내보낸다 (EncodedAudioChunk는 close가 필요 없다)
-    if (segment.startUs === null) {
+    // 기준시각(첫 영상 청크)과 클럭 오프셋이 둘 다 확정되기 전의 오디오는
+    // 모아뒀다가 제자리에 내보낸다 (EncodedAudioChunk는 close가 필요 없다).
+    // 확정과 방출이 handleVideoChunk 안에서 동기로 일어나므로, 직행 청크가
+    // 대기분을 앞지르는 일은 없다 — 트랙 내 단조성 유지
+    if (segment.startUs === null || !offsetCommitted) {
       if (pendingAudio.length < PENDING_AUDIO_MAX) pendingAudio.push([chunk, meta]);
+      else audioChunksDropped += 1;
       return;
+    }
+
+    if (closingSegment) {
+      // 경계(새 세그먼트의 첫 키프레임) 이전 소리는 이전 파일의 꼬리다 —
+      // muxAudioChunk의 배치 기준과 같은 식(프라이밍 포함)으로 비교한다
+      if (
+        chunk.timestamp + audioToVideoOffsetUs - audioPrimingUs <
+        closingSegment.endUs
+      ) {
+        muxAudioChunk(closingSegment, chunk, meta);
+        return;
+      }
+      // 오디오가 경계를 넘었다 — 꼬리가 다 들어왔으니 이전 파일을 닫는다
+      finalizeClosingSegment();
     }
     muxAudioChunk(segment, chunk, meta);
   };
@@ -300,6 +463,7 @@ export const createRecordPipeline = ({
 
   const encodeFrame = (rawFrame) => {
     framesIn += 1;
+    sampleVideoLag(rawFrame.timestamp);
     if (stopped || videoEncoder?.state !== "configured") {
       rawFrame.close();
       return;
@@ -332,6 +496,7 @@ export const createRecordPipeline = ({
   };
 
   const encodeAudio = (audioData) => {
+    sampleAudioLag(audioData);
     if (stopped || audioEncoder?.state !== "configured") {
       audioData.close();
       return;
@@ -431,21 +596,14 @@ export const createRecordPipeline = ({
     if (audioReadable) audioReader = audioReadable.getReader();
 
     // 인코더·먹서 설정에 실제 해상도와 채널 수가 필요하다. 트랙 설정값은 cropTo
-    // 직후를 반영하지 못할 수 있어 첫 샘플에서 직접 읽는다.
-    // 도착 시각도 함께 기록한다 — 원점이 서로 다른 두 클럭을 잇는 유일한 공통
-    // 기준이 "지금 도착했다"는 사실이기 때문
-    const readTimed = async (reader, timeoutMs) => {
-      const value = await readFirstSample(reader, timeoutMs);
-      return value ? { value, arrivedMs: performance.now() } : null;
-    };
-    const [firstVideoTimed, firstAudioTimed] = await Promise.all([
-      readTimed(videoReader, FIRST_FRAME_TIMEOUT_MS),
+    // 직후를 반영하지 못할 수 있어 첫 샘플에서 직접 읽는다. 클럭 오프셋은 여기서
+    // 재지 않는다 — 파이프라인이 도는 동안 표본을 모아 최소 지연으로 확정한다
+    const [firstFrame, firstAudio] = await Promise.all([
+      readFirstSample(videoReader, FIRST_FRAME_TIMEOUT_MS),
       audioReader
-        ? readTimed(audioReader, FIRST_AUDIO_TIMEOUT_MS)
+        ? readFirstSample(audioReader, FIRST_AUDIO_TIMEOUT_MS)
         : Promise.resolve(null),
     ]);
-    const firstFrame = firstVideoTimed?.value ?? null;
-    const firstAudio = firstAudioTimed?.value ?? null;
 
     if (!firstFrame) {
       firstAudio?.close();
@@ -465,17 +623,6 @@ export const createRecordPipeline = ({
     videoMuxerCodec = videoSupport.muxerCodec;
 
     if (firstAudio) {
-      // 오디오 클럭 → 영상 클럭 오프셋 실측: 캡처 시각 차이를 도착 시각 차이로
-      // 보정한다. 남는 오차는 두 경로의 캡처→도착 지연 차이(수십 ms 이내)로,
-      // 이전 방식의 오차(영상 인코더 초기화 지연, 수백 ms)보다 한 자릿수 작다
-      audioToVideoOffsetUs = Math.round(
-        firstFrame.timestamp -
-          firstAudio.timestamp -
-          (firstVideoTimed.arrivedMs - firstAudioTimed.arrivedMs) * 1000
-      );
-    }
-
-    if (firstAudio) {
       const audioSupport = await probeAudioConfig(firstAudio);
       if (audioSupport) {
         audioTrackConfig = {
@@ -483,6 +630,11 @@ export const createRecordPipeline = ({
           numberOfChannels: audioSupport.config.numberOfChannels,
           sampleRate: audioSupport.config.sampleRate,
         };
+        if (audioSupport.muxerCodec === "aac") {
+          audioPrimingUs = Math.round(
+            (AAC_PRIMING_SAMPLES / audioSupport.config.sampleRate) * 1e6
+          );
+        }
         audioEncoder = new AudioEncoder({ output: handleAudioChunk, error: fail });
         audioEncoder.configure(audioSupport.config);
       } else {
@@ -517,6 +669,7 @@ export const createRecordPipeline = ({
       audioReader = null;
     }
 
+    pipelineStartMs = performance.now();
     videoPump = pump(videoReader, encodeFrame);
     audioPump = audioReader ? pump(audioReader, encodeAudio) : null;
 
@@ -585,6 +738,24 @@ export const createRecordPipeline = ({
       // 이미 오류로 닫힌 인코더 — 무시
     }
 
+    // 분할 직후 종료 — 꼬리 수신용으로 열어둔 이전 세그먼트부터 닫고 기다린다
+    finalizeClosingSegment();
+    await closingPromise;
+
+    // 표본 수집 시간보다 짧게 끝난 초단편 녹화 — 지금 있는 표본으로 확정해
+    // 모아둔 오디오를 버리지 않는다
+    tryCommitOffset(true);
+    if (
+      offsetCommitted &&
+      activeSegment &&
+      activeSegment.startUs !== null &&
+      pendingAudio.length > 0
+    ) {
+      const queued = pendingAudio.splice(0);
+      for (const [pendingChunk, pendingMeta] of queued) {
+        muxAudioChunk(activeSegment, pendingChunk, pendingMeta);
+      }
+    }
     pendingAudio.length = 0;
 
     const last = activeSegment;
