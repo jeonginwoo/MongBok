@@ -37,7 +37,7 @@ import {
   viewCountAtom,
   currentTimePositionAtom,
 } from "@/atoms/setting";
-import { isDraggingAtom, isRecordingAtom, settingsOpenAtom, controllerPopupOpenAtom } from "@/atoms/ui";
+import { isDraggingAtom, isRecordingAtom, recordingStartedAtAtom, settingsOpenAtom, controllerPopupOpenAtom } from "@/atoms/ui";
 import { POINT_COLORS } from "@/data/color";
 import { canvas, getVisibleLayoutKeys } from "@/data/canvas";
 import { useLayoutManager } from "@/hooks/useLayoutManager";
@@ -59,6 +59,14 @@ const rotate360 = {
 // 남은 시간 표시: 1분 이상이면 분 단위(3m), 1분 미만이면 초 단위(10s)
 const formatTimeLeft = (seconds) =>
   seconds >= 60 ? `${Math.floor(seconds / 60)}m` : `${seconds}s`;
+
+// 녹화 경과 시간 "HH:MM:SS" — 장시간 녹화가 흔해 시간 자리는 잘리지 않게 둔다
+const formatElapsed = (seconds) => {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+};
 
 const tooltipSlotProps = {
   tooltip: {
@@ -90,6 +98,9 @@ export default function ControlButtonGroup({ fullscreen }) {
   // 수동 갱신 시 증가 → 자동 갱신 타이머 재시작
   const [refreshEpoch, setRefreshEpoch] = useState(0);
   const [isRecording, setIsRecording] = useAtom(isRecordingAtom);
+  const recordingStartedAt = useAtomValue(recordingStartedAtAtom);
+  // 툴팁의 경과 시간을 1초마다 갱신하기 위한 현재 시각 — 갱신은 인터벌 콜백에서만
+  const [recordingNow, setRecordingNow] = useState(null);
   const [controllerPopupOpen, setControllerPopupOpen] = useAtom(controllerPopupOpenAtom);
   const record = useAtomValue(recordAtom);
   const autoRecordEnabled = useAtomValue(autoRecordEnabledAtom);
@@ -333,6 +344,26 @@ export default function ControlButtonGroup({ fullscreen }) {
     return () => clearInterval(countdownInterval);
   }, [channels]);
 
+  // 녹화 중에만 1초 틱 — 툴팁 경과 시간의 유일한 갱신원
+  useEffect(() => {
+    if (!recordingStartedAt) return;
+
+    const interval = setInterval(() => {
+      setRecordingNow(Date.now());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [recordingStartedAt]);
+
+  const recordingElapsed = recordingStartedAt
+    ? Math.max(0, Math.floor(((recordingNow ?? recordingStartedAt) - recordingStartedAt) / 1000))
+    : 0;
+  const recordTooltip = !isRecording
+    ? "녹화"
+    : recordingStartedAt
+      ? `녹화중 ${formatElapsed(recordingElapsed)}`
+      : "녹화중";
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (
@@ -555,7 +586,7 @@ export default function ControlButtonGroup({ fullscreen }) {
             {(record || isRecording) && (
               <Tooltip
                 slotProps={tooltipSlotProps}
-                title={isRecording ? "녹화중" : "녹화"}
+                title={recordTooltip}
               >
                 <span>
                   <IconButton

@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { isRecordingAtom, isSavingRecordingAtom, snackbarAtom } from "@/atoms/ui";
+import { isRecordingAtom, isSavingRecordingAtom, recordingStartedAtAtom, snackbarAtom } from "@/atoms/ui";
 import { recordQualityAtom, recordFrameRateAtom, recordCodecAtom, recordSoundEnabledAtom, recordSoundTypeAtom, recordSoundVolumeAtom, recordSaveDirHandleAtom, recordSaveDirNameAtom, channelsAtom, recordStopConditionAtom, recordSplitOnZone1ChangeAtom } from "@/atoms/setting";
 import { playNotificationSound } from "@/utils/audio";
 import { getRecordDirectory } from "@/utils/recordDirectoryStorage";
@@ -33,6 +33,7 @@ export const useScreenRecorder = () => {
   const [recordSaveDirHandle, setRecordSaveDirHandle] = useAtom(recordSaveDirHandleAtom);
   const recordSaveDirName = useAtomValue(recordSaveDirNameAtom);
   const setIsSavingRecording = useSetAtom(isSavingRecordingAtom);
+  const setRecordingStartedAt = useSetAtom(recordingStartedAtAtom);
   const setSnackbar = useSetAtom(snackbarAtom);
   const originalTitleRef = useRef(document.title);
   const workerRef = useRef(null);
@@ -514,6 +515,8 @@ export const useScreenRecorder = () => {
         }
 
         workerRef.current = worker;
+        // 경과 시간 기준점 — 분할(회전)은 같은 녹화의 연속이므로 여기서만 찍는다
+        setRecordingStartedAt(Date.now());
 
         // 분할(세그먼트 교체): 새 파일을 먼저 열어 워커에 예약한다. 실제 교체는
         // 워커가 다음 키프레임에서 하므로 프레임 공백이 없고, 어떤 단계가 실패해도
@@ -603,6 +606,8 @@ export const useScreenRecorder = () => {
       return;
     }
 
+    setRecordingStartedAt(null);
+
     const worker = workerRef.current;
     if (worker) {
       workerRef.current = null;
@@ -626,7 +631,7 @@ export const useScreenRecorder = () => {
       streamRef.current = null;
       rotateSegmentRef.current = null;
     }
-  }, [isRecording, setIsRecording, setIsSavingRecording, setSnackbar, quality, frameRate, codec, recordSoundEnabled, recordSoundType, recordSoundVolume, recordSaveDirHandle, setRecordSaveDirHandle, recordSaveDirName]);
+  }, [isRecording, setIsRecording, setIsSavingRecording, setRecordingStartedAt, setSnackbar, quality, frameRate, codec, recordSoundEnabled, recordSoundType, recordSoundVolume, recordSaveDirHandle, setRecordSaveDirHandle, recordSaveDirName]);
 
   return contentRef;
 };
