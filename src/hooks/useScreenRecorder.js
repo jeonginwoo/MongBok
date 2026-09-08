@@ -3,7 +3,7 @@
 import { useRef, useEffect } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { isRecordingAtom, isSavingRecordingAtom, snackbarAtom } from "@/atoms/ui";
-import { recordQualityAtom, recordFrameRateAtom, recordCodecAtom, recordSoundEnabledAtom, recordSoundTypeAtom, recordSoundVolumeAtom, recordSaveDirHandleAtom, channelsAtom, recordStopConditionAtom, recordSplitOnZone1ChangeAtom } from "@/atoms/setting";
+import { recordQualityAtom, recordFrameRateAtom, recordCodecAtom, recordSoundEnabledAtom, recordSoundTypeAtom, recordSoundVolumeAtom, recordSaveDirHandleAtom, recordSaveDirNameAtom, channelsAtom, recordStopConditionAtom, recordSplitOnZone1ChangeAtom } from "@/atoms/setting";
 import { playNotificationSound } from "@/utils/audio";
 import { getRecordDirectory } from "@/utils/recordDirectoryStorage";
 import {
@@ -31,6 +31,7 @@ export const useScreenRecorder = () => {
   const recordSoundType = useAtomValue(recordSoundTypeAtom);
   const recordSoundVolume = useAtomValue(recordSoundVolumeAtom);
   const [recordSaveDirHandle, setRecordSaveDirHandle] = useAtom(recordSaveDirHandleAtom);
+  const recordSaveDirName = useAtomValue(recordSaveDirNameAtom);
   const setIsSavingRecording = useSetAtom(isSavingRecordingAtom);
   const setSnackbar = useSetAtom(snackbarAtom);
   const originalTitleRef = useRef(document.title);
@@ -226,7 +227,15 @@ export const useScreenRecorder = () => {
             ]
               .filter(Boolean)
               .join("-");
-            if (combined) suffix = ` ${combined.slice(0, 100)}`;
+            // 코드포인트 단위로 자른다 — UTF-16 단위 slice는 이모지(서로게이트 쌍)를
+            // 반 토막 내 유효하지 않은 문자열을 만들고, 파일시스템 API가
+            // "Name is not allowed"로 거부한다 (실측: 방제 변경 후 분할 파일명).
+            // Windows는 이름 끝의 점·공백도 거부하므로 함께 걷어낸다
+            const trimmed = Array.from(combined)
+              .slice(0, 100)
+              .join("")
+              .replace(/[. ]+$/, "");
+            if (trimmed) suffix = ` ${trimmed}`;
           }
           return `${dayjs().format("YYMMDD HHmmss")}${suffix}.${extension}`;
         };
@@ -245,6 +254,15 @@ export const useScreenRecorder = () => {
           }
         }
 
+        // 폴더를 못 쓰게 된 이유 — 조용히 저장 대화상자로 폴백하면 사용자는
+        // 폴더에 저장되는 줄 알고 장시간 녹화를 맡긴다. 반드시 밝히고 넘어간다
+        let dirFailReason = null;
+        if (!dirHandle && recordSaveDirName) {
+          // 설정에는 폴더 이름이 남아 있는데 핸들 저장소(IndexedDB)에는 없다
+          dirFailReason =
+            "저장된 폴더 정보를 찾을 수 없습니다 (브라우저 데이터가 지워졌거나 다른 주소에서 지정됨) — 설정에서 폴더를 다시 지정해 주세요";
+        }
+
         // dirHandle이 있으면 권한만 미리 확인 (파일 생성은 아직 하지 않음)
         let dirPermissionGranted = false;
         if (dirHandle) {
@@ -253,10 +271,12 @@ export const useScreenRecorder = () => {
             if (permission === "granted") {
               dirPermissionGranted = true;
             } else {
+              dirFailReason = "폴더 사용 권한이 허용되지 않았습니다 (권한 요청 창에서 허용을 눌러 주세요)";
               dirHandle = null;
             }
           } catch (e) {
             console.warn("폴더 권한 확인 실패:", e);
+            dirFailReason = `폴더 사용 권한을 확인하지 못했습니다 (${e?.message || e})`;
             dirHandle = null;
           }
         }
@@ -302,6 +322,16 @@ export const useScreenRecorder = () => {
           try {
             return await dirHandle.getFileHandle(fileName, { create: true });
           } catch (e) {
+            console.warn("지정 폴더 파일 생성 실패, 시각만으로 재시도:", fileName, e);
+          }
+          // 방제에서 온 이름이 어떤 이유로든 거부되면 시각만으로 된 안전한 이름으로
+          // 한 번 더 시도한다 — 파일명 때문에 녹화·분할이 실패하는 일은 없어야 한다
+          try {
+            return await dirHandle.getFileHandle(
+              `${dayjs().format("YYMMDD HHmmss")}.${extension}`,
+              { create: true }
+            );
+          } catch (e) {
             console.warn("지정 폴더 파일 생성 실패:", e);
             return null;
           }
@@ -309,6 +339,17 @@ export const useScreenRecorder = () => {
 
         // 화면 공유 허용 후 파일 생성
         initialFileHandle = await openFileInDir(initialFileName);
+
+        // 폴더가 지정돼 있는데 쓰지 못한 경우 — 이유를 알리고 대화상자로 넘어간다
+        if (!initialFileHandle && (dirFailReason || dirHandle)) {
+          setSnackbar({
+            open: true,
+            message: `지정한 녹화 저장 폴더를 사용할 수 없어 저장 위치를 직접 묻습니다. ${
+              dirFailReason || "폴더에 파일을 만들 수 없습니다 (개발자 도구 콘솔 확인)"
+            }`,
+            severity: "warning",
+          });
+        }
 
         if (!initialFileHandle) {
           if (typeof window !== "undefined" && window.showSaveFilePicker) {
@@ -454,7 +495,8 @@ export const useScreenRecorder = () => {
             },
             segment: {
               fileHandle: initialFileHandle,
-              fileName: initialFileName,
+              // 폴백 이름으로 생성됐을 수 있으므로 실제 핸들의 이름을 쓴다
+              fileName: initialFileHandle?.name ?? initialFileName,
             },
           },
           [videoReadable, ...(audioReadable ? [audioReadable] : [])]
@@ -491,12 +533,14 @@ export const useScreenRecorder = () => {
             if (diskBacked) {
               nextFileHandle = await openFileInDir(nextFileName);
               if (!nextFileHandle) {
-                // 저장 대화상자로 시작한 녹화(폴더 미지정)나 폴더 쓰기 실패 —
-                // 무인 상태에서도 인지할 수 있게 알리고, 분할만 건너뛴다
+                // 저장 대화상자로 시작한 녹화(폴더 미적용)나 폴더 쓰기 실패 —
+                // 무인 상태에서도 인지할 수 있게 알리고, 분할만 건너뛴다.
+                // 폴더가 살아 있는데 파일 생성만 실패한 경우와 문구를 구분한다
                 setSnackbar({
                   open: true,
-                  message:
-                    "녹화 분할을 할 수 없어 기존 파일로 계속 녹화합니다. 분할하려면 설정에서 녹화 저장 폴더를 지정하세요.",
+                  message: dirHandle
+                    ? "지정한 폴더에 분할 파일을 만들 수 없어 기존 파일로 계속 녹화합니다 (개발자 도구 콘솔 확인)."
+                    : "이 녹화는 저장 폴더 없이 시작되어 분할할 수 없습니다. 기존 파일로 계속 녹화합니다 — 다음 녹화 전에 설정에서 저장 폴더를 확인해 주세요.",
                   severity: "warning",
                 });
                 return;
@@ -510,14 +554,17 @@ export const useScreenRecorder = () => {
               videoTrack.readyState !== "live"
             ) {
               if (nextFileHandle) {
-                await dirHandle?.removeEntry(nextFileName).catch(() => {});
+                await dirHandle?.removeEntry(nextFileHandle.name).catch(() => {});
               }
               return;
             }
 
             worker.postMessage({
               type: "rotate",
-              segment: { fileHandle: nextFileHandle, fileName: nextFileName },
+              segment: {
+                fileHandle: nextFileHandle,
+                fileName: nextFileHandle?.name ?? nextFileName,
+              },
             });
           } finally {
             rotating = false;
@@ -579,7 +626,7 @@ export const useScreenRecorder = () => {
       streamRef.current = null;
       rotateSegmentRef.current = null;
     }
-  }, [isRecording, setIsRecording, setIsSavingRecording, setSnackbar, quality, frameRate, codec, recordSoundEnabled, recordSoundType, recordSoundVolume, recordSaveDirHandle, setRecordSaveDirHandle]);
+  }, [isRecording, setIsRecording, setIsSavingRecording, setSnackbar, quality, frameRate, codec, recordSoundEnabled, recordSoundType, recordSoundVolume, recordSaveDirHandle, setRecordSaveDirHandle, recordSaveDirName]);
 
   return contentRef;
 };
