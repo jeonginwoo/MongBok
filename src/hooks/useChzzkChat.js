@@ -60,6 +60,14 @@ export default function useChzzkChat(channelId) {
   const channelData = channels[makeChannelKey("chzzk", channelId)];
   const { chatChannelId, accessToken, isLive, lastRefreshed } = channelData || {};
 
+  // 액세스 토큰은 주기적 채널 갱신마다 새로 발급돼 값이 바뀜 — effect deps에 직접 넣으면
+  // 갱신 때마다 웹소켓이 재연결되어 그 사이 채팅이 누락됨. 연결 시점에 ref로 최신값만 읽음
+  const accessTokenRef = useRef(accessToken);
+  useEffect(() => {
+    accessTokenRef.current = accessToken;
+  }, [accessToken]);
+  const hasAccessToken = !!accessToken;
+
   const updateStatus = useCallback((newStatus) => {
     statusRef.current = newStatus;
     setStatus(newStatus);
@@ -151,7 +159,7 @@ export default function useChzzkChat(channelId) {
       return;
     }
 
-    if (!chatChannelId || !accessToken) {
+    if (!chatChannelId || !hasAccessToken) {
       // 이미 연결된 상태에서 메타데이터가 잠깐 비는 경우 status를 loading으로 바꾸지 않음 (깜빡임 방지)
       if (statusRef.current !== "connected") {
         if (isLive === false) {
@@ -215,7 +223,7 @@ export default function useChzzkChat(channelId) {
       ws.send(
         JSON.stringify({
           bdy: {
-            accTkn: accessToken,
+            accTkn: accessTokenRef.current,
             auth: "READ",
             devType: 2001,
             uid: null,
@@ -281,7 +289,15 @@ export default function useChzzkChat(channelId) {
               }
               return true;
             })
-            .map(convertChat);
+            .flatMap((chat) => {
+              // 한 프레임에 여러 채팅이 묶여 오므로, 형식이 어긋난 한 건 때문에 묶음 전체가 버려지지 않게 격리
+              try {
+                return [convertChat(chat)];
+              } catch (e) {
+                console.warn("⚠️ [Chzzk] 채팅 변환 실패:", e, chat);
+                return [];
+              }
+            });
 
           pendingChatListRef.current.push(...newChats);
           break;
@@ -301,7 +317,7 @@ export default function useChzzkChat(channelId) {
       worker.terminate();
       ws.close();
     };
-  }, [channelId, chatChannelId, accessToken, convertChat, webSocketBuster]);
+  }, [channelId, chatChannelId, hasAccessToken, convertChat, webSocketBuster]);
 
   useEffect(() => {
     return () => {

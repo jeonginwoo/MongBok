@@ -296,6 +296,17 @@ export default function useSoopChat(channelId) {
     [combinedEmoticons]
   );
 
+  // ftk는 채널 갱신마다 재발급되고, 변환 함수들은 갱신마다 새 객체로 오는 pconObject·
+  // 비동기 로딩되는 이모티콘에 따라 매번 새로 만들어짐 — effect deps에 직접 넣으면 갱신 때마다
+  // 웹소켓이 재연결되어 그 사이 채팅이 누락됨. ref로 최신값만 참조하고 연결은 유지
+  const ftkRef = useRef(ftk);
+  const convertersRef = useRef({ convertChat, convertBalloonChat, convertStickerChat });
+  useEffect(() => {
+    ftkRef.current = ftk;
+    convertersRef.current = { convertChat, convertBalloonChat, convertStickerChat };
+  }, [ftk, convertChat, convertBalloonChat, convertStickerChat]);
+  const hasFtk = !!ftk;
+
   useEffect(() => {
     if (!channelId) {
       updateStatus("idle");
@@ -303,7 +314,7 @@ export default function useSoopChat(channelId) {
       return;
     }
 
-    if (!isLive || !bjid || !chatNo || !ftk) {
+    if (!isLive || !bjid || !chatNo || !hasFtk) {
       if (statusRef.current !== "connected") {
         if (!isLive) {
           updateStatus("offline");
@@ -317,7 +328,7 @@ export default function useSoopChat(channelId) {
     let isCurrent = true;
     const isSeamless = statusRef.current === "connected";
     const webSocketUrl = `wss://${chDomain}:${chPt}/Websocket/${bjid}`;
-    const payload = `\f${chatNo}\f${ftk}\f0\f\f`;
+    const payload = `\f${chatNo}\f${ftkRef.current}\f0\f\f`;
     const key = payload.length.toString().padStart(6, "0");
     const handshake = `\u001b\t0002${key}00${payload}`;
 
@@ -400,6 +411,7 @@ export default function useSoopChat(channelId) {
       }
 
       worker.postMessage("startPingTimer");
+      const { convertChat, convertBalloonChat, convertStickerChat } = convertersRef.current;
       const data = event.data;
       const soopMessage = parseMessage(data);
       if (soopMessage[0].startsWith("0005")) {
@@ -435,7 +447,7 @@ export default function useSoopChat(channelId) {
       worker.terminate();
       ws.close();
     };
-  }, [channelId, bjid, chatNo, ftk, chDomain, chPt, webSocketBuster, isLive, convertChat, convertBalloonChat, convertStickerChat]);
+  }, [channelId, bjid, chatNo, hasFtk, chDomain, chPt, webSocketBuster, isLive]);
 
   useEffect(() => {
     return () => {
