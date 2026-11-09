@@ -16,12 +16,13 @@ import SettingChangeIndicator from "@/components/Info/SettingChangeIndicator";
 import RecordingSavingBanner from "@/components/Info/RecordingSavingBanner";
 
 import { useAtom, useAtomValue } from "jotai";
-import { viewCountAtom } from "@/atoms/setting";
+import { viewCountAtom, controllerExpandedAtom } from "@/atoms/setting";
 import { settingsOpenAtom, controllerPopupOpenAtom } from "@/atoms/ui";
 import { usePopupWindow } from "@/hooks/usePopupWindow";
 
 export default function App() {
   const viewCount = useAtomValue(viewCountAtom);
+  const controllerExpanded = useAtomValue(controllerExpandedAtom);
   const [settingsOpen, setSettingsOpen] = useAtom(settingsOpenAtom);
   const [controllerPopupOpen, setControllerPopupOpen] = useAtom(controllerPopupOpenAtom);
   const theme = useTheme();
@@ -31,8 +32,9 @@ export default function App() {
 
   // 컨트롤러(+설정)를 리모컨처럼 별도 창으로 분리.
   // 너비는 내부 콘텐츠에 맞춰 자동 보정, 높이는 사용자가 자유롭게 조절.
-  // 처음부터 콘텐츠 폭(펴기 컨트롤러 290 + 설정창 340)에 맞춰 열어 열릴 때 리사이즈/반짝임을 방지.
-  const initialPopupWidth = 290 + (settingsOpen ? 340 : 0) + 2;
+  // 처음부터 콘텐츠 폭(컨트롤러 펴기 290 / 접기 80 + 설정창 340)에 맞춰 열어 열릴 때 리사이즈/반짝임을 방지.
+  // 접힘 상태도 그대로 반영해야 분리 시 사용자가 고른 접기/펴기가 유지된다.
+  const initialPopupWidth = (controllerExpanded ? 290 : 80) + (settingsOpen ? 340 : 0) + 2;
   const popupContainer = usePopupWindow(
     controllerPopupOpen,
     () => setControllerPopupOpen(false),

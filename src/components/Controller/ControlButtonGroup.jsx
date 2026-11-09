@@ -156,9 +156,18 @@ export default function ControlButtonGroup({ fullscreen }) {
     prevZone1LiveRef.current = isLive;
   }, [channels, record, autoRecordEnabled, setIsRecording, isRecording]);
 
-  const handleRecordButtonClick = () => {
+  const hasVisibleChannels = Object.values(channels).some((c) => c.isVisible);
+  // 버튼이 숨김/비활성일 때는 단축키(O)로도 토글되지 않도록 버튼과 같은 조건을 공유
+  const canToggleRecording = (record || isRecording) && (hasVisibleChannels || isRecording);
+
+  const handleRecordButtonClick = useCallback(() => {
     setIsRecording((prev) => !prev);
-  };
+  }, [setIsRecording]);
+
+  // 접기/펴기 상태는 그대로 유지 — 팝업 초기 폭이 현재 접힘 상태를 반영하므로(page.jsx) 깜빡임 없음
+  const handleToggleControllerPopup = useCallback(() => {
+    setControllerPopupOpen((prev) => !prev);
+  }, [setControllerPopupOpen]);
 
   const handleToggleController = useCallback(() => {
     setControllerExpanded((prev) => !prev);
@@ -409,6 +418,14 @@ export default function ControlButtonGroup({ fullscreen }) {
           event.preventDefault();
           fullscreen();
           break;
+        case "O":
+          event.preventDefault();
+          if (canToggleRecording) handleRecordButtonClick();
+          break;
+        case "L":
+          event.preventDefault();
+          handleToggleControllerPopup();
+          break;
         case "ARROWUP":
         case "ARROWDOWN": {
           event.preventDefault();
@@ -491,6 +508,9 @@ export default function ControlButtonGroup({ fullscreen }) {
     handleTogglePointerEvents,
     handleRefresh,
     fullscreen,
+    canToggleRecording,
+    handleRecordButtonClick,
+    handleToggleControllerPopup,
     isDragging,
     chatFontSizeAdjustment,
     handleChangeChatFontSize,
@@ -586,12 +606,17 @@ export default function ControlButtonGroup({ fullscreen }) {
             {(record || isRecording) && (
               <Tooltip
                 slotProps={tooltipSlotProps}
-                title={recordTooltip}
+                title={
+                  <>
+                    {recordTooltip}{" "}
+                    <HotkeySpan component="span" pointcolor={pointColor}>(O)</HotkeySpan>
+                  </>
+                }
               >
                 <span>
                   <IconButton
                     onClick={handleRecordButtonClick}
-                    disabled={!Object.values(channels).some(c => c.isVisible) && !isRecording}
+                    disabled={!canToggleRecording}
                     sx={{
                       "& .MuiSvgIcon-root": {
                         color: isRecording
@@ -608,16 +633,14 @@ export default function ControlButtonGroup({ fullscreen }) {
 
             <Tooltip
               slotProps={tooltipSlotProps}
-              title={controllerPopupOpen ? "리모컨 닫기" : "리모컨 분리"}
+              title={
+                <>
+                  {controllerPopupOpen ? "리모컨 닫기" : "리모컨 분리"}{" "}
+                  <HotkeySpan component="span" pointcolor={pointColor}>(L)</HotkeySpan>
+                </>
+              }
             >
-              <IconButton
-                onClick={() => {
-                  const opening = !controllerPopupOpen;
-                  // 분리 시 펴기를 먼저 확정해, 접힘(80)→펴기(290) 폭 변화로 인한 깜빡임 방지
-                  if (opening) setControllerExpanded(true);
-                  setControllerPopupOpen(opening);
-                }}
-              >
+              <IconButton onClick={handleToggleControllerPopup}>
                 <CropPortraitIcon sx={{ ...iconStyle, color: controllerPopupOpen ? activePointColor : undefined }} />
               </IconButton>
             </Tooltip>

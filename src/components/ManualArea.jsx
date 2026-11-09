@@ -241,7 +241,7 @@ export default function ManualArea() {
           {record && (
           <Item
             icon={<FiberManualRecordIcon />}
-            primary="방송 화면 녹화"
+            primary="방송 화면 녹화 (O)"
             secondary={[
               "녹화 시작 시 브라우저 팝업에서 '이 탭'을 선택하면 방송 화면만 녹화됩니다.",
               "설정에서 '자동 녹화'를 켜면 1번 구역 채널이 라이브를 시작할 때 자동으로 녹화가 시작됩니다.",
@@ -268,7 +268,7 @@ export default function ManualArea() {
           )}
           <Item
             icon={<CropPortraitIcon />}
-            primary="리모컨 (별도 창으로 분리)"
+            primary="리모컨 (별도 창으로 분리) (L)"
             secondary={[
               "컨트롤러(+설정)를 별도 창으로 분리해 리모컨처럼 사용할 수 있습니다.",
               "전체 화면은 브라우저 정책상 메인 창에서 F 키로 사용해야 합니다.",
