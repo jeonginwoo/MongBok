@@ -4,10 +4,10 @@
 
 ## 현재 상태 (2026-11-09)
 
-- **버전:** v1.8.4 — 녹화(O)·리모컨 분리(L) 단축키, 리모컨 분리 시 접기 상태 유지
-- **진행:** 컨트롤러 단축키 2종 추가 + 분리 시 강제 펴기 제거 — main 커밋·v1.8.4 push·배포
-- **검증 상태:** verify.sh 초록 · **브라우저 미확인** (O 녹화 토글·L 키보드 팝업 차단 여부·접힌 상태 분리 시 80px 창 깜빡임/잘림)
-- **다음 작업:** 새 작업 선정
+- **버전:** v1.8.5 — 채널 정보 갱신마다 치지직·숲 채팅 재연결되어 채팅 누락되던 현상 수정
+- **진행:** 채팅 훅 웹소켓 effect deps 안정화 — main 커밋·v1.8.5 push·배포
+- **검증 상태:** verify.sh 초록 · **브라우저 미확인** (v1.8.5 갱신 시점 WS 재연결 여부 + v1.8.4 단축키 항목 여전히 미확인)
+- **다음 작업:** 브라우저 확인 (아래 세션 로그 미해결 항목)
 - **차단 요소:** 없음
 
 ## 결정 기록 (Decision Log)
@@ -36,6 +36,7 @@
 - [ ] `ControlButtonGroup.jsx` `applyLiveStatusUpdate`의 `setChannels` updater 내부 `"channels"` setItem 정리 (패턴 정리 ③에서 발견 — `channelsAtom`은 plain atom이고 저장 형태가 `{zoneId}` 프로젝션이라 중복 아님·삭제 불가, updater 밖으로 이동 필요. 같은 값 재기록이라 실해 없음, 이 영역 다시 만질 때 처리)
 - [x] 훅 조기 반환 리팩터링: `if (!x) return null`이 훅 호출보다 앞에 있는 패턴 제거 (대상 5개 파일: `ChannelListChannelInfo.jsx` · `LiveCategory.jsx` · `LiveTags.jsx` · `DraggableChat.jsx` · `DraggableView.jsx`). eslint `react-hooks/rules-of-hooks` error 복원 포함. 완료 2026-08-06 — verify 초록, 5개 컴포넌트 브라우저 확인 완료(이상 없음)
 - [x] 미사용 변수 정리 (34건): 데드코드는 삭제, 의도적 보존(레이아웃 정의 등)은 `_` 프리픽스. eslint `no-unused-vars` error 복원 포함. 완료 2026-08-06 — verify 초록, reviewer APPROVE, 브라우저 확인 완료(채팅 재연결·컨트롤러 버튼·화면 로드 이상 없음)
+- [ ] 채널 갱신 중 토큰 발급만 실패(`accessToken`/`ftk` null)하면 채팅 소켓이 닫히는데 상태는 "connected"로 남는 문제 (v1.8.5 채팅 누락 수정 중 발견 — 기존 동작, 드묾. 누락 수정과 분리해 보류)
 - [x] `"use client"` 누락 11개 파일 명시 (컨벤션 전수 검토 2026-08-06에서 발견): 컴포넌트 8(ControllerArea · ManualArea · ChannelListChannelInfo · LiveCategory · LiveTags · UserCount · ChatRow · RatioSelector) + 훅 3(useLayoutManager · usePopupWindow · useScreenRecorder). 완료 2026-08-06 — verify 초록, 브라우저 화면 로드 확인 완료
 - [x] 상대경로 import 9건 `@/` 별칭 전환: useSoopChat(2) · SettingsArea(1) · ChatView(5) · PresetSelector(1). 완료 2026-08-06 — verify 초록
 - [x] 숲 이모티콘 조회를 `api/live.js` + `soop_live_client` 경유로 이전 (useSoopEmoticons.js의 플랫폼 REST 직접 fetch — 불변식 1 위반). 완료 2026-08-06 — verify 초록, 브라우저에서 이모티콘 렌더 확인 완료
@@ -52,6 +53,12 @@
 - 미해결: <다음 세션으로 넘기는 것>
 - 다음 작업: <구체적으로>
 ```
+
+### 2026-11-09 — 치지직·숲 채팅 누락 수정 (v1.8.5)
+
+- 완료: 자동 채널 갱신(기본 60초)이 갱신마다 새로 발급되는 `accessToken`(치지직)·`ftk`(숲)와 새 객체 `pconObject`를 atom에 덮어써, 이를 deps로 가진 채팅 웹소켓 effect가 갱신마다 재연결 → 재연결 공백 동안 채팅 누락. 토큰·변환 함수를 ref로 참조하고 deps는 연결 식별 값 + 토큰 존재 여부만 유지(Twitch 훅의 convertChatRef 패턴과 동일). 치지직은 묶음 프레임 중 한 건 변환 예외 시 묶음 전체가 버려지던 것도 건별 격리. Twitch·YouTube는 이미 deps 안정 — 해당 없음. 커밋 a5b7bb8, verify 초록. 브라우저 미확인 상태로 사용자 요청에 따라 push
+- 미해결: 브라우저 확인 — DevTools WS 탭에서 갱신 카운트다운 0 시점에 새 소켓이 생기지 않는지, 이모티콘·구독 배지 정상 렌더. 토큰 null 엣지는 작업 큐에 등록
+- 다음 작업: 위 브라우저 확인
 
 ### 2026-11-09 — 녹화·리모컨 단축키, 분리 시 접기 상태 유지 (v1.8.4)
 
