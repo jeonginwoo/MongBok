@@ -334,7 +334,10 @@ export default function ManualArea() {
           <Item
             icon={<InfoIcon />}
             primary="광고 및 성인 콘텐츠"
-            secondary="보안 정책상 로그인이 차단되어, 구독 중이라도 광고가 나올 수 있고 19세 이상 콘텐츠는 시청할 수 없습니다."
+            secondary={[
+              "보안 정책상 로그인이 차단되어, 구독 중이라도 광고가 나올 수 있고 19세 이상 콘텐츠는 시청할 수 없습니다.",
+              "치지직 19세 방송은 아래 '치지직 로그인 연동 확장'을 설치하면 시청할 수 있습니다.",
+            ]}
           />
           <Item
             icon={<InfoIcon />}
@@ -386,6 +389,52 @@ export default function ManualArea() {
             macOS·Linux는 첫 실행 전{" "}
             <Code>chmod +x ./파일명</Code>
             {" "}으로 실행 권한을 부여해야 합니다.
+          </Typography>
+        </Section>
+
+        {/* 치지직 로그인 연동 확장 */}
+        <Section title={
+          <Box sx={{ display: "flex", alignItems: "baseline", gap: 1.5 }}>
+            <span>치지직 로그인 연동 확장</span>
+            <Typography sx={{ color: "text.disabled", fontSize: "1.3rem", fontWeight: 600 }}>
+              v{process.env.NEXT_PUBLIC_CHZZK_EXTENSION_VERSION}
+            </Typography>
+          </Box>
+        }>
+          <Typography sx={{ fontSize: "1.35rem", color: "text.secondary", lineHeight: 1.7, mb: 3 }}>
+            치지직 19세 방송은 성인 인증된 계정으로 로그인해야 재생 정보를 받을 수 있는데, 몽복에서는 네이버 로그인을 직접 사용할 수 없습니다. 이 확장은 브라우저에 이미 로그인된 치지직 계정으로 방송 정보만 대신 조회해 몽복에 전달합니다. 로그인 정보(쿠키)는 읽거나 저장하지 않습니다.
+          </Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 3 }}>
+            <Button
+              variant="outlined"
+              href={`/downloads/mongbok_chzzk_extension_v${process.env.NEXT_PUBLIC_CHZZK_EXTENSION_VERSION}.zip`}
+              download
+              endIcon={<DownloadIcon />}
+              sx={{ fontSize: "1.3rem", py: 1, px: 2, textTransform: "none", borderRadius: "1rem" }}
+            >
+              확장 다운로드
+            </Button>
+          </Box>
+          <Box
+            component="ol"
+            sx={{
+              m: 0,
+              pl: "2rem",
+              "& li": { fontSize: "1.3rem", color: "text.secondary", lineHeight: 1.9 },
+            }}
+          >
+            <li>다운로드한 파일의 압축을 풉니다.</li>
+            <li>
+              주소창에 <Code>chrome://extensions</Code>를 입력해 확장 프로그램 페이지를 열고, 우측 상단의 &apos;개발자 모드&apos;를 켭니다.
+            </li>
+            <li>
+              &apos;압축해제된 확장 프로그램을 로드합니다&apos;를 눌러, 압축을 푼 <Code>mongbok_chzzk_extension</Code> 폴더를 선택합니다.
+            </li>
+            <li>같은 브라우저에서 성인 인증된 계정으로 치지직에 로그인합니다.</li>
+            <li>몽복을 새로고침합니다.</li>
+          </Box>
+          <Typography sx={{ fontSize: "1.2rem", color: "text.secondary", lineHeight: 1.7, mt: 3 }}>
+            크롬·엣지·웨일 등 크로미움 계열 데스크톱 브라우저에서만 사용할 수 있습니다.
           </Typography>
         </Section>
 

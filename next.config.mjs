@@ -5,12 +5,16 @@ const { version: REQUIRED_SERVER_VERSION } = JSON.parse(
 const { version: APP_VERSION } = JSON.parse(
   readFileSync('./package.json', 'utf8')
 );
+const { version: CHZZK_EXTENSION_VERSION } = JSON.parse(
+  readFileSync('./chzzk-extension/manifest.json', 'utf8')
+);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
     NEXT_PUBLIC_REQUIRED_SERVER_VERSION: REQUIRED_SERVER_VERSION,
     NEXT_PUBLIC_APP_VERSION: APP_VERSION,
+    NEXT_PUBLIC_CHZZK_EXTENSION_VERSION: CHZZK_EXTENSION_VERSION,
   },
   async rewrites() {
     return [

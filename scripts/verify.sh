@@ -23,6 +23,14 @@ step() {
   fi
 }
 
+# 매뉴얼의 확장 다운로드 링크는 manifest 버전으로 파일명을 만든다 —
+# 버전만 올리고 zip을 다시 만들지 않으면 배포본에서 404가 된다
+step "chzzk-extension zip" node -e "
+const v = require('./chzzk-extension/manifest.json').version;
+const f = 'public/downloads/mongbok_chzzk_extension_v' + v + '.zip';
+if (!require('fs').existsSync(f)) { console.error('missing ' + f + ' — run: bash scripts/zip-chzzk-extension.sh'); process.exit(1); }
+"
+
 step "lint" npx eslint src
 
 if [ "$QUICK" != "--quick" ]; then
