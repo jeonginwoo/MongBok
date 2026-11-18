@@ -2,11 +2,11 @@
 
 > **모든 세션은 이 파일을 읽는 것으로 시작하고, 이 파일을 갱신하는 것으로 끝난다.**
 
-## 현재 상태 (2026-11-09)
+## 현재 상태 (2026-11-19)
 
-- **버전:** v1.8.5 — 채널 정보 갱신마다 치지직·숲 채팅 재연결되어 채팅 누락되던 현상 수정
-- **진행:** 채팅 훅 웹소켓 effect deps 안정화 — main 커밋·v1.8.5 push·배포
-- **검증 상태:** verify.sh 초록 · **브라우저 미확인** (v1.8.5 갱신 시점 WS 재연결 여부 + v1.8.4 단축키 항목 여전히 미확인)
+- **버전:** v1.9.0 — 치지직 로그인 연동 확장으로 19세 방송 시청 지원
+- **진행:** 동반 확장(`chzzk-extension/`) + 앱 브리지 + 매뉴얼 안내·다운로드 — main 커밋·v1.9.0 push·배포
+- **검증 상태:** verify.sh 초록 · 19세 방송 재생은 브라우저 확인 완료(사용자, localhost — reviewer 반영 이전 빌드) · **미확인**: reviewer 반영 후 빌드의 재생·실패 시 재생 유지, 19 태그, 배포본(mongbok.vercel.app)에서의 확장 동작, 매뉴얼 확장 섹션·다운로드 버튼, 19세 채널 채팅 연결 + 이전 세션분(v1.8.5 WS 재연결, v1.8.4 단축키)
 - **다음 작업:** 브라우저 확인 (아래 세션 로그 미해결 항목)
 - **차단 요소:** 없음
 
@@ -20,6 +20,8 @@
 | 2026-08-02 | eslint 설정에서 Vite용 react-refresh 플러그인 제거, node 전역 추가 | 플러그인 미설치로 eslint 자체가 실행 불가였음. Vite 잔재로 Next.js와 무관 · route.js와 process.env 때문에 node 전역 필요 |
 | 2026-08-02 | ralph(자율 루프)는 도입하지 않음 | 선제 부품 금지 원칙 — 큐가 쌓이고 반복 고통이 생기면 그때 추가 |
 | 2026-09-11 | 녹화 엔진을 MediaRecorder로 복귀. WebCodecs 엔진은 히스토리·`fix/record-clock-drift` 브랜치(56fa468)에 보존 | 인덱스·무손실 분할·싱크 실측을 다 얻었지만 장시간 실사용에서 끊김이 재발(원인 미규명) — 매일 쓰는 무인 녹화라 안정성이 우선. 재도전 시 미지수는 장시간 끊김 원인 하나(계측 로그 브랜치에 존치) |
+| 2026-11-19 | 치지직 19세 시청은 동반 브라우저 확장으로 해결 (쿠키 붙여넣기·로컬 서버 방식 기각) | `NID_AUT`/`NID_SES`는 치지직 전용이 아닌 네이버 계정 전체 세션 — 공개 배포 앱이 받아 저장하면 피싱과 같은 패턴이고 Vercel 경유 시 IP 보안에도 걸릴 수 있음. 확장은 쿠키를 읽지 않고 로그인 세션으로 조회만 대행. 공식 Open API(OAuth)는 재생 URL을 주지 않아 해당 없음. 실측: 비로그인 응답은 `livePlaybackJson`·`chatChannelId`가 null, 재생 URL은 토큰 내장이라 쿠키 불필요, 채팅 토큰은 비로그인 발급 가능 |
+| 2026-11-19 | 확장 경유 조회는 `adult && !livePlaybackJson`일 때만 | 일반 방송과 확장 미설치 환경의 동작을 기존과 완전히 동일하게 유지 — 확장은 선택 설치라 장애 범위를 19세 채널로 한정 |
 
 ## 작업 큐
 
@@ -36,6 +38,7 @@
 - [ ] `ControlButtonGroup.jsx` `applyLiveStatusUpdate`의 `setChannels` updater 내부 `"channels"` setItem 정리 (패턴 정리 ③에서 발견 — `channelsAtom`은 plain atom이고 저장 형태가 `{zoneId}` 프로젝션이라 중복 아님·삭제 불가, updater 밖으로 이동 필요. 같은 값 재기록이라 실해 없음, 이 영역 다시 만질 때 처리)
 - [x] 훅 조기 반환 리팩터링: `if (!x) return null`이 훅 호출보다 앞에 있는 패턴 제거 (대상 5개 파일: `ChannelListChannelInfo.jsx` · `LiveCategory.jsx` · `LiveTags.jsx` · `DraggableChat.jsx` · `DraggableView.jsx`). eslint `react-hooks/rules-of-hooks` error 복원 포함. 완료 2026-08-06 — verify 초록, 5개 컴포넌트 브라우저 확인 완료(이상 없음)
 - [x] 미사용 변수 정리 (34건): 데드코드는 삭제, 의도적 보존(레이아웃 정의 등)은 `_` 프리픽스. eslint `no-unused-vars` error 복원 포함. 완료 2026-08-06 — verify 초록, reviewer APPROVE, 브라우저 확인 완료(채팅 재연결·컨트롤러 버튼·화면 로드 이상 없음)
+- [x] 치지직 동반 확장 배포·안내: `chzzk-extension/`을 zip으로 `public/downloads`에 제공(버전은 manifest 기준, `scripts/zip-chzzk-extension.sh`로 생성)하고 매뉴얼에 설치 방법 섹션 추가, "광고 및 성인 콘텐츠" 문구 갱신. 완료 2026-11-19 — verify 초록, 매뉴얼 화면·다운로드 버튼은 브라우저 미확인. **확장을 고치면 manifest 버전 업 + zip 재생성 필수**(매뉴얼 다운로드 링크가 manifest 버전으로 파일명을 만든다)
 - [ ] 채널 갱신 중 토큰 발급만 실패(`accessToken`/`ftk` null)하면 채팅 소켓이 닫히는데 상태는 "connected"로 남는 문제 (v1.8.5 채팅 누락 수정 중 발견 — 기존 동작, 드묾. 누락 수정과 분리해 보류)
 - [x] `"use client"` 누락 11개 파일 명시 (컨벤션 전수 검토 2026-08-06에서 발견): 컴포넌트 8(ControllerArea · ManualArea · ChannelListChannelInfo · LiveCategory · LiveTags · UserCount · ChatRow · RatioSelector) + 훅 3(useLayoutManager · usePopupWindow · useScreenRecorder). 완료 2026-08-06 — verify 초록, 브라우저 화면 로드 확인 완료
 - [x] 상대경로 import 9건 `@/` 별칭 전환: useSoopChat(2) · SettingsArea(1) · ChatView(5) · PresetSelector(1). 완료 2026-08-06 — verify 초록
@@ -53,6 +56,12 @@
 - 미해결: <다음 세션으로 넘기는 것>
 - 다음 작업: <구체적으로>
 ```
+
+### 2026-11-19 — 치지직 로그인 연동 확장으로 19세 방송 시청 지원 (v1.9.0)
+
+- 완료: 19세 방송은 비로그인 `live-detail` 응답에 재생 정보가 없어 전용 플레이어도 iframe 폴백도 볼 수 없던 문제. ① 동반 MV3 확장 `chzzk-extension/` 신규 — content script가 페이지의 postMessage 요청을 받아 서비스 워커로 넘기고, 워커가 `host_permissions`로 브라우저의 치지직 로그인 세션을 실어 `live-detail`을 조회해 JSON만 반환(쿠키 미접근, 조회 경로 1개·채널 ID 형식 고정). 확장 ID에 의존하지 않도록 `externally_connectable` 대신 postMessage 중계 채택. ② 앱 브리지 `src/api/chzzkExtension.js` — 설치 여부를 페이지당 1회 ping(500ms)으로 확인해 캐시, 미설치·실패 시 null. ③ `getChzzkLiveStatus`가 `adult && !livePlaybackJson`일 때만 확장으로 재조회, 재생 정보가 오면 응답 교체(이후 HLS 파싱·채팅 토큰 발급은 기존 경로 그대로). ④ 매뉴얼에 "치지직 로그인 연동 확장" 섹션(다운로드·설치 5단계) 추가, "광고 및 성인 콘텐츠" 문구 갱신, `public/downloads` zip + 생성 스크립트 `scripts/zip-chzzk-extension.sh`, 확장 버전을 `NEXT_PUBLIC_CHZZK_EXTENSION_VERSION`으로 노출. ⑤ 채널 목록 툴팁에 19 태그(`isAdult` 필드 신설, 라이브 중인 치지직 19세 방송 — 확장 유무와 무관하게 표시). CLAUDE.md 불변식 1에 확장 브리지 예외 명시, CONVENTIONS.md에 확장 경로·버전 규칙 추가. reviewer NEEDS CHANGES(MAJOR 1) 반영: 브리지가 실패를 전부 null로 뭉개 일시 오류 한 번에 재생 중인 19세 방송의 `liveHlsUrl`·`chatChannelId`가 null로 덮여 플레이어·채팅이 끊기던 경로 — 결과를 unavailable/failed/ok로 구분하고, failed면 같은 `liveId`의 마지막 성공 응답 재생 정보를 유지(`chzzkAuthedDetailCache`). MINOR 반영: ping 실패는 30초만 기억(성공만 영구 캐시), 확장 조회는 `status === "OPEN"`일 때만, 요청 타임아웃 10→5초, 배포 zip의 manifest에서 localhost 매치 제거(개발은 `chzzk-extension/` 폴더 직접 로드), verify.sh에 manifest 버전의 zip 존재 검사 추가. 반영 후 reviewer 재검토는 하지 않음. verify 초록. 브라우저 확인: 19세 방송 재생 정상(사용자, localhost + 압축 해제 설치 — reviewer 반영 **이전** 빌드 기준)
+- 미해결: 브라우저 확인 — reviewer 반영 후 빌드의 19세 재생(정상 경로가 그대로인지), 확장 조회 실패 시 재생 유지(확장을 끄고 다음 갱신까지 재생이 이어지는지), 19 태그 표시, 배포본에서 확장 동작, 매뉴얼 확장 섹션 표시·zip 다운로드, 19세 채널 채팅 연결(비로그인 토큰 발급은 API 호출로만 확인), 확장 미설치 상태의 일반 방송 회귀 여부. 19 태그는 치지직만 — 숲·트위치의 연령 제한 방송은 미지원. 이전 세션분(v1.8.5 WS 재연결·v1.8.4 단축키)도 여전히 미확인
+- 다음 작업: 위 브라우저 확인
 
 ### 2026-11-09 — 치지직·숲 채팅 누락 수정 (v1.8.5)
 

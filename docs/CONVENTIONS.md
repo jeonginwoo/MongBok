@@ -79,6 +79,18 @@
    플랫폼 도메인. 소비는 `src/api/client.js`의 axios 클라이언트로.
 2. **서버에서만 돌 수 있는 로직(youtubei.js 등)은 `src/app/api/**/route.js`** Route Handler로.
 
+예외 — **로그인 세션이 필요한 치지직 조회는 동반 확장 경유**: 몽복 출처에서는 네이버
+쿠키를 실을 수 없어 위 두 경로로는 불가능하다. `chzzk-extension/`이 브라우저의 로그인
+세션으로 대신 조회하고, 앱은 `src/api/chzzkExtension.js` 브리지로 결과만 받는다
+(소비는 `src/api/live.js`에서만). 확장은 선택 설치이므로 **없을 때의 동작이 항상
+기존 경로와 같아야 한다.** 쿠키를 앱이 받거나 저장하는 방식은 쓰지 않는다.
+
+- 확장 버전(`chzzk-extension/manifest.json`)은 앱 버전과 독립 — 확장 파일을 고칠 때만
+  올리고, 올리면 `bash scripts/zip-chzzk-extension.sh`로 `public/downloads`의 zip을
+  다시 만들어 함께 커밋한다 (매뉴얼 다운로드 링크가 manifest 버전으로 파일명을 만든다).
+- 페이지↔확장 메시지 형식은 `src/api/chzzkExtension.js`와 `chzzk-extension/content.js`가
+  짝이다 — 한쪽만 바꾸면 이미 설치된 확장과 어긋나므로 하위 호환을 유지한다.
+
 ### Route Handler 에러 관례
 
 - **fail-soft**: 조회 실패 시 500 대신 빈 데이터(`{ channels: [] }` 등)를 **200**으로 반환한다.

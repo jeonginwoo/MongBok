@@ -10,7 +10,7 @@ Read `docs/PROGRESS.md` first — current state, work queue, decision log.
 ## Commands
 
 ```bash
-bash scripts/verify.sh        # full verification (lint + production build)
+bash scripts/verify.sh        # full verification (extension-zip check + lint + production build)
                               # --quick: lint only
                               # full log → build/last-verify.log; on FAIL read only the failing part
 npm run dev                   # dev server — runtime behavior can only be checked here, in a browser
@@ -21,6 +21,10 @@ npm run dev                   # dev server — runtime behavior can only be chec
 1. Platform REST/GraphQL calls go through the shared axios clients in
    `src/api/client.js` (consumed by `src/api/live.js` · `search.js`).
    Components never call platform HTTP APIs directly.
+   One documented exception to "axios": `src/api/chzzkExtension.js` reaches the
+   CHZZK API through the companion browser extension (`chzzk-extension/`) for
+   login-only data (19+ streams). It still lives in `src/api/` and is consumed
+   only by `src/api/live.js`.
 2. Realtime chat (websocket/polling) logic lives in `src/hooks/use*Chat.js` —
    one hook per platform.
 3. Cross-component state is a jotai atom in `src/atoms/`. Never introduce
