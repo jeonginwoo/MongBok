@@ -67,6 +67,7 @@ const loadChannels = (savedChannels, setAtom) => {
               liveVideoId: live.liveVideoId ?? null,
               liveCategory: live.liveCategory,
               tags: live.tags,
+              isAdult: live.isAdult ?? false,
               liveHlsUrl: live.liveHlsUrl ?? null,
               liveImageUrl: live.liveImageUrl,
               lastRefreshed: live.lastRefreshed,

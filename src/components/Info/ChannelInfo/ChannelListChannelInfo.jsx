@@ -4,6 +4,7 @@ import React, { useRef } from "react";
 import { Box, Typography, Tooltip, Skeleton } from "@mui/material";
 import { PLATFORM_COLORS } from "@/data/color";
 
+import TagWrap from "@/components/Common/TagWrap";
 import LiveCategory from "@/components/Info/LiveCategory";
 import LiveTags from "@/components/Info/LiveTags";
 import LiveTime from "@/components/Info/LiveTime";
@@ -125,6 +126,16 @@ export default function ChannelInfo({ channel, isDragging = false }) {
             maxWidth: "26.0rem",
           }}
         >
+          {/* 19세 방송 — 확장 없이는 재생되지 않으므로 목록에서 미리 알 수 있게 표시 */}
+          {channel.isLive && channel.isAdult && (
+            <TagWrap
+              color="#fff"
+              backgroundColor="#e53935"
+              sx={{ borderColor: "#e53935" }}
+            >
+              19
+            </TagWrap>
+          )}
           <LiveCategory channel={channel} isTag={true} />
           <LiveTags channel={channel} isTag={true} />
           {channel.isLive ? (
