@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "몽복 치지직 로그인 연동",
+  "version": "1.0.0",
+  "description": "몽복(Mongbok)에서 치지직 19세 방송을 볼 수 있도록, 이 브라우저의 치지직 로그인 상태로 방송 정보를 조회해 전달합니다.",
+  "host_permissions": ["https://api.chzzk.naver.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://mongbok.vercel.app/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}

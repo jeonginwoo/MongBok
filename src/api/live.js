@@ -6,6 +6,11 @@ import {
   youtube_channel_client,
   twitch_gql_client,
 } from "@/api/client";
+import { getChzzkLiveDetailViaExtension } from "@/api/chzzkExtension";
+
+// 확장으로 조회한 19세 방송의 마지막 성공 응답 (channelId → live-detail content).
+// 확장 조회가 한 번 실패해도 재생 중인 플레이어·채팅이 끊기지 않게 하기 위함
+const chzzkAuthedDetailCache = new Map();
 
 // ✅ 치지직 라이브 상태 조회
 const getChzzkLiveStatus = async (channelId) => {
@@ -13,9 +18,37 @@ const getChzzkLiveStatus = async (channelId) => {
     const response = await chzzk_live_client.get(
       `/service/v3.2/channels/${channelId}/live-detail`
     );
-    const data = response.data?.content;
+    let data = response.data?.content;
     if (!data) {
       return await getChzzkLiveStatus2(channelId);
+    }
+
+    // 19세 방송은 비로그인 응답에서 재생 정보(livePlaybackJson)와 chatChannelId가
+    // 빠져 온다. 동반 확장이 있으면 브라우저의 치지직 로그인으로 다시 조회한다.
+    // 성인 인증이 안 된 계정이면 여전히 비어 오므로 그때는 기존 응답을 유지
+    // 방송 중일 때만 — 오프라인 채널·검색 결과까지 로그인 요청을 보내지 않는다
+    if (data.adult && !data.livePlaybackJson && data.status === "OPEN") {
+      const result = await getChzzkLiveDetailViaExtension(channelId);
+      if (result.status === "ok") {
+        if (result.content.livePlaybackJson) {
+          data = result.content;
+          chzzkAuthedDetailCache.set(channelId, result.content);
+        } else {
+          chzzkAuthedDetailCache.delete(channelId);
+        }
+      } else if (result.status === "failed") {
+        // 같은 방송(liveId)이면 마지막 성공 응답의 재생 정보를 이어 쓴다.
+        // 재생 URL 토큰은 발급 후 수 시간 유효해 일시 실패 구간은 넘길 수 있다
+        const cached = chzzkAuthedDetailCache.get(channelId);
+        if (cached && cached.liveId === data.liveId) {
+          console.warn("⚠️ [Chzzk] 확장 조회 실패 — 이전 재생 정보 유지:", channelId);
+          data = {
+            ...data,
+            livePlaybackJson: cached.livePlaybackJson,
+            chatChannelId: cached.chatChannelId,
+          };
+        }
+      }
     }
 
     // livePlaybackJson에서 HLS 재생 URL 추출 (플레이어 전용 재생용)
@@ -60,6 +93,8 @@ const getChzzkLiveStatus = async (channelId) => {
       userCount: data?.status === "CLOSE" ? -1 : data?.concurrentUserCount ?? 0,
       liveCategory: data?.liveCategoryValue || data?.liveCategory,
       tags: data?.tags,
+      // 19세 방송 여부 — 채널 툴팁의 19 태그 표시용 (재생 가능 여부와는 무관)
+      isAdult: data?.adult === true,
       liveHlsUrl,
       chatChannelId,
       accessToken,
@@ -377,6 +412,7 @@ export const getAllChannelsData = async (localStorageData) => {
           liveVideoId: live.liveVideoId ?? null,
           liveCategory: live.liveCategory,
           tags: live.tags,
+          isAdult: live.isAdult ?? false,
           liveHlsUrl: live.liveHlsUrl ?? null,
           isVisible: item.zoneId != null,
           zoneId: item.zoneId ?? null,
